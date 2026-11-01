@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 enum SidebarSection: String, Hashable, CaseIterable {
@@ -37,15 +38,24 @@ struct MainWindow: View {
         }
         .foregroundStyle(Palette.text)
         .background(Palette.window)
-        .background(TrafficLightsPositioner())
         .ignoresSafeArea()
     }
 }
 
-struct SidebarPanel: View {
-    /// Corner radius of a hidden-title-bar window on macOS 26 (measured at runtime: 16 pt).
-    static let windowCornerRadius: CGFloat = 16
+/// The translucent behind-window material macOS uses for sidebars.
+private struct SidebarMaterial: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSVisualEffectView {
+        let view = NSVisualEffectView()
+        view.material = .sidebar
+        view.blendingMode = .behindWindow
+        view.state = .followsWindowActiveState
+        return view
+    }
 
+    func updateNSView(_ view: NSVisualEffectView, context: Context) {}
+}
+
+struct SidebarPanel: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
@@ -71,11 +81,11 @@ struct SidebarPanel: View {
         .padding(.top, 14)
         .padding(.horizontal, 10)
         .padding(.bottom, 12)
-        .frame(width: 224, alignment: .topLeading)
+        .frame(width: 240, alignment: .topLeading)
         .frame(maxHeight: .infinity, alignment: .top)
-        // Concentric with the window's corners: window radius minus the 8 pt margin.
-        .glassSurface(RoundedRectangle(cornerRadius: Self.windowCornerRadius - 8), fill: Palette.sidebar)
-        .padding(8)
+        // Like Finder: edge to edge, the system sidebar material, a hairline on the trailing edge.
+        .background(SidebarMaterial())
+        .overlay(alignment: .trailing) { Palette.cardBorder.frame(width: 1) }
     }
 
     private func group(_ title: String, _ items: [(SidebarSection, String?)]) -> some View {
@@ -195,7 +205,7 @@ struct PlaceholderScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             Text(section.title)
                 .font(.ui(15, .semibold))
-                .padding(.leading, 8)
+                .padding(.leading, 16)
                 .frame(minHeight: 60)
             ContentUnavailableView(section.title, systemImage: "hammer", description: Text("Designed, not built yet."))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

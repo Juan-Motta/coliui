@@ -36,9 +36,8 @@ struct ContainersView: View {
                 }
             }
             .padding(.top, 4)
-            .padding(.trailing, 16)
+            .padding(.horizontal, 16)
             .padding(.bottom, 16)
-            .padding(.leading, 8)
         }
         .confirmationDialog(
             "Remove “\(pendingRemoval?.name ?? "")”?",
@@ -158,8 +157,7 @@ private struct Header: View {
             }
             .buttonStyle(TintButtonStyle())
         }
-        .padding(.leading, 8)
-        .padding(.trailing, 14)
+        .padding(.horizontal, 16)
         .padding(.vertical, 8)
         .frame(minHeight: 60)
     }
