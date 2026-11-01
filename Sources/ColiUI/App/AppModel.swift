@@ -10,7 +10,11 @@ final class AppModel {
     let colima: ColimaViewModel
     var section: SidebarSection? = .containers
     private(set) var summary: DockerSummary?
+    /// The open container detail, if any (shown in place of the list).
+    private(set) var detail: ContainerDetailViewModel?
 
+    private let repository: ContainerRepository?
+    private let logSource: ContainerLogSource?
     private let inventory: DockerInventory?
     private let events: (@Sendable () -> AsyncThrowingStream<Void, Error>)?
     private var pollTask: Task<Void, Never>?
@@ -21,13 +25,35 @@ final class AppModel {
     init(
         containers: ContainersViewModel,
         colima: ColimaViewModel,
+        repository: ContainerRepository? = nil,
+        logSource: ContainerLogSource? = nil,
         inventory: DockerInventory? = nil,
         events: (@Sendable () -> AsyncThrowingStream<Void, Error>)? = nil
     ) {
         self.containers = containers
         self.colima = colima
+        self.repository = repository
+        self.logSource = logSource
         self.inventory = inventory
         self.events = events
+    }
+
+    func openDetail(_ container: Container) {
+        guard let repository, let logSource else { return }
+        detail?.stop()
+        let detail = ContainerDetailViewModel(containerID: container.id, repository: repository, logSource: logSource)
+        self.detail = detail
+        Task { await detail.start() }
+    }
+
+    func closeDetail() {
+        detail?.stop()
+        detail = nil
+    }
+
+    func select(_ section: SidebarSection) {
+        closeDetail()
+        self.section = section
     }
 
     static func live(profile: String = "default") -> AppModel {
@@ -43,6 +69,8 @@ final class AppModel {
         return AppModel(
             containers: ContainersViewModel(repository: repository),
             colima: ColimaViewModel(runtime: runtime, profile: profile),
+            repository: repository,
+            logSource: DockerLogStream(socketPath: socketPath),
             inventory: repository,
             events: { DockerEvents.containerEvents(socketPath: socketPath) }
         )

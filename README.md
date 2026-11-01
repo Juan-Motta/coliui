@@ -22,9 +22,16 @@ open build/ColiUI.app
 - Colima status for the `default` profile, with start, stop and restart.
 - Containers list with All / Running / Stopped filter, search, start, stop, restart and remove (with confirmation).
 - Context menu: open a published port in the browser, copy the container ID or a `docker exec` command.
+- Container detail (click a name): live logs with filter, regex, follow, timestamps, time range, export and clear; overview, ports and mounts.
 - Menu bar extra with the VM status and quick start/stop per container.
 
-Data refreshes every 3 seconds (Colima every 15). Images, volumes, networks, cleanup and profiles are designed but not built yet.
+The list updates live from Docker events; CPU and memory refresh every 3 seconds (Colima every 15). Images, volumes, networks, cleanup, profiles and the other detail tabs are designed but not built yet.
+
+```bash
+COLIUI_LIVE=1 swift test   # also runs the tests that talk to your real Colima socket
+```
+
+`swift test --filter …` fails with the Command Line Tools (the Testing macro plugin isn't loaded); run the whole suite instead.
 
 ## Architecture
 

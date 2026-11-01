@@ -252,10 +252,15 @@ private struct ContainerRow: View {
     var body: some View {
         let containers = model.containers
         HStack(spacing: Columns.gap) {
-            VStack(alignment: .leading, spacing: 0) {
-                Text(container.name).font(.ui(13, .medium)).foregroundStyle(Palette.text).lineLimit(1)
-                Text(container.shortID).font(.mono(11)).foregroundStyle(Palette.secondary)
+            Button { model.openDetail(container) } label: {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(container.name).font(.ui(13, .medium)).foregroundStyle(Palette.text).lineLimit(1)
+                    Text(container.shortID).font(.mono(11)).foregroundStyle(Palette.secondary)
+                }
+                .contentShape(.rect)
             }
+            .buttonStyle(.plain)
+            .help("Show logs and details")
             .frame(width: columns.name, alignment: .leading)
 
             Text(container.image)
@@ -330,7 +335,7 @@ private struct PortsLabel: View {
 }
 
 /// `M8 5v14l11-7z`
-private struct PlayShape: Shape {
+struct PlayShape: Shape {
     func path(in rect: CGRect) -> Path {
         let s = min(rect.width, rect.height) / 24
         var path = Path()
@@ -388,6 +393,8 @@ private struct ContainerMenu: View {
 
     var body: some View {
         let containers = model.containers
+        Button("Show Logs and Details") { model.openDetail(container) }
+        Divider()
         if let url = container.ports.lazy.compactMap(\.localURL).first {
             Button("Open \(url.host() ?? "localhost"):\(url.port ?? 0)") { NSWorkspace.shared.open(url) }
             Divider()

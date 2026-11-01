@@ -28,7 +28,11 @@ struct MainWindow: View {
             Group {
                 switch model.section ?? .containers {
                 case .containers:
-                    ContainersView()
+                    if let detail = model.detail {
+                        ContainerDetailView(detail: detail)
+                    } else {
+                        ContainersView()
+                    }
                 case let other:
                     PlaceholderScreen(section: other)
                 }
@@ -84,7 +88,7 @@ struct SidebarPanel: View {
                 .padding(.horizontal, 8)
                 .padding(.bottom, 6)
             ForEach(items, id: \.0) { section, count in
-                Button { model.section = section } label: {
+                Button { model.select(section) } label: {
                     SidebarRowLabel(
                         icon: section.icon,
                         title: section.title,

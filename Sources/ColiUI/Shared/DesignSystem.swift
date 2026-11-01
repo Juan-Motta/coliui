@@ -36,6 +36,22 @@ enum Palette {
     static let rowDivider = dynamic(rgb(0, 0, 0, 0.04), rgb(255, 255, 255, 0.04))
     static let rowHover = dynamic(rgb(0, 102, 204, 0.05), rgb(77, 163, 255, 0.14))
 
+    /// `.pill` / logs filter field fill and its hover.
+    static let field = dynamic(rgb(0, 0, 0, 0.05), rgb(255, 255, 255, 0.08))
+    static let fieldHover = dynamic(rgb(0, 0, 0, 0.09), rgb(255, 255, 255, 0.14))
+    static let toggleOn = dynamic(rgb(0, 102, 204, 0.14), rgb(77, 163, 255, 0.24))
+    static let toggleOnText = dynamic(rgb(0x0B, 0x4F, 0x8A), rgb(0x7B, 0xBB, 0xFF))
+    static let greenPill = dynamic(rgb(0xE7, 0xF6, 0xEC), rgb(48, 209, 88, 0.16))
+    static let orangePill = dynamic(rgb(0xFE, 0xF3, 0xE7), rgb(255, 159, 10, 0.16))
+
+    /// Log panel (same in light and dark).
+    static let logBackground = Color(nsColor: rgb(0x1C, 0x1C, 0x1E))
+    static let logTime = Color(nsColor: rgb(0x8E, 0x8E, 0x93))
+    static let logText = Color(nsColor: rgb(0xE5, 0xE5, 0xEA))
+    static let logInfo = Color(nsColor: rgb(0x64, 0xD2, 0xFF))
+    static let logWarn = Color(nsColor: rgb(0xFF, 0xD6, 0x0A))
+    static let logError = Color(nsColor: rgb(0xFF, 0x69, 0x61))
+
     static let greenText = dynamic(rgb(0x1E, 0x7F, 0x3C), rgb(0x4C, 0xD9, 0x64))
     static let greenDot = dynamic(rgb(0x28, 0xC8, 0x40), rgb(0x30, 0xD1, 0x58))
     static let orangeText = dynamic(rgb(0xB5, 0x47, 0x08), rgb(0xFF, 0xB3, 0x40))
@@ -207,11 +223,40 @@ struct TintButtonStyle: ButtonStyle {
     }
 }
 
+/// `.pill`: 30 pt capsule, 12 pt text, soft fill that darkens on hover.
+struct PillButtonStyle: ButtonStyle {
+    var isOn = false
+    var foreground: Color? = nil
+
+    func makeBody(configuration: Configuration) -> some View {
+        Hoverable { hovered in
+            configuration.label
+                .font(.ui(12))
+                .foregroundStyle(foreground ?? (isOn ? Palette.toggleOnText : Palette.text))
+                .padding(.horizontal, 12)
+                .frame(height: 30)
+                .background(isOn ? Palette.toggleOn : (hovered || configuration.isPressed ? Palette.fieldHover : Palette.field), in: .capsule)
+                .contentShape(.capsule)
+        }
+    }
+}
+
+extension View {
+    /// A non-button `.pill` (holds a checkbox or a menu).
+    func pillSurface() -> some View {
+        font(.ui(12))
+            .padding(.horizontal, 12)
+            .frame(height: 30)
+            .background(Palette.field, in: .capsule)
+    }
+}
+
 /// Line icons drawn from the designs' 24×24 SVG paths.
 struct LineIcon: Shape {
     enum Kind {
         case containers, images, volumes, networks, cleanup, profiles, settings
         case refresh, sort, search, plus, trash
+        case chevronLeft, terminal, download
     }
 
     let kind: Kind
@@ -275,6 +320,12 @@ struct LineIcon: Shape {
             line(p(20, 20), p(16, 16))
         case .plus:
             line(p(12, 5), p(12, 19)); line(p(5, 12), p(19, 12))
+        case .chevronLeft:
+            line(p(15, 5), p(8, 12), p(15, 19))
+        case .terminal:
+            line(p(4, 17), p(10, 12), p(4, 7)); line(p(12, 19), p(20, 19))
+        case .download:
+            line(p(12, 4), p(12, 15)); line(p(7, 10), p(12, 15), p(17, 10)); line(p(5, 20), p(19, 20))
         }
         let scale = min(rect.width, rect.height) / 24
         return path.applying(CGAffineTransform(translationX: rect.minX, y: rect.minY).scaledBy(x: scale, y: scale))
