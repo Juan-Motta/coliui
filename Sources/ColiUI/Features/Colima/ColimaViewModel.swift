@@ -18,6 +18,7 @@ enum ColimaAction {
 @Observable
 final class ColimaViewModel {
     private(set) var instance: ColimaInstance?
+    private(set) var profileCount = 0
     private(set) var pendingAction: ColimaAction?
     var errorMessage: String?
     let profile: String
@@ -34,7 +35,9 @@ final class ColimaViewModel {
 
     func refresh() async {
         do {
-            instance = try await runtime.instances().first { $0.name == profile }
+            let instances = try await runtime.instances()
+            profileCount = instances.count
+            instance = instances.first { $0.name == profile }
             errorMessage = instance == nil
                 ? "Colima profile “\(profile)” not found. Start it with `colima start`."
                 : nil

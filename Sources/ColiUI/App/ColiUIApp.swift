@@ -23,6 +23,15 @@ struct ColiUIApp: App {
             Image(nsImage: Glyph.menuBarImage(dimmed: !model.colima.isRunning))
         }
         .menuBarExtraStyle(.window)
+
+        Settings {
+            ContentUnavailableView(
+                "Settings",
+                systemImage: "gearshape",
+                description: Text("Designed, not built yet.")
+            )
+            .frame(width: 480, height: 320)
+        }
     }
 }
 

@@ -53,8 +53,9 @@ struct ContainerStatusLabel: View {
         HStack(spacing: 6) {
             Circle().fill(container.statusTint).frame(width: 8, height: 8)
             Text(container.status)
-                .foregroundStyle(container.isRunning ? AnyShapeStyle(.green) : AnyShapeStyle(.secondary))
+                .foregroundStyle(container.statusTint)
+                .lineLimit(1)
         }
-        .font(.callout)
+        .font(.callout.weight(.medium))
     }
 }

@@ -9,14 +9,17 @@ final class AppModel {
     let containers: ContainersViewModel
     let colima: ColimaViewModel
     var section: SidebarSection? = .containers
+    private(set) var summary: DockerSummary?
 
+    private let inventory: DockerInventory?
     private var pollTask: Task<Void, Never>?
 
     static let shared = AppModel.live()
 
-    init(containers: ContainersViewModel, colima: ColimaViewModel) {
+    init(containers: ContainersViewModel, colima: ColimaViewModel, inventory: DockerInventory? = nil) {
         self.containers = containers
         self.colima = colima
+        self.inventory = inventory
     }
 
     static func live(profile: String = "default") -> AppModel {
@@ -31,18 +34,22 @@ final class AppModel {
             ?? UnavailableColimaRuntime()
         return AppModel(
             containers: ContainersViewModel(repository: repository),
-            colima: ColimaViewModel(runtime: runtime, profile: profile)
+            colima: ColimaViewModel(runtime: runtime, profile: profile),
+            inventory: repository
         )
     }
 
-    /// Polls containers every 3 s and Colima every 15 s (each `colima list` spawns processes).
+    /// Polls containers every 3 s; Colima and sidebar totals every 15 s (each `colima list` spawns processes).
     /// Replace with the Docker events stream later.
     func startPolling() {
         guard pollTask == nil else { return }
         pollTask = Task {
             var tick = 0
             while !Task.isCancelled {
-                if tick % 5 == 0 { await colima.refresh() }
+                if tick % 5 == 0 {
+                    await colima.refresh()
+                    summary = try? await inventory?.summary()
+                }
                 await containers.refresh()
                 tick += 1
                 try? await Task.sleep(for: .seconds(3))

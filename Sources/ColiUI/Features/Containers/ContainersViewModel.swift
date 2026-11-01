@@ -10,6 +10,20 @@ enum ContainerFilter: String, CaseIterable, Identifiable {
     var id: Self { self }
 }
 
+enum ContainerViewMode: String, CaseIterable, Identifiable {
+    case list = "List"
+    case compose = "Compose groups"
+
+    var id: Self { self }
+}
+
+enum ContainerSort: String, CaseIterable, Identifiable {
+    case name = "Name"
+    case status = "Status"
+
+    var id: Self { self }
+}
+
 enum ContainerAction {
     case start, stop, restart, remove
 }
@@ -18,12 +32,15 @@ enum ContainerAction {
 @Observable
 final class ContainersViewModel {
     private(set) var containers: [Container] = []
+    /// CPU / memory for running containers, keyed by container ID.
+    private(set) var stats: [String: ContainerStats] = [:]
     private(set) var busyIDs: Set<String> = []
     private(set) var hasLoaded = false
     var errorMessage: String?
     var filter: ContainerFilter = .all
+    var sort: ContainerSort = .name
     var searchText = ""
-    var selection: Container.ID?
+    var viewMode: ContainerViewMode = .list
     /// Set to ask for confirmation before removing.
     var pendingRemoval: Container?
 
@@ -46,7 +63,8 @@ final class ContainersViewModel {
 
     var visibleContainers: [Container] {
         let query = searchText.trimmingCharacters(in: .whitespaces)
-        return containers.filter { container in
+        let ordered = sort == .name ? containers : containers.filter(\.isRunning) + containers.filter { !$0.isRunning }
+        return ordered.filter { container in
             let matchesFilter = switch filter {
             case .all: true
             case .running: container.isRunning
@@ -67,9 +85,27 @@ final class ContainersViewModel {
         } catch {
             // A stale list would suggest containers are still there while Docker is down.
             containers = []
+            stats = [:]
             errorMessage = error.localizedDescription
         }
         hasLoaded = true
+        await refreshStats()
+    }
+
+    /// Each stats call takes ~1 s (the engine samples twice), so query running containers in parallel.
+    private func refreshStats() async {
+        let repository = repository
+        let running = containers.filter(\.isRunning).map(\.id)
+        stats = await withTaskGroup(of: (String, ContainerStats?).self) { group in
+            for id in running {
+                group.addTask { (id, try? await repository.stats(id: id)) }
+            }
+            var collected: [String: ContainerStats] = [:]
+            for await (id, value) in group {
+                if let value { collected[id] = value }
+            }
+            return collected
+        }
     }
 
     func perform(_ action: ContainerAction, on container: Container) async {

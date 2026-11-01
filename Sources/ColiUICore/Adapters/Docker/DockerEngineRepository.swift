@@ -1,7 +1,7 @@
 import Foundation
 
 /// `ContainerRepository` backed by the Docker Engine REST API.
-public struct DockerEngineRepository: ContainerRepository {
+public struct DockerEngineRepository: ContainerRepository, DockerInventory {
     private let transport: HTTPTransport
 
     public init(transport: HTTPTransport) {
@@ -16,6 +16,35 @@ public struct DockerEngineRepository: ContainerRepository {
         } catch {
             throw DockerError.malformedResponse
         }
+    }
+
+    /// `stream=false` makes the engine take two samples (~1 s apart) so CPU deltas are meaningful.
+    public func stats(id: String) async throws -> ContainerStats {
+        let id = try Self.validated(id)
+        let response = try await transport.send(method: "GET", path: "/containers/\(id)/stats?stream=false", body: nil)
+        try Self.check(response)
+        guard let dto = try? JSONDecoder().decode(StatsDTO.self, from: response.body) else {
+            throw DockerError.malformedResponse
+        }
+        return dto.toDomain()
+    }
+
+    public func summary() async throws -> DockerSummary {
+        async let images = decodeList(path: "/images/json")
+        async let volumes = decode(VolumesDTO.self, path: "/volumes")
+        async let networks = decodeList(path: "/networks")
+        return try await DockerSummary(images: images, volumes: volumes.volumes?.count ?? 0, networks: networks)
+    }
+
+    private func decodeList(path: String) async throws -> Int {
+        try await decode([IgnoredDTO].self, path: path).count
+    }
+
+    private func decode<T: Decodable>(_ type: T.Type, path: String) async throws -> T {
+        let response = try await transport.send(method: "GET", path: path, body: nil)
+        try Self.check(response)
+        guard let value = try? JSONDecoder().decode(type, from: response.body) else { throw DockerError.malformedResponse }
+        return value
     }
 
     public func start(id: String) async throws {
@@ -62,6 +91,40 @@ public struct DockerEngineRepository: ContainerRepository {
 
 private struct EngineErrorDTO: Decodable {
     let message: String
+}
+
+private struct IgnoredDTO: Decodable {}
+
+private struct VolumesDTO: Decodable {
+    let volumes: [IgnoredDTO]?
+    enum CodingKeys: String, CodingKey { case volumes = "Volumes" }
+}
+
+private struct StatsDTO: Decodable {
+    struct CPU: Decodable {
+        struct Usage: Decodable { let total_usage: Int64 }
+        let cpu_usage: Usage
+        let system_cpu_usage: Int64?
+        let online_cpus: Int?
+    }
+    struct Memory: Decodable {
+        let usage: Int64?
+        let stats: [String: Int64]?
+    }
+    let cpu_stats: CPU
+    let precpu_stats: CPU
+    let memory_stats: Memory
+
+    /// Same formulas as `docker stats` on Linux (cgroup v2 reports page cache as `inactive_file`).
+    func toDomain() -> ContainerStats {
+        let cpuDelta = Double(cpu_stats.cpu_usage.total_usage - precpu_stats.cpu_usage.total_usage)
+        let systemDelta = Double((cpu_stats.system_cpu_usage ?? 0) - (precpu_stats.system_cpu_usage ?? 0))
+        let cpus = Double(cpu_stats.online_cpus ?? 1)
+        let cpu = cpuDelta > 0 && systemDelta > 0 ? cpuDelta / systemDelta * cpus * 100 : 0
+        let cache = memory_stats.stats?["inactive_file"] ?? memory_stats.stats?["total_inactive_file"] ?? 0
+        let memory = max((memory_stats.usage ?? 0) - cache, 0)
+        return ContainerStats(cpuPercent: cpu, memoryBytes: memory)
+    }
 }
 
 private struct ContainerDTO: Decodable {

@@ -26,6 +26,11 @@ final class FakeContainerRepository: ContainerRepository, @unchecked Sendable {
         if let actionError { throw actionError }
     }
 
+    func stats(id: String) async throws -> ContainerStats {
+        lock.withLock { _actions.append("stats \(id)") }
+        return ContainerStats(cpuPercent: 1.5, memoryBytes: 1_048_576)
+    }
+
     func start(id: String) async throws { try record("start \(id)") }
     func stop(id: String) async throws { try record("stop \(id)") }
     func restart(id: String) async throws { try record("restart \(id)") }
@@ -66,6 +71,27 @@ private let sample = [
         #expect(model.visibleContainers.map(\.name) == ["api-server", "worker"])
     }
 
+    @Test func statsAreLoadedForRunningContainersOnly() async {
+        let repository = FakeContainerRepository(sample)
+        let model = ContainersViewModel(repository: repository)
+        await model.refresh()
+
+        #expect(Set(repository.actions) == ["stats c1", "stats c2"])
+        #expect(model.stats["c1"]?.cpuDisplay == "1.5%")
+        #expect(model.stats["c3"] == nil)
+    }
+
+    @Test func sortByStatusPutsRunningFirst() async {
+        let model = ContainersViewModel(repository: FakeContainerRepository([
+            Container(id: "a", name: "alpha", image: "x", state: .exited, status: "Exited (0)"),
+            Container(id: "z", name: "zulu", image: "x", state: .running, status: "Up"),
+        ]))
+        await model.refresh()
+        #expect(model.visibleContainers.map(\.name) == ["alpha", "zulu"])
+        model.sort = .status
+        #expect(model.visibleContainers.map(\.name) == ["zulu", "alpha"])
+    }
+
     @Test func actionCallsRepositoryThenRefreshes() async {
         let repository = FakeContainerRepository(sample)
         let model = ContainersViewModel(repository: repository)
@@ -74,7 +100,7 @@ private let sample = [
         repository.setContainers([])
         await model.perform(.stop, on: sample[1])
 
-        #expect(repository.actions == ["stop c1"])
+        #expect(repository.actions.filter { !$0.hasPrefix("stats") } == ["stop c1"])
         #expect(model.containers.isEmpty)
         #expect(model.busyIDs.isEmpty)
     }
@@ -84,7 +110,7 @@ private let sample = [
         let model = ContainersViewModel(repository: repository)
         await model.perform(.remove, on: sample[1])
         await model.perform(.remove, on: sample[0])
-        #expect(repository.actions == ["remove c1 force=true", "remove c3 force=false"])
+        #expect(repository.actions.filter { !$0.hasPrefix("stats") } == ["remove c1 force=true", "remove c3 force=false"])
     }
 
     @Test func listFailureSetsErrorMessage() async {
