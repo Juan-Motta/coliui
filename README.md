@@ -1,0 +1,43 @@
+# ColiUI
+
+A native, lightweight macOS app for managing [Colima](https://github.com/abiosoft/colima) and its Docker containers — a window with a sidebar plus a menu bar extra.
+
+## Requirements
+
+- macOS 26 or later
+- Colima (`brew install colima`) with the Docker runtime
+- Swift 6.2+ (the Command Line Tools are enough; Xcode is optional)
+
+## Build and run
+
+```bash
+swift run ColiUI          # run from source
+swift test                # run the test suite
+scripts/bundle.sh         # build build/ColiUI.app (release, ad-hoc signed)
+open build/ColiUI.app
+```
+
+## What works today
+
+- Colima status for the `default` profile, with start, stop and restart.
+- Containers list with All / Running / Stopped filter, search, start, stop, restart and remove (with confirmation).
+- Context menu: open a published port in the browser, copy the container ID or a `docker exec` command.
+- Menu bar extra with the VM status and quick start/stop per container.
+
+Data refreshes every 3 seconds (Colima every 15). Images, volumes, networks, cleanup and profiles are designed but not built yet.
+
+## Architecture
+
+```
+Sources/
+  ColiUICore/            no third-party dependencies
+    Domain/              Container, ColimaInstance
+    Ports/               ContainerRepository, ColimaRuntime
+    Adapters/Docker/     HTTP/1.1 over the Colima Unix socket → Docker Engine API
+    Adapters/Colima/     `colima` CLI (list --json, start, stop, restart)
+  ColiUI/                SwiftUI app: composition root, view models, views
+```
+
+The Docker socket is `~/.colima/<profile>/docker.sock`, or a `unix://` `DOCKER_HOST` when set.
+
+> On the macOS 27 SDK, SwiftUI's `@State` is a macro whose plugin ships only with Xcode. To keep the project buildable with the Command Line Tools, UI state lives in `@Observable` models instead of `@State`.

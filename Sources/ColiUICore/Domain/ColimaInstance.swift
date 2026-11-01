@@ -44,9 +44,12 @@ public struct ColimaInstance: Identifiable, Sendable, Equatable {
     public var id: String { name }
     public var isRunning: Bool { status == .running }
 
+    public var memoryDisplay: String { Self.gib(memoryBytes) }
+    public var diskDisplay: String { Self.gib(diskBytes) }
+
     /// "4 CPU · 4 GiB · 100 GiB"
     public var resourcesSummary: String {
-        "\(cpus) CPU · \(Self.gib(memoryBytes)) · \(Self.gib(diskBytes))"
+        "\(cpus) CPU · \(memoryDisplay) · \(diskDisplay)"
     }
 
     static func gib(_ bytes: Int64) -> String {
