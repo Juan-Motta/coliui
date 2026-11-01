@@ -43,6 +43,9 @@ struct MainWindow: View {
 }
 
 struct SidebarPanel: View {
+    /// Corner radius of a hidden-title-bar window on macOS 26 (measured at runtime: 16 pt).
+    static let windowCornerRadius: CGFloat = 16
+
     @Environment(AppModel.self) private var model
 
     var body: some View {
@@ -70,8 +73,8 @@ struct SidebarPanel: View {
         .padding(.bottom, 12)
         .frame(width: 224, alignment: .topLeading)
         .frame(maxHeight: .infinity, alignment: .top)
-        // Concentric with the window's corners (window radius minus the 8 pt margin).
-        .glassSurface(ConcentricRectangle(), fill: Palette.sidebar)
+        // Concentric with the window's corners: window radius minus the 8 pt margin.
+        .glassSurface(RoundedRectangle(cornerRadius: Self.windowCornerRadius - 8), fill: Palette.sidebar)
         .padding(8)
     }
 
