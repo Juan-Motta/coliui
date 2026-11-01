@@ -224,7 +224,8 @@ private struct HeaderRow: View {
             Text("PORTS").frame(width: columns.ports, alignment: .leading)
             Text("CPU").frame(width: columns.cpu, alignment: .leading)
             Text("MEMORY").frame(width: columns.memory, alignment: .leading)
-            Text("ACTIONS").frame(width: Columns.actions, alignment: .trailing)
+            // Centred over the button group: each icon sits in a 28 pt hit area, so trailing alignment drifts.
+            Text("ACTIONS").frame(width: Columns.actions, alignment: .center)
         }
         .font(.ui(11, .semibold))
         .tracking(0.33)
@@ -274,7 +275,7 @@ private struct ContainerRow: View {
                 .frame(width: columns.memory, alignment: .leading)
 
             RowActions(container: container)
-                .frame(width: Columns.actions, alignment: .trailing)
+                .frame(width: Columns.actions, alignment: .center)
         }
         .padding(.horizontal, Columns.padding)
         .frame(height: 52)
