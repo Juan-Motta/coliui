@@ -41,6 +41,8 @@ final class ContainersViewModel {
     var sort: ContainerSort = .name
     var searchText = ""
     var viewMode: ContainerViewMode = .list
+    var hoveredID: Container.ID?
+    var showRunComingSoon = false
     /// Set to ask for confirmation before removing.
     var pendingRemoval: Container?
 

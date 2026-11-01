@@ -12,9 +12,12 @@ struct ColiUIApp: App {
         Window("ColiUI", id: "main") {
             MainWindow()
                 .environment(model)
+                .frame(minWidth: 1040, minHeight: 620)
                 .task { model.startPolling() }
         }
-        .defaultSize(width: 1180, height: 760)
+        .windowStyle(.hiddenTitleBar)
+        .windowBackgroundDragBehavior(.enabled)
+        .defaultSize(width: 1232, height: 752)
 
         MenuBarExtra {
             MenuBarView()

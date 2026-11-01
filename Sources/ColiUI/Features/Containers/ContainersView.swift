@@ -2,68 +2,43 @@ import AppKit
 import ColiUICore
 import SwiftUI
 
+/// Main.dc.html: header (60 pt), filter row, then the containers card.
 struct ContainersView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         @Bindable var containers = model.containers
         let pendingRemoval = containers.pendingRemoval
-        VStack(alignment: .leading, spacing: 14) {
-            if containers.viewMode == .list {
-                HStack {
-                    Picker("Filter", selection: $containers.filter) {
-                        ForEach(ContainerFilter.allCases) { filter in
-                            Text("\(filter.rawValue) (\(containers.count(for: filter)))").tag(filter)
-                        }
+        VStack(alignment: .leading, spacing: 0) {
+            Header()
+            VStack(alignment: .leading, spacing: 14) {
+                if containers.viewMode == .list {
+                    HStack {
+                        CapsuleSegmented(
+                            options: ContainerFilter.allCases.map {
+                                SegmentOption(value: $0, title: "\($0.rawValue) (\(containers.count(for: $0)))")
+                            },
+                            selection: $containers.filter
+                        )
+                        Spacer()
+                        Text("Live via Docker events")
+                            .font(.ui(12))
+                            .foregroundStyle(Palette.secondary)
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .fixedSize()
-                    Spacer()
-                    Text("Updates every 3 s")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
-                content
-            } else {
-                ContentUnavailableView(
-                    "Compose groups",
-                    systemImage: "square.stack.3d.down.right",
-                    description: Text("Designed, not built yet.")
-                )
-            }
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 12)
-        .navigationTitle("Containers")
-        .navigationSubtitle("\(containers.runningCount) running · \(containers.stoppedCount) stopped")
-        .searchable(text: $containers.searchText, placement: .toolbar, prompt: "Search")
-        .toolbar {
-            ToolbarItem(placement: .navigation) {
-                Picker("View", selection: $containers.viewMode) {
-                    ForEach(ContainerViewMode.allCases) { Text($0.rawValue).tag($0) }
-                }
-                .pickerStyle(.segmented)
-            }
-            ToolbarItemGroup {
-                Button("Refresh", systemImage: "arrow.clockwise") {
-                    Task { await containers.refresh() }
-                }
-                .keyboardShortcut("r")
-                Menu("Sort", systemImage: "line.3.horizontal.decrease") {
-                    Picker("Sort by", selection: $containers.sort) {
-                        ForEach(ContainerSort.allCases) { Text($0.rawValue).tag($0) }
-                    }
-                    .pickerStyle(.inline)
+                    content
+                } else {
+                    ContentUnavailableView(
+                        "Compose groups",
+                        systemImage: "square.stack.3d.down.right",
+                        description: Text("Designed, not built yet.")
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            ToolbarItem {
-                Button("Run container", systemImage: "plus") {}
-                    .labelStyle(.titleAndIcon)
-                    .buttonStyle(.glassProminent)
-                    .disabled(true)
-                    .help("Designed, not built yet")
-            }
+            .padding(.top, 4)
+            .padding(.trailing, 16)
+            .padding(.bottom, 16)
+            .padding(.leading, 8)
         }
         .confirmationDialog(
             "Remove “\(pendingRemoval?.name ?? "")”?",
@@ -75,6 +50,11 @@ struct ContainersView: View {
             }
         } message: { container in
             Text(container.isRunning ? "It's running and will be stopped first. This can't be undone." : "This can't be undone.")
+        }
+        .alert("Run container", isPresented: $containers.showRunComingSoon) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Designed, not built yet.")
         }
         .overlay(alignment: .bottom) {
             if let error = containers.errorMessage, !containers.containers.isEmpty {
@@ -95,39 +75,113 @@ struct ContainersView: View {
             } description: {
                 Text(error)
             } actions: {
-                Button("Start Colima") { Task { await model.performColima(.start) } }
-                    .buttonStyle(.glassProminent)
+                Button { Task { await model.performColima(.start) } } label: { Text("Start Colima") }
+                    .buttonStyle(TintButtonStyle())
                     .disabled(model.colima.isBusy)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if containers.visibleContainers.isEmpty {
             ContentUnavailableView(
                 containers.containers.isEmpty ? "No containers" : "No matches",
                 systemImage: "shippingbox",
                 description: Text(containers.containers.isEmpty ? "Run one with `docker run`." : "Try another filter or search.")
             )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             ContainersCard()
         }
     }
 }
 
-/// Proportional column widths shared by the header and every row.
+/// Title + subtitle, view toggle, spacer, refresh/sort capsule, search capsule, Run container.
+private struct Header: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var containers = model.containers
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Containers").font(.ui(15, .semibold))
+                Text("\(containers.runningCount) running · \(containers.stoppedCount) stopped")
+                    .font(.ui(11))
+                    .foregroundStyle(Palette.secondary)
+            }
+            .padding(.trailing, 6)
+
+            CapsuleSegmented(
+                options: ContainerViewMode.allCases.map { SegmentOption(value: $0, title: $0.rawValue) },
+                selection: $containers.viewMode
+            )
+
+            Spacer(minLength: 10)
+
+            GlassCapsule {
+                Button { Task { await containers.refresh() } } label: {
+                    Label { Text("Refresh") } icon: { LineIcon(kind: .refresh).icon(Palette.text, size: 16) }
+                }
+                .buttonStyle(ToolbarIconButtonStyle())
+                .keyboardShortcut("r")
+                .help("Refresh")
+
+                Menu {
+                    Picker("Sort by", selection: $containers.sort) {
+                        ForEach(ContainerSort.allCases) { Text($0.rawValue).tag($0) }
+                    }
+                    .pickerStyle(.inline)
+                } label: {
+                    LineIcon(kind: .sort).icon(Palette.text, size: 16)
+                        .frame(width: 34, height: 28)
+                        .contentShape(.capsule)
+                }
+                .menuStyle(.button)
+                .buttonStyle(.plain)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                .help("Sort")
+            }
+
+            HStack(spacing: 6) {
+                LineIcon(kind: .search).icon(Palette.secondary, size: 14)
+                TextField("Search", text: $containers.searchText)
+                    .textFieldStyle(.plain)
+                    .font(.ui(13))
+            }
+            .padding(.horizontal, 12)
+            .frame(width: 200, height: 34)
+            .glassSurface(Capsule())
+
+            Button { containers.showRunComingSoon = true } label: {
+                HStack(spacing: 6) {
+                    LineIcon(kind: .plus).icon(.white, size: 14, svgStrokeWidth: 2.4)
+                    Text("Run container")
+                }
+            }
+            .buttonStyle(TintButtonStyle())
+        }
+        .padding(.leading, 8)
+        .padding(.trailing, 14)
+        .padding(.vertical, 8)
+        .frame(minHeight: 60)
+    }
+}
+
+/// `grid-template-columns: 2fr 2fr 1.4fr 1.4fr 0.8fr 1fr 112px; gap: 12px; padding: 0 16px`.
 private struct Columns {
-    static let actions: CGFloat = 96
-    static let spacing: CGFloat = 12
-    static let padding: CGFloat = 20
+    static let actions: CGFloat = 112
+    static let gap: CGFloat = 12
+    static let padding: CGFloat = 16
 
     let name, image, status, ports, cpu, memory: CGFloat
 
     init(width: CGFloat) {
-        let flexible = max(width - 2 * Self.padding - Self.actions - 6 * Self.spacing, 360)
-        let unit = flexible / 9
-        name = 2 * unit
-        image = 2 * unit
-        status = 1.5 * unit
-        ports = 1.5 * unit
-        cpu = 0.9 * unit
-        memory = 1.1 * unit
+        let fractions = max(width - 2 * Self.padding - Self.actions - 6 * Self.gap, 0)
+        let fr = fractions / 8.6
+        name = 2 * fr
+        image = 2 * fr
+        status = 1.4 * fr
+        ports = 1.4 * fr
+        cpu = 0.8 * fr
+        memory = 1 * fr
     }
 }
 
@@ -136,23 +190,19 @@ private struct ContainersCard: View {
 
     var body: some View {
         let containers = model.containers
-        let visible = containers.visibleContainers
         GeometryReader { geometry in
-            let columns = Columns(width: geometry.size.width)
-            ScrollView {
+            let columns = Columns(width: max(geometry.size.width, 760))
+            ScrollView([.vertical, .horizontal]) {
                 VStack(spacing: 0) {
                     HeaderRow(columns: columns)
-                    Divider()
-                    ForEach(Array(visible.enumerated()), id: \.element.id) { index, container in
+                    ForEach(containers.visibleContainers) { container in
                         ContainerRow(container: container, stats: containers.stats[container.id], columns: columns)
-                        if index < visible.count - 1 {
-                            Divider().padding(.horizontal, Columns.padding)
-                        }
                     }
                 }
-                .background(.background, in: .rect(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(.separator))
-                .padding(.bottom, 20)
+                .frame(width: max(geometry.size.width, 760))
+                .background(Palette.card)
+                .clipShape(.rect(cornerRadius: 14))
+                .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
             }
             .scrollIndicators(.automatic)
         }
@@ -163,7 +213,7 @@ private struct HeaderRow: View {
     let columns: Columns
 
     var body: some View {
-        HStack(spacing: Columns.spacing) {
+        HStack(spacing: Columns.gap) {
             Text("NAME").frame(width: columns.name, alignment: .leading)
             Text("IMAGE").frame(width: columns.image, alignment: .leading)
             Text("STATUS").frame(width: columns.status, alignment: .leading)
@@ -172,33 +222,35 @@ private struct HeaderRow: View {
             Text("MEMORY").frame(width: columns.memory, alignment: .leading)
             Text("ACTIONS").frame(width: Columns.actions, alignment: .trailing)
         }
-        .font(.caption.weight(.semibold))
-        .tracking(0.6)
-        .foregroundStyle(.secondary)
+        .font(.ui(11, .semibold))
+        .tracking(0.33)
+        .foregroundStyle(Palette.secondary)
         .padding(.horizontal, Columns.padding)
-        .frame(height: 44)
+        .padding(.vertical, 10)
+        .overlay(alignment: .bottom) { Palette.headerDivider.frame(height: 1) }
     }
 }
 
 private struct ContainerRow: View {
+    @Environment(AppModel.self) private var model
     let container: Container
     let stats: ContainerStats?
     let columns: Columns
 
     var body: some View {
-        HStack(spacing: Columns.spacing) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(container.name).fontWeight(.medium).lineLimit(1)
-                Text(container.shortID)
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
+        let containers = model.containers
+        HStack(spacing: Columns.gap) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(container.name).font(.ui(13, .medium)).foregroundStyle(Palette.text).lineLimit(1)
+                Text(container.shortID).font(.mono(11)).foregroundStyle(Palette.secondary)
             }
             .frame(width: columns.name, alignment: .leading)
 
             Text(container.image)
-                .font(.callout.monospaced())
+                .font(.mono(12))
+                .foregroundStyle(Palette.tertiary)
                 .lineLimit(1)
-                .truncationMode(.middle)
+                .truncationMode(.tail)
                 .frame(width: columns.image, alignment: .leading)
 
             ContainerStatusLabel(container: container)
@@ -208,20 +260,30 @@ private struct ContainerRow: View {
                 .frame(width: columns.ports, alignment: .leading)
 
             Text(stats?.cpuDisplay ?? "—")
-                .foregroundStyle(stats == nil ? .secondary : .primary)
+                .font(.ui(12))
+                .foregroundStyle(Palette.tertiary)
                 .frame(width: columns.cpu, alignment: .leading)
 
             Text(stats?.memoryDisplay ?? "—")
-                .foregroundStyle(stats == nil ? .secondary : .primary)
+                .font(.ui(12))
+                .foregroundStyle(Palette.tertiary)
                 .frame(width: columns.memory, alignment: .leading)
 
             RowActions(container: container)
                 .frame(width: Columns.actions, alignment: .trailing)
         }
-        .font(.callout)
         .padding(.horizontal, Columns.padding)
-        .frame(height: 58)
+        .frame(height: 52)
+        .background(containers.hoveredID == container.id ? Palette.rowHover : .clear)
+        .overlay(alignment: .bottom) { Palette.rowDivider.frame(height: 1) }
         .contentShape(.rect)
+        .onHover { inside in
+            if inside {
+                containers.hoveredID = container.id
+            } else if containers.hoveredID == container.id {
+                containers.hoveredID = nil
+            }
+        }
         .contextMenu { ContainerMenu(container: container) }
     }
 }
@@ -230,36 +292,40 @@ private struct PortsLabel: View {
     let container: Container
 
     var body: some View {
-        if container.ports.isEmpty {
-            Text("—").foregroundStyle(.secondary)
-        } else {
-            HStack(spacing: 6) {
-                ForEach(container.ports.prefix(2), id: \.self) { port in
-                    if let url = port.localURL {
-                        Link(port.display, destination: url)
-                    } else {
-                        Text(port.display).foregroundStyle(.secondary)
+        Group {
+            if container.ports.isEmpty {
+                Text("—")
+            } else {
+                HStack(spacing: 0) {
+                    ForEach(Array(container.ports.enumerated()), id: \.element) { index, port in
+                        let text = port.publicPort.map { "\($0)→\(port.privatePort)" } ?? "\(port.privatePort)"
+                        if let url = port.localURL {
+                            Link(text, destination: url)
+                        } else {
+                            Text(text)
+                        }
+                        if index < container.ports.count - 1 { Text(", ") }
                     }
                 }
-                if container.ports.count > 2 {
-                    Text("+\(container.ports.count - 2)").foregroundStyle(.secondary)
-                }
             }
-            .font(.callout.monospaced())
-            .lineLimit(1)
         }
+        .font(.mono(12))
+        .foregroundStyle(Palette.accent)
+        .tint(Palette.accent)
+        .lineLimit(1)
     }
 }
 
-/// 28 pt circular hit target with a pressed highlight, matching the design's icon buttons.
-private struct IconButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .labelStyle(.iconOnly)
-            .font(.system(size: 13, weight: .semibold))
-            .frame(width: 28, height: 28)
-            .background(Color.primary.opacity(configuration.isPressed ? 0.14 : 0.0), in: .circle)
-            .contentShape(.circle)
+/// `M8 5v14l11-7z`
+private struct PlayShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let s = min(rect.width, rect.height) / 24
+        var path = Path()
+        path.move(to: CGPoint(x: 8 * s, y: 5 * s))
+        path.addLine(to: CGPoint(x: 8 * s, y: 19 * s))
+        path.addLine(to: CGPoint(x: 19 * s, y: 12 * s))
+        path.closeSubpath()
+        return path.offsetBy(dx: rect.minX, dy: rect.minY)
     }
 }
 
@@ -270,26 +336,35 @@ private struct RowActions: View {
     var body: some View {
         let containers = model.containers
         let isBusy = containers.busyIDs.contains(container.id)
-        HStack(spacing: 4) {
+        HStack(spacing: 2) {
             if isBusy {
                 ProgressView().controlSize(.small).frame(width: 28, height: 28)
             } else if container.isRunning {
-                Button("Stop", systemImage: "stop.fill") { Task { await containers.perform(.stop, on: container) } }
-                    .foregroundStyle(.primary)
-                    .help("Stop")
+                Button { Task { await containers.perform(.stop, on: container) } } label: {
+                    Label {
+                        Text("Stop")
+                    } icon: {
+                        // rect x6 y6 12×12 rx2 in a 24 box at 14 pt
+                        RoundedRectangle(cornerRadius: 14 / 12).fill(Palette.text).frame(width: 7, height: 7).frame(width: 14, height: 14)
+                    }
+                }
+                .help("Stop")
             } else {
-                Button("Start", systemImage: "play.fill") { Task { await containers.perform(.start, on: container) } }
-                    .foregroundStyle(.green)
-                    .help("Start")
+                Button { Task { await containers.perform(.start, on: container) } } label: {
+                    Label { Text("Start") } icon: { PlayShape().fill(Palette.greenText).frame(width: 14, height: 14) }
+                }
+                .help("Start")
             }
-            Button("Restart", systemImage: "arrow.clockwise") { Task { await containers.perform(.restart, on: container) } }
-                .foregroundStyle(.primary)
-                .help("Restart")
-            Button("Remove", systemImage: "trash") { containers.pendingRemoval = container }
-                .foregroundStyle(.red)
-                .help("Remove…")
+            Button { Task { await containers.perform(.restart, on: container) } } label: {
+                Label { Text("Restart") } icon: { LineIcon(kind: .refresh).icon(Palette.text, size: 14, svgStrokeWidth: 2.2) }
+            }
+            .help("Restart")
+            Button { containers.pendingRemoval = container } label: {
+                Label { Text("Remove") } icon: { LineIcon(kind: .trash).icon(Palette.danger, size: 14) }
+            }
+            .help("Remove…")
         }
-        .buttonStyle(IconButtonStyle())
+        .buttonStyle(ToolbarIconButtonStyle(width: 28))
         .disabled(isBusy)
     }
 }
@@ -329,15 +404,15 @@ private struct ErrorBanner: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Palette.orangeDot)
             Text(message).lineLimit(2)
             Button("Dismiss", systemImage: "xmark", action: onDismiss)
                 .labelStyle(.iconOnly)
                 .buttonStyle(.borderless)
         }
-        .font(.callout)
+        .font(.ui(12))
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .glassEffect(.regular, in: .capsule)
+        .glassSurface(Capsule())
     }
 }

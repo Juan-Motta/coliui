@@ -35,14 +35,34 @@ public struct ColimaCLIRuntime: ColimaRuntime {
     public func instances() async throws -> [ColimaInstance] {
         let output = try await execute(["list", "--json"])
         // One JSON object per line.
-        return try output
+        let dtos = try output
             .split(whereSeparator: \.isNewline)
             .map { line in
                 guard let dto = try? JSONDecoder().decode(InstanceDTO.self, from: Data(line.utf8)) else {
                     throw ColimaError.unexpectedOutput
                 }
-                return dto.toDomain()
+                return dto
             }
+        var instances: [ColimaInstance] = []
+        for dto in dtos {
+            // `list` doesn't report the VM driver; `status` does, but only for a running profile.
+            let vmType = ColimaStatus(rawValue: dto.status) == .running ? await vmType(profile: dto.name) : nil
+            instances.append(dto.toDomain(vmType: vmType))
+        }
+        return instances
+    }
+
+    public static func vmType(forDriver driver: String) -> String {
+        let lowered = driver.lowercased()
+        if lowered.contains("virtualization") { return "vz" }
+        if lowered.contains("qemu") { return "qemu" }
+        return lowered
+    }
+
+    private func vmType(profile: String) async -> String? {
+        guard let output = try? await execute(["status", profile, "--json"]),
+              let dto = try? JSONDecoder().decode(StatusDTO.self, from: Data(output.utf8)) else { return nil }
+        return Self.vmType(forDriver: dto.driver)
     }
 
     public func start(profile: String) async throws {
@@ -76,7 +96,7 @@ private struct InstanceDTO: Decodable {
     let disk: Int64
     let runtime: String
 
-    func toDomain() -> ColimaInstance {
+    func toDomain(vmType: String?) -> ColimaInstance {
         ColimaInstance(
             name: name,
             status: ColimaStatus(rawValue: status),
@@ -84,7 +104,12 @@ private struct InstanceDTO: Decodable {
             cpus: cpus,
             memoryBytes: memory,
             diskBytes: disk,
-            runtime: runtime
+            runtime: runtime,
+            vmType: vmType
         )
     }
+}
+
+private struct StatusDTO: Decodable {
+    let driver: String
 }

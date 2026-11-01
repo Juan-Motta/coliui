@@ -22,6 +22,8 @@ public struct ColimaInstance: Identifiable, Sendable, Equatable {
     public let memoryBytes: Int64
     public let diskBytes: Int64
     public let runtime: String
+    /// "vz" or "qemu"; only known while the VM is running.
+    public let vmType: String?
 
     public init(
         name: String,
@@ -30,8 +32,10 @@ public struct ColimaInstance: Identifiable, Sendable, Equatable {
         cpus: Int,
         memoryBytes: Int64,
         diskBytes: Int64,
-        runtime: String
+        runtime: String,
+        vmType: String? = nil
     ) {
+        self.vmType = vmType
         self.name = name
         self.status = status
         self.arch = arch

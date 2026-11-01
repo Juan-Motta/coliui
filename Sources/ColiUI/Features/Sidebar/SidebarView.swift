@@ -5,85 +5,120 @@ enum SidebarSection: String, Hashable, CaseIterable {
 
     var title: String { rawValue.capitalized }
 
-    var symbol: String {
+    var icon: LineIcon.Kind {
         switch self {
-        case .containers: "shippingbox"
-        case .images: "square.stack.3d.up"
-        case .volumes: "cylinder"
-        case .networks: "point.3.connected.trianglepath.dotted"
-        case .cleanup: "trash"
-        case .profiles: "desktopcomputer"
+        case .containers: .containers
+        case .images: .images
+        case .volumes: .volumes
+        case .networks: .networks
+        case .cleanup: .cleanup
+        case .profiles: .profiles
         }
     }
 }
 
+/// Window layout from the designs: an inset glass sidebar (224 pt, 8 pt margin) beside the content.
+/// The title bar is hidden; the system traffic lights sit in the sidebar's top row.
 struct MainWindow: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        @Bindable var model = model
-        NavigationSplitView {
-            SidebarView(selection: $model.section)
-        } detail: {
-            switch model.section ?? .containers {
-            case .containers:
-                ContainersView()
-            case let other:
-                ContentUnavailableView(
-                    other.title,
-                    systemImage: other.symbol,
-                    description: Text("Designed, not built yet.")
-                )
+        HStack(spacing: 0) {
+            SidebarPanel()
+            Group {
+                switch model.section ?? .containers {
+                case .containers:
+                    ContainersView()
+                case let other:
+                    PlaceholderScreen(section: other)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+        .foregroundStyle(Palette.text)
+        .background(Palette.window)
+        .ignoresSafeArea()
+    }
+}
+
+struct SidebarPanel: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Color.clear.frame(height: 12) // traffic lights row
+            ColimaCard()
+            group("DOCKER", [
+                (.containers, "\(model.containers.containers.count)"),
+                (.images, model.summary.map { "\($0.images)" }),
+                (.volumes, model.summary.map { "\($0.volumes)" }),
+                (.networks, model.summary.map { "\($0.networks)" }),
+            ])
+            group("SYSTEM", [
+                (.cleanup, nil),
+                (.profiles, model.colima.profileCount > 0 ? "\(model.colima.profileCount)" : nil),
+            ])
+            SettingsLink {
+                SidebarRowLabel(icon: .settings, title: "Settings", trailing: "⌘,", isSelected: false)
+            }
+            .buttonStyle(.plain)
+            Spacer(minLength: 0)
+        }
+        .padding(.top, 14)
+        .padding(.horizontal, 10)
+        .padding(.bottom, 12)
+        .frame(width: 224, alignment: .topLeading)
+        .frame(maxHeight: .infinity, alignment: .top)
+        .glassSurface(RoundedRectangle(cornerRadius: 16), fill: Palette.sidebar)
+        .padding(8)
+    }
+
+    private func group(_ title: String, _ items: [(SidebarSection, String?)]) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.ui(11, .semibold))
+                .tracking(0.44)
+                .foregroundStyle(Palette.sidebarSecondary)
+                .padding(.horizontal, 8)
+                .padding(.bottom, 6)
+            ForEach(items, id: \.0) { section, count in
+                Button { model.section = section } label: {
+                    SidebarRowLabel(
+                        icon: section.icon,
+                        title: section.title,
+                        trailing: count,
+                        isSelected: (model.section ?? .containers) == section
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits((model.section ?? .containers) == section ? .isSelected : [])
             }
         }
     }
 }
 
-struct SidebarView: View {
-    @Environment(AppModel.self) private var model
-    @Binding var selection: SidebarSection?
+/// `.nav`: 30 pt row, 8 pt radius, 10 pt icon gap; selected = blue tint, blue icon, semibold.
+struct SidebarRowLabel: View {
+    let icon: LineIcon.Kind
+    let title: String
+    let trailing: String?
+    let isSelected: Bool
 
     var body: some View {
-        List(selection: $selection) {
-            Section("DOCKER") {
-                row(.containers, badge: model.containers.containers.count)
-                row(.images, badge: model.summary?.images ?? 0)
-                row(.volumes, badge: model.summary?.volumes ?? 0)
-                row(.networks, badge: model.summary?.networks ?? 0)
-            }
-            Section("SYSTEM") {
-                row(.cleanup)
-                row(.profiles, badge: model.colima.profileCount)
+        HStack(spacing: 10) {
+            LineIcon(kind: icon).icon(isSelected ? Palette.accent : Palette.sidebarSecondary, size: 16)
+            Text(title)
+                .font(.ui(13, isSelected ? .semibold : .regular))
+                .foregroundStyle(Palette.text)
+            Spacer(minLength: 0)
+            if let trailing {
+                Text(trailing).font(.ui(12)).foregroundStyle(Palette.sidebarSecondary)
             }
         }
-        .safeAreaInset(edge: .top) {
-            ColimaCard()
-                .padding(.horizontal, 10)
-                .padding(.bottom, 6)
-        }
-        .safeAreaInset(edge: .bottom) {
-            SettingsLink {
-                HStack(spacing: 8) {
-                    Label("Settings", systemImage: "gearshape")
-                    Spacer()
-                    Text("⌘,").foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 10)
-                .frame(height: 30)
-                .contentShape(.rect)
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 10)
-            .padding(.bottom, 10)
-        }
-        .navigationSplitViewColumnWidth(min: 210, ideal: 230)
-    }
-
-    /// `.tag` must be the outermost modifier, otherwise the List can't select the row.
-    private func row(_ section: SidebarSection, badge: Int = 0) -> some View {
-        Label(section.title, systemImage: section.symbol)
-            .badge(badge)
-            .tag(section)
+        .padding(.horizontal, 8)
+        .frame(height: 30)
+        .background(isSelected ? Palette.selected : .clear, in: .rect(cornerRadius: 8))
+        .contentShape(.rect(cornerRadius: 8))
     }
 }
 
@@ -95,45 +130,70 @@ struct ColimaCard: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text("COLIMA")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .font(.ui(11, .semibold))
+                    .tracking(0.44)
+                    .foregroundStyle(Palette.sidebarSecondary)
                 Spacer()
-                StatusBadge(title: colima.statusTitle, tint: colima.statusTint, isBusy: colima.isBusy)
+                HStack(spacing: 5) {
+                    if colima.isBusy {
+                        ProgressView().controlSize(.mini)
+                    } else {
+                        Circle().fill(colima.isRunning ? Palette.greenDot : Palette.grayDot).frame(width: 7, height: 7)
+                    }
+                    Text(colima.statusTitle)
+                }
+                .font(.ui(11, .semibold))
+                .foregroundStyle(colima.isRunning && !colima.isBusy ? Palette.greenText : Palette.sidebarSecondary)
             }
-            Text(colima.profile).font(.headline)
+            Text(colima.profile).font(.ui(14, .semibold))
             if let instance = colima.instance {
-                Text("\(instance.resourcesSummary) · \(instance.arch)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Text("\(instance.resourcesSummary) · \(instance.vmType ?? instance.arch)")
+                    .font(.ui(12))
+                    .foregroundStyle(Palette.sidebarSecondary)
             } else if let error = colima.errorMessage {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(3)
+                Text(error).font(.ui(12)).foregroundStyle(Palette.sidebarSecondary).lineLimit(3)
             }
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 if colima.isRunning {
-                    Button { Task { await model.performColima(.restart) } } label: {
-                        Text("Restart").frame(maxWidth: .infinity)
-                    }
-                    Button { Task { await model.performColima(.stop) } } label: {
-                        Text("Stop").frame(maxWidth: .infinity)
-                    }
-                    .foregroundStyle(.red)
+                    pill("Restart", color: Palette.text) { await model.performColima(.restart) }
+                    pill("Stop", color: Palette.danger) { await model.performColima(.stop) }
                 } else {
-                    Button { Task { await model.performColima(.start) } } label: {
-                        Text("Start").frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.glassProminent)
+                    pill("Start", color: Palette.greenText) { await model.performColima(.start) }
                 }
             }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.capsule)
             .disabled(colima.isBusy)
             .padding(.top, 4)
         }
         .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 12))
+        .background(Palette.colimaCard, in: .rect(cornerRadius: 12))
+    }
+
+    private func pill(_ title: String, color: Color, action: @escaping @MainActor () async -> Void) -> some View {
+        Button { Task { await action() } } label: {
+            Text(title)
+                .font(.ui(12))
+                .foregroundStyle(color)
+                .frame(maxWidth: .infinity)
+                .frame(height: 26)
+                .background(Palette.chip, in: .capsule)
+                .contentShape(.capsule)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// Screens that are designed but not built yet keep the window header.
+struct PlaceholderScreen: View {
+    let section: SidebarSection
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(section.title)
+                .font(.ui(15, .semibold))
+                .padding(.leading, 8)
+                .frame(minHeight: 60)
+            ContentUnavailableView(section.title, systemImage: "hammer", description: Text("Designed, not built yet."))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
 }

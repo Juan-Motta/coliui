@@ -6,6 +6,7 @@ final class FakeRunner: CommandRunner, @unchecked Sendable {
     private let lock = NSLock()
     private var _invocations: [[String]] = []
     var result: CommandResult
+    var statusResult = CommandResult(exitCode: 1, stdout: "", stderr: "")
 
     init(result: CommandResult) { self.result = result }
 
@@ -13,7 +14,7 @@ final class FakeRunner: CommandRunner, @unchecked Sendable {
 
     func run(_ executable: String, _ arguments: [String]) async throws -> CommandResult {
         lock.withLock { _invocations.append([executable] + arguments) }
-        return result
+        return arguments.first == "status" ? statusResult : result
     }
 }
 
@@ -26,14 +27,31 @@ final class FakeRunner: CommandRunner, @unchecked Sendable {
 
     @Test func parsesOneInstancePerLine() async throws {
         let runner = FakeRunner(result: CommandResult(exitCode: 0, stdout: Self.listOutput, stderr: ""))
+        runner.statusResult = CommandResult(
+            exitCode: 0,
+            stdout: #"{"display_name":"colima","driver":"macOS Virtualization.Framework","arch":"aarch64"}"#,
+            stderr: ""
+        )
         let instances = try await ColimaCLIRuntime(runner: runner, executable: "/bin/colima").instances()
 
-        #expect(runner.invocations == [["/bin/colima", "list", "--json"]])
+        // Only running profiles are asked for their VM driver.
+        #expect(runner.invocations == [["/bin/colima", "list", "--json"], ["/bin/colima", "status", "default", "--json"]])
         #expect(instances.map(\.name) == ["default", "work"])
         #expect(instances[0].status == .running)
+        #expect(instances[0].vmType == "vz")
         #expect(instances[0].resourcesSummary == "4 CPU · 4 GiB · 100 GiB")
+        #expect(instances[1].vmType == nil)
         #expect(instances[1].status == .stopped)
         #expect(instances[1].runtime == "containerd")
+    }
+
+    @Test(arguments: [
+        ("macOS Virtualization.Framework", "vz"),
+        ("QEMU", "qemu"),
+        ("krunkit", "krunkit"),
+    ])
+    func mapsDriverToVMType(driver: String, expected: String) {
+        #expect(ColimaCLIRuntime.vmType(forDriver: driver) == expected)
     }
 
     @Test func emptyOutputMeansNoInstances() async throws {

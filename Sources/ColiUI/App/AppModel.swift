@@ -12,14 +12,22 @@ final class AppModel {
     private(set) var summary: DockerSummary?
 
     private let inventory: DockerInventory?
+    private let events: (@Sendable () -> AsyncThrowingStream<Void, Error>)?
     private var pollTask: Task<Void, Never>?
+    private var eventsTask: Task<Void, Never>?
 
     static let shared = AppModel.live()
 
-    init(containers: ContainersViewModel, colima: ColimaViewModel, inventory: DockerInventory? = nil) {
+    init(
+        containers: ContainersViewModel,
+        colima: ColimaViewModel,
+        inventory: DockerInventory? = nil,
+        events: (@Sendable () -> AsyncThrowingStream<Void, Error>)? = nil
+    ) {
         self.containers = containers
         self.colima = colima
         self.inventory = inventory
+        self.events = events
     }
 
     static func live(profile: String = "default") -> AppModel {
@@ -35,13 +43,28 @@ final class AppModel {
         return AppModel(
             containers: ContainersViewModel(repository: repository),
             colima: ColimaViewModel(runtime: runtime, profile: profile),
-            inventory: repository
+            inventory: repository,
+            events: { DockerEvents.containerEvents(socketPath: socketPath) }
         )
+    }
+
+    /// Refreshes the list as soon as Docker reports a container event; reconnects after 5 s if the stream drops.
+    private func startEvents() {
+        guard eventsTask == nil, let events else { return }
+        eventsTask = Task {
+            while !Task.isCancelled {
+                do {
+                    for try await _ in events() { await containers.refresh() }
+                } catch {}
+                try? await Task.sleep(for: .seconds(5))
+            }
+        }
     }
 
     /// Polls containers every 3 s; Colima and sidebar totals every 15 s (each `colima list` spawns processes).
     /// Replace with the Docker events stream later.
     func startPolling() {
+        startEvents()
         guard pollTask == nil else { return }
         pollTask = Task {
             var tick = 0

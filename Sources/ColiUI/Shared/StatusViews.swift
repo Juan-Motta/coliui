@@ -31,18 +31,25 @@ extension ColimaViewModel {
         }
     }
 
-    var statusTint: Color { isRunning ? .green : .secondary }
+    var statusTint: Color { isRunning ? Palette.greenDot : Palette.grayDot }
 }
 
 extension Container {
-    /// Green when running, orange for a failed exit, grey otherwise.
-    var statusTint: Color {
+    private var failed: Bool {
         switch state {
-        case .running: .green
-        case .restarting, .dead: .orange
-        case .exited: status.contains("(0)") ? .secondary : .orange
-        default: .secondary
+        case .restarting, .dead: true
+        case .exited: !status.contains("(0)")
+        default: false
         }
+    }
+
+    /// Dot colour: green running, orange failed exit, grey otherwise.
+    var statusTint: Color {
+        isRunning ? Palette.greenDot : failed ? Palette.orangeDot : Palette.grayDot
+    }
+
+    var statusTextColor: Color {
+        isRunning ? Palette.greenText : failed ? Palette.orangeText : Palette.secondary
     }
 }
 
@@ -53,9 +60,9 @@ struct ContainerStatusLabel: View {
         HStack(spacing: 6) {
             Circle().fill(container.statusTint).frame(width: 8, height: 8)
             Text(container.status)
-                .foregroundStyle(container.statusTint)
+                .foregroundStyle(container.statusTextColor)
                 .lineLimit(1)
         }
-        .font(.callout.weight(.medium))
+        .font(.ui(12, .medium))
     }
 }
