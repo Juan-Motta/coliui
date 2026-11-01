@@ -332,11 +332,16 @@ private struct InfoCards: View {
                     Text("—").font(.mono(12)).foregroundStyle(Palette.secondary)
                 }
                 ForEach(published, id: \.self) { port in
-                    if let url = port.localURL {
-                        Link("localhost:\(port.publicPort ?? 0) → \(port.privatePort)/\(port.proto)", destination: url)
-                            .font(.mono(12))
-                            .tint(Palette.accent)
-                            .help("Open \(url.absoluteString) in the browser")
+                    if let url = port.localURL, let hostPort = port.publicPort {
+                        // `verbatim`: a localized string key would format 8002 as "8.002".
+                        HStack(spacing: 6) {
+                            Link(destination: url) { Text(verbatim: "localhost:\(hostPort)") }
+                                .foregroundStyle(Palette.accent)
+                                .help("Open \(url.absoluteString) in the browser")
+                            Text(verbatim: "→ \(port.privatePort)/\(port.proto)")
+                                .foregroundStyle(Palette.secondary)
+                        }
+                        .font(.mono(12))
                     }
                 }
             }

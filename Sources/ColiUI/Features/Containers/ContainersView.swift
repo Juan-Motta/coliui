@@ -396,7 +396,9 @@ private struct ContainerMenu: View {
         Button("Show Logs and Details") { model.openDetail(container) }
         Divider()
         if let url = container.ports.lazy.compactMap(\.localURL).first {
-            Button("Open \(url.host() ?? "localhost"):\(url.port ?? 0)") { NSWorkspace.shared.open(url) }
+            Button { NSWorkspace.shared.open(url) } label: {
+                Text(verbatim: "Open \(url.host() ?? "localhost"):\(url.port ?? 0)")
+            }
             Divider()
         }
         if container.isRunning {
