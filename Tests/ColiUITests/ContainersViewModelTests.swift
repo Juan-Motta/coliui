@@ -26,6 +26,13 @@ final class FakeContainerRepository: ContainerRepository, @unchecked Sendable {
         if let actionError { throw actionError }
     }
 
+    func details(id: String) async throws -> ContainerDetails {
+        ContainerDetails(
+            id: id, name: "api-server", image: "myapp/api:latest", created: nil, restartPolicy: "no",
+            network: "bridge", ipAddress: "172.17.0.4", mounts: [], environment: [], tty: false
+        )
+    }
+
     func stats(id: String) async throws -> ContainerStats {
         lock.withLock { _actions.append("stats \(id)") }
         return ContainerStats(cpuPercent: 1.5, memoryBytes: 1_048_576)

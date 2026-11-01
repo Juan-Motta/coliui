@@ -71,8 +71,13 @@ public struct DockerEngineRepository: ContainerRepository, DockerInventory {
         try Self.check(response)
     }
 
+    public func details(id: String) async throws -> ContainerDetails {
+        let id = try Self.validated(id)
+        return try await decode(InspectDTO.self, path: "/containers/\(id)/json").toDomain()
+    }
+
     /// Container IDs and names only use `[A-Za-z0-9_.-]`; anything else could escape the path.
-    private static func validated(_ id: String) throws -> String {
+    static func validated(_ id: String) throws -> String {
         let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_.-"))
         guard !id.isEmpty, !id.hasPrefix("."), id.unicodeScalars.allSatisfy(allowed.contains) else {
             throw DockerError.invalidContainerID
@@ -94,6 +99,75 @@ private struct EngineErrorDTO: Decodable {
 }
 
 private struct IgnoredDTO: Decodable {}
+
+private struct InspectDTO: Decodable {
+    struct ConfigDTO: Decodable {
+        let image: String
+        let tty: Bool?
+        let env: [String]?
+        enum CodingKeys: String, CodingKey { case image = "Image", tty = "Tty", env = "Env" }
+    }
+    struct HostConfigDTO: Decodable {
+        struct RestartPolicyDTO: Decodable {
+            let name: String?
+            enum CodingKeys: String, CodingKey { case name = "Name" }
+        }
+        let restartPolicy: RestartPolicyDTO?
+        enum CodingKeys: String, CodingKey { case restartPolicy = "RestartPolicy" }
+    }
+    struct NetworkSettingsDTO: Decodable {
+        struct NetworkDTO: Decodable {
+            let ipAddress: String?
+            enum CodingKeys: String, CodingKey { case ipAddress = "IPAddress" }
+        }
+        let networks: [String: NetworkDTO]?
+        enum CodingKeys: String, CodingKey { case networks = "Networks" }
+    }
+    struct MountDTO: Decodable {
+        let type: String?
+        let name: String?
+        let source: String?
+        let destination: String
+        enum CodingKeys: String, CodingKey {
+            case type = "Type", name = "Name", source = "Source", destination = "Destination"
+        }
+    }
+
+    let id: String
+    let name: String
+    let created: String?
+    let config: ConfigDTO
+    let hostConfig: HostConfigDTO?
+    let networkSettings: NetworkSettingsDTO?
+    let mounts: [MountDTO]?
+
+    enum CodingKeys: String, CodingKey {
+        case id = "Id", name = "Name", created = "Created", config = "Config"
+        case hostConfig = "HostConfig", networkSettings = "NetworkSettings", mounts = "Mounts"
+    }
+
+    func toDomain() -> ContainerDetails {
+        let network = networkSettings?.networks?.sorted { $0.key < $1.key }.first
+        let ip = network?.value.ipAddress.flatMap { $0.isEmpty ? nil : $0 }
+        let policy = hostConfig?.restartPolicy?.name.flatMap { $0.isEmpty ? nil : $0 } ?? "no"
+        return ContainerDetails(
+            id: id,
+            name: name.hasPrefix("/") ? String(name.dropFirst()) : name,
+            image: config.image,
+            created: created.flatMap(LogLineParser.parseTimestamp),
+            restartPolicy: policy,
+            network: network?.key,
+            ipAddress: ip,
+            mounts: (mounts ?? []).map { mount in
+                // Named volumes read better by name than by their path inside the VM.
+                let source = mount.type == "volume" ? (mount.name ?? mount.source ?? "") : (mount.source ?? "")
+                return ContainerMount(source: source, destination: mount.destination)
+            },
+            environment: config.env ?? [],
+            tty: config.tty ?? false
+        )
+    }
+}
 
 private struct VolumesDTO: Decodable {
     let volumes: [IgnoredDTO]?

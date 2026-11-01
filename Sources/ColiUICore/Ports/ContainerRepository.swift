@@ -1,5 +1,8 @@
+import Foundation
+
 public protocol ContainerRepository: Sendable {
     func listContainers() async throws -> [Container]
+    func details(id: String) async throws -> ContainerDetails
     func stats(id: String) async throws -> ContainerStats
     func start(id: String) async throws
     func stop(id: String) async throws
@@ -9,4 +12,9 @@ public protocol ContainerRepository: Sendable {
 
 public protocol DockerInventory: Sendable {
     func summary() async throws -> DockerSummary
+}
+
+public protocol ContainerLogSource: Sendable {
+    /// Streams log lines, starting with the last `tail` lines since `since`, until cancelled.
+    func logs(id: String, since: Date?, tail: Int, tty: Bool) -> AsyncThrowingStream<LogLine, Error>
 }
