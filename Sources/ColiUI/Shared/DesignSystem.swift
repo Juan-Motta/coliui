@@ -124,6 +124,8 @@ struct Hoverable<Content: View>: View {
 struct SegmentOption<Value: Hashable>: Identifiable {
     let value: Value
     let title: String
+    /// Tooltip shown after hovering; empty shows none.
+    var help: String = ""
     var id: Value { value }
 }
 
@@ -154,6 +156,7 @@ struct CapsuleSegmented<Value: Hashable>: View {
                     }
                 }
                 .buttonStyle(.plain)
+                .help(option.help)
                 .accessibilityAddTraits(isOn ? .isSelected : [])
             }
         }

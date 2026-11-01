@@ -108,7 +108,10 @@ private struct Header: View {
             .padding(.trailing, 6)
 
             CapsuleSegmented(
-                options: ContainerViewMode.allCases.map { SegmentOption(value: $0, title: $0.rawValue) },
+                options: [
+                    SegmentOption(value: .list, title: ContainerViewMode.list.rawValue, help: "Show all containers in one list"),
+                    SegmentOption(value: .compose, title: ContainerViewMode.compose.rawValue, help: "Group containers by Compose project"),
+                ],
                 selection: $containers.viewMode
             )
 
@@ -120,7 +123,7 @@ private struct Header: View {
                 }
                 .buttonStyle(ToolbarIconButtonStyle())
                 .keyboardShortcut("r")
-                .help("Refresh")
+                .help("Refresh (⌘R)")
 
                 Menu {
                     Picker("Sort by", selection: $containers.sort) {
@@ -139,7 +142,7 @@ private struct Header: View {
                 .buttonStyle(.plain)
                 .menuIndicator(.hidden)
                 .fixedSize()
-                .help("Sort")
+                .help("Sort by name or status")
             }
 
             HStack(spacing: 6) {
@@ -151,6 +154,7 @@ private struct Header: View {
             .padding(.horizontal, 12)
             .frame(width: 200, height: 34)
             .glassSurface(Capsule())
+            .help("Search by name or image")
 
             Button { containers.showRunComingSoon = true } label: {
                 HStack(spacing: 6) {
@@ -159,6 +163,8 @@ private struct Header: View {
                 }
             }
             .buttonStyle(TintButtonStyle())
+            .keyboardShortcut("n")
+            .help("Run a new container (⌘N)")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
@@ -307,6 +313,7 @@ private struct PortsLabel: View {
                         let text = port.publicPort.map { "\($0)→\(port.privatePort)" } ?? "\(port.privatePort)"
                         if let url = port.localURL {
                             Link(text, destination: url)
+                                .help("Open \(url.absoluteString) in the browser")
                         } else {
                             Text(text)
                         }
@@ -354,21 +361,21 @@ private struct RowActions: View {
                         RoundedRectangle(cornerRadius: 14 / 12).fill(Palette.text).frame(width: 7, height: 7).frame(width: 14, height: 14)
                     }
                 }
-                .help("Stop")
+                .help("Stop \(container.name)")
             } else {
                 Button { Task { await containers.perform(.start, on: container) } } label: {
                     Label { Text("Start") } icon: { PlayShape().fill(Palette.greenText).frame(width: 14, height: 14) }
                 }
-                .help("Start")
+                .help("Start \(container.name)")
             }
             Button { Task { await containers.perform(.restart, on: container) } } label: {
                 Label { Text("Restart") } icon: { LineIcon(kind: .refresh).icon(Palette.text, size: 14, svgStrokeWidth: 2.2) }
             }
-            .help("Restart")
+            .help("Restart \(container.name)")
             Button { containers.pendingRemoval = container } label: {
                 Label { Text("Remove") } icon: { LineIcon(kind: .trash).icon(Palette.danger, size: 14) }
             }
-            .help("Remove…")
+            .help("Remove \(container.name)…")
         }
         .buttonStyle(ToolbarIconButtonStyle(width: 28))
         .disabled(isBusy)

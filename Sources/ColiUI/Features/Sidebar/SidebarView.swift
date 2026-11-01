@@ -62,6 +62,7 @@ struct SidebarPanel: View {
                 SidebarRowLabel(icon: .settings, title: "Settings", trailing: "⌘,", isSelected: false)
             }
             .buttonStyle(.plain)
+            .help("Open Settings (⌘,)")
             Spacer(minLength: 0)
         }
         .padding(.top, 14)
@@ -159,9 +160,12 @@ struct ColimaCard: View {
             HStack(spacing: 6) {
                 if colima.isRunning {
                     pill("Restart", color: Palette.text) { await model.performColima(.restart) }
+                        .help("Restart the Colima VM “\(colima.profile)”")
                     pill("Stop", color: Palette.danger) { await model.performColima(.stop) }
+                        .help("Stop the Colima VM “\(colima.profile)”")
                 } else {
                     pill("Start", color: Palette.greenText) { await model.performColima(.start) }
+                        .help("Start the Colima VM “\(colima.profile)”")
                 }
             }
             .disabled(colima.isBusy)
