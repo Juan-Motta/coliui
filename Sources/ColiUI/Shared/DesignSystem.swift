@@ -15,7 +15,8 @@ enum Palette {
     static let sidebarSecondary = dynamic(rgb(0x5E, 0x5E, 0x63), rgb(0xAE, 0xAE, 0xB2))
     static let tertiary = dynamic(rgb(0x3A, 0x3A, 0x3C), rgb(0xD1, 0xD1, 0xD6))
 
-    static let colimaCard = dynamic(rgb(255, 255, 255, 0.65), rgb(255, 255, 255, 0.08))
+    static let colimaCard = dynamic(rgb(0, 0, 0, 0.04), rgb(255, 255, 255, 0.08))
+    static let colimaButton = dynamic(.white, rgb(255, 255, 255, 0.12))
     static let chip = dynamic(rgb(0, 0, 0, 0.06), rgb(255, 255, 255, 0.12))
     static let selected = dynamic(rgb(0, 102, 204, 0.14), rgb(77, 163, 255, 0.24))
     static let accent = dynamic(rgb(0x00, 0x66, 0xCC), rgb(0x4D, 0xA3, 0xFF))

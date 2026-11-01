@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 
 enum SidebarSection: String, Hashable, CaseIterable {
@@ -42,19 +41,6 @@ struct MainWindow: View {
     }
 }
 
-/// The translucent behind-window material macOS uses for sidebars.
-private struct SidebarMaterial: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
-        view.material = .sidebar
-        view.blendingMode = .behindWindow
-        view.state = .followsWindowActiveState
-        return view
-    }
-
-    func updateNSView(_ view: NSVisualEffectView, context: Context) {}
-}
-
 struct SidebarPanel: View {
     @Environment(AppModel.self) private var model
 
@@ -83,8 +69,8 @@ struct SidebarPanel: View {
         .padding(.bottom, 12)
         .frame(width: 240, alignment: .topLeading)
         .frame(maxHeight: .infinity, alignment: .top)
-        // Like Finder: edge to edge, the system sidebar material, a hairline on the trailing edge.
-        .background(SidebarMaterial())
+        // Edge to edge like Finder, same surface as the containers card, a hairline on the trailing edge.
+        .background(Palette.card)
         .overlay(alignment: .trailing) { Palette.cardBorder.frame(width: 1) }
     }
 
@@ -190,7 +176,7 @@ struct ColimaCard: View {
                 .foregroundStyle(color)
                 .frame(maxWidth: .infinity)
                 .frame(height: 26)
-                .background(Palette.chip, in: .capsule)
+                .background(Palette.colimaButton, in: .capsule)
                 .contentShape(.capsule)
         }
         .buttonStyle(.plain)
