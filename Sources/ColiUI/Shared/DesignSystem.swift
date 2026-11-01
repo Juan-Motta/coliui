@@ -72,6 +72,25 @@ extension View {
     }
 }
 
+extension View {
+    /// Same surface for shapes that can't be inset (e.g. `ConcentricRectangle`):
+    /// strokes are doubled and clipped to the shape, which leaves them 1 pt inside like `strokeBorder`.
+    func glassSurface<S: Shape>(_ shape: S, fill: Color = Palette.glass) -> some View {
+        background {
+            ZStack {
+                shape.fill(fill)
+                shape.stroke(
+                    LinearGradient(colors: [Palette.glassHighlight, .clear], startPoint: .top, endPoint: .init(x: 0.5, y: 0.12)),
+                    lineWidth: 4
+                )
+                shape.stroke(Palette.glassBorder, lineWidth: 2)
+            }
+            .clipShape(shape)
+            .shadow(color: Palette.glassShadow, radius: 8, y: 4)
+        }
+    }
+}
+
 /// `.glass .cap`: 34 pt tall capsule, 3 pt inner padding, 2 pt between children.
 struct GlassCapsule<Content: View>: View {
     @ViewBuilder let content: Content

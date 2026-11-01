@@ -190,20 +190,24 @@ private struct ContainersCard: View {
 
     var body: some View {
         let containers = model.containers
+        // The window's minimum width keeps the card at ≥ 760 pt, so only vertical scrolling is needed;
+        // a two-axis ScrollView would centre a short card vertically.
         GeometryReader { geometry in
-            let columns = Columns(width: max(geometry.size.width, 760))
-            ScrollView([.vertical, .horizontal]) {
+            let columns = Columns(width: geometry.size.width)
+            ScrollView(.vertical) {
                 VStack(spacing: 0) {
                     HeaderRow(columns: columns)
                     ForEach(containers.visibleContainers) { container in
                         ContainerRow(container: container, stats: containers.stats[container.id], columns: columns)
                     }
                 }
-                .frame(width: max(geometry.size.width, 760))
+                .frame(width: geometry.size.width)
                 .background(Palette.card)
                 .clipShape(.rect(cornerRadius: 14))
                 .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
+                .frame(maxHeight: .infinity, alignment: .top)
             }
+            .defaultScrollAnchor(.top)
             .scrollIndicators(.automatic)
         }
     }

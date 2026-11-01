@@ -37,6 +37,7 @@ struct MainWindow: View {
         }
         .foregroundStyle(Palette.text)
         .background(Palette.window)
+        .background(TrafficLightsPositioner())
         .ignoresSafeArea()
     }
 }
@@ -69,7 +70,8 @@ struct SidebarPanel: View {
         .padding(.bottom, 12)
         .frame(width: 224, alignment: .topLeading)
         .frame(maxHeight: .infinity, alignment: .top)
-        .glassSurface(RoundedRectangle(cornerRadius: 16), fill: Palette.sidebar)
+        // Concentric with the window's corners (window radius minus the 8 pt margin).
+        .glassSurface(ConcentricRectangle(), fill: Palette.sidebar)
         .padding(8)
     }
 
