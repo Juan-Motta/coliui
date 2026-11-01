@@ -49,10 +49,17 @@ final class ContainerDetailViewModel {
     private let now: () -> Date
     private var streamTask: Task<Void, Never>?
 
-    init(containerID: String, repository: ContainerRepository, logSource: ContainerLogSource, now: @escaping () -> Date = Date.init) {
+    init(
+        containerID: String,
+        repository: ContainerRepository,
+        logSource: ContainerLogSource,
+        range: LogRange = .fifteenMinutes,
+        now: @escaping () -> Date = Date.init
+    ) {
         self.containerID = containerID
         self.repository = repository
         self.logSource = logSource
+        self.range = range
         self.now = now
     }
 

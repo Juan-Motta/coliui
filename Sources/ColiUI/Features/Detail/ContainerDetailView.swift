@@ -38,7 +38,7 @@ struct ContainerDetailView: View {
                             .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
                 InfoCards(details: detail.details, container: container)
                     .frame(minWidth: 260, idealWidth: 300, maxWidth: 320)
@@ -167,7 +167,7 @@ private struct LogsSection: View {
     var body: some View {
         @Bindable var detail = detail
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
+            FlowLayout(spacing: 8, lineSpacing: 8) {
                 HStack(spacing: 6) {
                     LineIcon(kind: .search).icon(Palette.secondary, size: 14)
                     TextField("Filter logs", text: $detail.filterText)
@@ -175,8 +175,7 @@ private struct LogsSection: View {
                         .font(.ui(13))
                 }
                 .padding(.horizontal, 12)
-                .frame(minWidth: 180, maxWidth: .infinity)
-                .frame(height: 34)
+                .frame(width: 220, height: 34)
                 .background(Palette.field, in: .capsule)
 
                 Button { detail.useRegex.toggle() } label: { Text(".*").font(.mono(12)) }
@@ -194,7 +193,7 @@ private struct LogsSection: View {
                     .help("Show the time of each line")
 
                 HStack(spacing: 4) {
-                    Text("Since")
+                    Text("Since").fixedSize()
                     Menu(detail.range.rawValue) {
                         ForEach(LogRange.allCases) { range in
                             Button(range.rawValue) { detail.select(range: range) }
@@ -219,7 +218,6 @@ private struct LogsSection: View {
                     .buttonStyle(PillButtonStyle())
                     .help("Clear the lines shown")
             }
-            .fixedSize(horizontal: false, vertical: true)
 
             LogPanel(detail: detail)
         }
@@ -248,11 +246,6 @@ private struct LogPanel: View {
         ScrollViewReader { proxy in
             ScrollView(.vertical) {
                 LazyVStack(alignment: .leading, spacing: 0) {
-                    if lines.isEmpty {
-                        Text(detail.lines.isEmpty ? "No logs in this range yet." : "No lines match the filter.")
-                            .foregroundStyle(Palette.logTime)
-                            .padding(.vertical, 4)
-                    }
                     ForEach(lines) { line in
                         LogRow(line: line, time: line.timestamp.map(Self.time.string(from:)), showTime: detail.showTimestamps)
                     }
@@ -268,6 +261,13 @@ private struct LogPanel: View {
             }
             .defaultScrollAnchor(.bottom)
             .background(Palette.logBackground, in: .rect(cornerRadius: 14))
+            .overlay {
+                if lines.isEmpty, detail.streamError == nil {
+                    Text(detail.lines.isEmpty ? "No logs in this range. Try a longer “Since”." : "No lines match the filter.")
+                        .font(.mono(12))
+                        .foregroundStyle(Palette.logTime)
+                }
+            }
             .frame(minHeight: 470, maxHeight: .infinity)
             .onChange(of: detail.lines.last?.id) {
                 if detail.follow { proxy.scrollTo("bottom", anchor: .bottom) }

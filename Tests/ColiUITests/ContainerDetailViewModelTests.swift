@@ -53,6 +53,23 @@ private func makeModel(_ lines: [LogLine]) -> (ContainerDetailViewModel, FakeLog
         #expect(source.calls == [.init(id: "c1", since: now.addingTimeInterval(-900), tail: 5000, tty: false)])
     }
 
+    @Test func stoppedContainersOpenWithTheWholeHistory() async {
+        let source = FakeLogSource(lines: [line(0, "Hello from Docker!")])
+        let model = ContainerDetailViewModel(
+            containerID: "c1",
+            repository: FakeContainerRepository([]),
+            logSource: source,
+            range: .all,
+            now: { now }
+        )
+        await model.start()
+        await model.waitForLogs()
+
+        #expect(model.range == .all)
+        #expect(source.calls.map(\.since) == [nil])
+        #expect(model.lines.map(\.message) == ["Hello from Docker!"])
+    }
+
     @Test func plainFilterIsCaseInsensitive() async {
         let (model, _) = makeModel([line(0, "GET /health 200"), line(1, "POST /api/users 201"), line(2, "Slow query")])
         await model.start()

@@ -251,6 +251,57 @@ extension View {
     }
 }
 
+/// CSS `flex-wrap: wrap` for a row of controls: children keep their natural size and move to the
+/// next line when they don't fit; each line's children are centred vertically.
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+    var lineSpacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        arrange(width: proposal.width ?? .infinity, subviews: subviews).size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let arrangement = arrange(width: bounds.width, subviews: subviews)
+        for (index, frame) in arrangement.frames.enumerated() {
+            subviews[index].place(
+                at: CGPoint(x: bounds.minX + frame.minX, y: bounds.minY + frame.midY),
+                anchor: .leading,
+                proposal: ProposedViewSize(frame.size)
+            )
+        }
+    }
+
+    private func arrange(width: CGFloat, subviews: Subviews) -> (size: CGSize, frames: [CGRect]) {
+        var lines: [[(index: Int, size: CGSize)]] = [[]]
+        var x: CGFloat = 0
+        for (index, subview) in subviews.enumerated() {
+            let size = subview.sizeThatFits(.unspecified)
+            if x > 0, x + size.width > width {
+                lines.append([])
+                x = 0
+            }
+            lines[lines.count - 1].append((index, size))
+            x += size.width + spacing
+        }
+
+        var frames = [CGRect](repeating: .zero, count: subviews.count)
+        var y: CGFloat = 0
+        var maxWidth: CGFloat = 0
+        for line in lines where !line.isEmpty {
+            let height = line.map(\.size.height).max() ?? 0
+            var x: CGFloat = 0
+            for item in line {
+                frames[item.index] = CGRect(x: x, y: y + (height - item.size.height) / 2, width: item.size.width, height: item.size.height)
+                x += item.size.width + spacing
+            }
+            maxWidth = max(maxWidth, x - spacing)
+            y += height + lineSpacing
+        }
+        return (CGSize(width: maxWidth, height: max(y - lineSpacing, 0)), frames)
+    }
+}
+
 /// Line icons drawn from the designs' 24×24 SVG paths.
 struct LineIcon: Shape {
     enum Kind {

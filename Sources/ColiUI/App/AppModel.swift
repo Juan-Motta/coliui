@@ -41,7 +41,13 @@ final class AppModel {
     func openDetail(_ container: Container) {
         guard let repository, let logSource else { return }
         detail?.stop()
-        let detail = ContainerDetailViewModel(containerID: container.id, repository: repository, logSource: logSource)
+        // A stopped container's last lines are usually older than 15 minutes.
+        let detail = ContainerDetailViewModel(
+            containerID: container.id,
+            repository: repository,
+            logSource: logSource,
+            range: container.isRunning ? .fifteenMinutes : .all
+        )
         self.detail = detail
         Task { await detail.start() }
     }
