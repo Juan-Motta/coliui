@@ -106,20 +106,22 @@ struct SidebarRowLabel: View {
     let isSelected: Bool
 
     var body: some View {
-        HStack(spacing: 10) {
-            LineIcon(kind: icon).icon(isSelected ? Palette.accent : Palette.sidebarSecondary, size: 16)
-            Text(title)
-                .font(.ui(13, isSelected ? .semibold : .regular))
-                .foregroundStyle(Palette.text)
-            Spacer(minLength: 0)
-            if let trailing {
-                Text(trailing).font(.ui(12)).foregroundStyle(Palette.sidebarSecondary)
+        Hoverable { hovered in
+            HStack(spacing: 10) {
+                LineIcon(kind: icon).icon(isSelected ? Palette.accent : Palette.sidebarSecondary, size: 16)
+                Text(title)
+                    .font(.ui(13, isSelected ? .semibold : .regular))
+                    .foregroundStyle(Palette.text)
+                Spacer(minLength: 0)
+                if let trailing {
+                    Text(trailing).font(.ui(12)).foregroundStyle(Palette.sidebarSecondary)
+                }
             }
+            .padding(.horizontal, 8)
+            .frame(height: 30)
+            .background(isSelected ? Palette.selected : hovered ? Palette.hoverSubtle : .clear, in: .rect(cornerRadius: 8))
+            .contentShape(.rect(cornerRadius: 8))
         }
-        .padding(.horizontal, 8)
-        .frame(height: 30)
-        .background(isSelected ? Palette.selected : .clear, in: .rect(cornerRadius: 8))
-        .contentShape(.rect(cornerRadius: 8))
     }
 }
 
@@ -171,13 +173,16 @@ struct ColimaCard: View {
 
     private func pill(_ title: String, color: Color, action: @escaping @MainActor () async -> Void) -> some View {
         Button { Task { await action() } } label: {
-            Text(title)
-                .font(.ui(12))
-                .foregroundStyle(color)
-                .frame(maxWidth: .infinity)
-                .frame(height: 26)
-                .background(Palette.colimaButton, in: .capsule)
-                .contentShape(.capsule)
+            Hoverable { hovered in
+                Text(title)
+                    .font(.ui(12))
+                    .foregroundStyle(color)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 26)
+                    .background(Palette.colimaButton, in: .capsule)
+                    .overlay(Capsule().fill(hovered ? Palette.hoverSubtle : .clear))
+                    .contentShape(.capsule)
+            }
         }
         .buttonStyle(.plain)
     }

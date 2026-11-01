@@ -128,9 +128,12 @@ private struct Header: View {
                     }
                     .pickerStyle(.inline)
                 } label: {
-                    LineIcon(kind: .sort).icon(Palette.text, size: 16)
-                        .frame(width: 34, height: 28)
-                        .contentShape(.capsule)
+                    Hoverable { hovered in
+                        LineIcon(kind: .sort).icon(Palette.text, size: 16)
+                            .frame(width: 34, height: 28)
+                            .background(hovered ? Palette.hover : .clear, in: .capsule)
+                            .contentShape(.capsule)
+                    }
                 }
                 .menuStyle(.button)
                 .buttonStyle(.plain)

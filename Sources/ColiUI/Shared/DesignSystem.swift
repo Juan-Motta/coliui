@@ -24,6 +24,10 @@ enum Palette {
     static let segmentOnText = dynamic(rgb(0x1D, 0x1D, 0x1F), .white)
     static let segmentOffText = dynamic(rgb(0x3A, 0x3A, 0x3C), rgb(0xD1, 0xD1, 0xD6))
     static let tint = dynamic(rgb(0x0A, 0x6F, 0xD6), rgb(0x0A, 0x84, 0xFF))
+    static let tintHover = dynamic(rgb(0x08, 0x62, 0xBF), rgb(0x00, 0x77, 0xED))
+    /// `.ib:hover` / `.nav:hover` washes.
+    static let hover = dynamic(rgb(0, 0, 0, 0.06), rgb(255, 255, 255, 0.1))
+    static let hoverSubtle = dynamic(rgb(0, 0, 0, 0.05), rgb(255, 255, 255, 0.08))
     static let tintShadow = dynamic(rgb(0, 102, 204, 0.3), rgb(10, 132, 255, 0.35))
 
     static let card = dynamic(.white, rgb(0x23, 0x23, 0x26))
@@ -104,6 +108,19 @@ struct GlassCapsule<Content: View>: View {
     }
 }
 
+/// Tracks pointer hover for its content.
+/// `State` is a plain stored property on purpose: the `@State` attribute is a macro whose plugin
+/// ships only with Xcode, but SwiftUI still recognises a stored `State` value as view state.
+struct Hoverable<Content: View>: View {
+    private let hovering = State(initialValue: false)
+    @ViewBuilder let content: (Bool) -> Content
+
+    var body: some View {
+        content(hovering.wrappedValue)
+            .onHover { hovering.wrappedValue = $0 }
+    }
+}
+
 struct SegmentOption<Value: Hashable>: Identifiable {
     let value: Value
     let title: String
@@ -120,17 +137,21 @@ struct CapsuleSegmented<Value: Hashable>: View {
             ForEach(options) { option in
                 let isOn = option.value == selection
                 Button { selection = option.value } label: {
-                    Text(option.title)
-                        .font(.ui(12, isOn ? .semibold : .regular))
-                        .foregroundStyle(isOn ? Palette.segmentOnText : Palette.segmentOffText)
-                        .padding(.horizontal, 12)
-                        .frame(height: 28)
-                        .background {
-                            if isOn {
-                                Capsule().fill(Palette.segmentOn).shadow(color: .black.opacity(0.14), radius: 2, y: 1)
+                    Hoverable { hovered in
+                        Text(option.title)
+                            .font(.ui(12, isOn ? .semibold : .regular))
+                            .foregroundStyle(isOn ? Palette.segmentOnText : Palette.segmentOffText)
+                            .padding(.horizontal, 12)
+                            .frame(height: 28)
+                            .background {
+                                if isOn {
+                                    Capsule().fill(Palette.segmentOn).shadow(color: .black.opacity(0.14), radius: 2, y: 1)
+                                } else if hovered {
+                                    Capsule().fill(Palette.hoverSubtle)
+                                }
                             }
-                        }
-                        .contentShape(.capsule)
+                            .contentShape(.capsule)
+                    }
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(isOn ? .isSelected : [])
@@ -144,24 +165,35 @@ struct ToolbarIconButtonStyle: ButtonStyle {
     var width: CGFloat = 34
 
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .labelStyle(.iconOnly)
-            .foregroundStyle(Palette.text)
-            .frame(width: width, height: 28)
-            .background(Color.primary.opacity(configuration.isPressed ? 0.1 : 0), in: .capsule)
-            .contentShape(.capsule)
+        Hoverable { hovered in
+            configuration.label
+                .labelStyle(.iconOnly)
+                .foregroundStyle(Palette.text)
+                .frame(width: width, height: 28)
+                .background(
+                    configuration.isPressed ? Color.primary.opacity(0.12) : hovered ? Palette.hover : .clear,
+                    in: .capsule
+                )
+                .contentShape(.capsule)
+        }
     }
 }
 
 /// `.tint`: blue capsule with a white hairline and coloured shadow.
 struct TintButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
+        Hoverable { hovered in
+            tinted(configuration, hovered: hovered)
+        }
+    }
+
+    private func tinted(_ configuration: Configuration, hovered: Bool) -> some View {
         configuration.label
             .font(.ui(13, .medium))
             .foregroundStyle(.white)
             .padding(.horizontal, 14)
             .frame(height: 34)
-            .background(Palette.tint.opacity(configuration.isPressed ? 0.88 : 1), in: .capsule)
+            .background((hovered ? Palette.tintHover : Palette.tint).opacity(configuration.isPressed ? 0.88 : 1), in: .capsule)
             .overlay(Capsule().strokeBorder(.white.opacity(0.4), lineWidth: 1))
             .overlay(Capsule().inset(by: 1).stroke(
                 LinearGradient(colors: [.white.opacity(0.35), .clear], startPoint: .top, endPoint: .init(x: 0.5, y: 0.15)),
