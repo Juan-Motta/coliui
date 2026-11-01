@@ -208,8 +208,12 @@ struct LineIcon: Shape {
             path.addCurve(to: p(12, 9), control1: p(4, 7.7), control2: p(7.6, 9))
             path.addCurve(to: p(20, 6), control1: p(16.4, 9), control2: p(20, 7.7))
         case .networks:
-            line(p(12, 4), p(12, 10))
-            line(p(6, 18), p(12, 10), p(18, 18))
+            // Topology: M9 3h6v5H9z M3 16h6v5H3z M15 16h6v5h-6z M12 8v4 M6 16v-4h12v4
+            path.addRect(CGRect(x: 9, y: 3, width: 6, height: 5))
+            path.addRect(CGRect(x: 3, y: 16, width: 6, height: 5))
+            path.addRect(CGRect(x: 15, y: 16, width: 6, height: 5))
+            line(p(12, 8), p(12, 12))
+            line(p(6, 16), p(6, 12), p(18, 12), p(18, 16))
         case .cleanup, .trash:
             line(p(4, 7), p(20, 7))
             line(p(9, 7), p(9, 4), p(15, 4), p(15, 7))
