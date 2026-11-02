@@ -58,11 +58,11 @@ struct FilesSection: View {
 
             Group {
                 if !(container?.isRunning ?? false) {
-                    MessageCard("Start \(container?.name ?? "the container") to browse its files.")
+                    MessageCard("Start \(container?.name ?? "the container") to browse its files.", wraps: true)
                 } else {
                     switch files.state {
-                    case .idle, .loading: MessageCard("Loading…")
-                    case .failed(let error): MessageCard(error, color: Palette.danger)
+                    case .idle, .loading: MessageCard("Loading…", wraps: true)
+                    case .failed(let error): MessageCard(error, color: Palette.danger, wraps: true)
                     case .loaded:
                         HStack(alignment: .top, spacing: 14) {
                             FolderTable(files: files)

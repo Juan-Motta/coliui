@@ -228,6 +228,26 @@ private func started(_ fake: FakeFileBrowser = browser()) async -> FilesViewMode
         #expect(model.visibleEntries.map(\.name) == ["server.ts"])
     }
 
+    /// Going up fails while the first listing is still loading: the tab must not stay on "Loading…".
+    @Test func aFailedMoveDuringTheFirstLoadStillShowsTheFolder() async {
+        let fake = FakeFileBrowser(["/app/src": [file("a.txt")]])
+        fake.start = "/app/src"
+        let gate = Gate()
+        fake.listGates["/app/src"] = gate
+        let model = FilesViewModel(containerID: "c1", browser: fake)
+        let starting = Task { await model.start() }
+        for _ in 0..<1_000 where model.state != .loading { await Task.yield() }
+        await model.goUp()
+        gate.release()
+        await starting.value
+        for _ in 0..<1_000 where model.state != .loaded { await Task.yield() }
+
+        #expect(model.state == .loaded)
+        #expect(model.path == "/app/src")
+        #expect(model.visibleEntries.map(\.name) == ["a.txt"])
+        #expect(model.notice == "Can't open /app: No such file or directory")
+    }
+
     @Test func aFolderThatFailsToOpenKeepsYouWhereYouWere() async {
         let model = await started()
         await model.go(to: "/missing")

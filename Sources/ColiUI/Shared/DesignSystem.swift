@@ -186,18 +186,21 @@ extension View {
 struct MessageCard: View {
     let text: String
     var color: Color = Palette.secondary
+    /// Long messages wrap centred with a 24 pt margin (Files); Inspect and Environment keep a single line.
+    var wraps = false
 
-    init(_ text: String, color: Color = Palette.secondary) {
+    init(_ text: String, color: Color = Palette.secondary, wraps: Bool = false) {
         self.text = text
         self.color = color
+        self.wraps = wraps
     }
 
     var body: some View {
         Text(text)
             .font(.ui(13))
             .foregroundStyle(color)
-            .multilineTextAlignment(.center)
-            .padding(24)
+            .multilineTextAlignment(wraps ? .center : .leading)
+            .padding(wraps ? 24 : 0)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .cardSurface()
     }

@@ -121,6 +121,8 @@ final class ContainerDetailViewModel {
         guard !query.isEmpty else { return lines }
         let isRegex = useRegex
         let regex = regex
+        // A regex compiles the text as typed (spaces included); the plain search ignores surrounding spaces.
+        let pattern = isRegex ? filterText : query
         if isRegex, regex == nil { return [] }
         func matches(_ line: LogLine) -> Bool {
             if let regex { return line.message.contains(regex) }
@@ -128,7 +130,7 @@ final class ContainerDetailViewModel {
         }
         guard let first = lines.first, let last = lines.last else { return [] }
 
-        if var cache = filterCache, cache.query == query, cache.isRegex == isRegex, cache.stream == stream, cache.lastID <= last.id {
+        if var cache = filterCache, cache.query == pattern, cache.isRegex == isRegex, cache.stream == stream, cache.lastID <= last.id {
             let newLines = lines.reversed().prefix { $0.id > cache.lastID }.reversed()
             cache.matches.append(contentsOf: newLines.filter(matches))
             if let firstKept = cache.matches.firstIndex(where: { $0.id >= first.id }) {
@@ -141,7 +143,7 @@ final class ContainerDetailViewModel {
             return cache.matches
         }
         let result = lines.filter(matches)
-        filterCache = FilterCache(query: query, isRegex: isRegex, stream: stream, lastID: last.id, matches: result)
+        filterCache = FilterCache(query: pattern, isRegex: isRegex, stream: stream, lastID: last.id, matches: result)
         return result
     }
 

@@ -102,7 +102,10 @@ final class FilesViewModel {
             clearSelection()
             return true
         } catch {
-            if listings.isLatest(request) { notice = error.localizedDescription }
+            guard listings.isLatest(request) else { return false }
+            notice = error.localizedDescription
+            // This attempt superseded a listing still in flight (the first load, a refresh); show the folder anyway.
+            if state != .loaded { await refresh() }
             return false
         }
     }

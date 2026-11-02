@@ -208,6 +208,18 @@ private final class ChangeCounter {
         model.stop()
     }
 
+    /// A regex compiles the text as typed; a trailing space changes what it matches, so the result must too.
+    @Test func regexFilterRefiltersWhenOnlyWhitespaceChanges() async {
+        let (model, _) = makeModel([line(0, "error"), line(1, "error code")])
+        await model.start()
+        await model.waitForLogs()
+        model.useRegex = true
+        model.filterText = "error"
+        #expect(model.visibleLines.map(\.id) == [0, 1])
+        model.filterText = "error "
+        #expect(model.visibleLines.map(\.id) == [1])
+    }
+
     @Test func keepsOnlyTheLast5000Lines() async {
         let (model, _) = makeModel((0..<5005).map { line($0, "line \($0)") })
         await model.start()
