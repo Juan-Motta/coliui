@@ -42,9 +42,9 @@ struct InspectSection: View {
             Group {
                 switch inspect.state {
                 case .idle, .loading:
-                    message("Loading…")
+                    MessageCard("Loading…")
                 case .failed(let error):
-                    message(error, color: Palette.danger)
+                    MessageCard(error, color: Palette.danger)
                 case .loaded:
                     if inspect.mode == .tree { tree } else { raw }
                 }
@@ -97,14 +97,6 @@ struct InspectSection: View {
         // Dark scrollers on the dark panel; otherwise the corner where both scroll bars meet stays white.
         .environment(\.colorScheme, .dark)
         .accessibilityLabel("docker inspect JSON")
-    }
-
-    private func message(_ text: String, color: Color = Palette.secondary) -> some View {
-        Text(text)
-            .font(.ui(13))
-            .foregroundStyle(color)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .cardSurface()
     }
 }
 

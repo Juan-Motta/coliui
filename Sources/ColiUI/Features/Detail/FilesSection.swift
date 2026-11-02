@@ -58,11 +58,11 @@ struct FilesSection: View {
 
             Group {
                 if !(container?.isRunning ?? false) {
-                    message("Start \(container?.name ?? "the container") to browse its files.")
+                    MessageCard("Start \(container?.name ?? "the container") to browse its files.")
                 } else {
                     switch files.state {
-                    case .idle, .loading: message("Loading…")
-                    case .failed(let error): message(error, color: Palette.danger)
+                    case .idle, .loading: MessageCard("Loading…")
+                    case .failed(let error): MessageCard(error, color: Palette.danger)
                     case .loaded:
                         HStack(alignment: .top, spacing: 14) {
                             FolderTable(files: files)
@@ -79,16 +79,6 @@ struct FilesSection: View {
                 .font(.ui(12))
                 .foregroundStyle(Palette.secondary)
         }
-    }
-
-    private func message(_ text: String, color: Color = Palette.secondary) -> some View {
-        Text(text)
-            .font(.ui(13))
-            .foregroundStyle(color)
-            .multilineTextAlignment(.center)
-            .padding(24)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .cardSurface()
     }
 }
 

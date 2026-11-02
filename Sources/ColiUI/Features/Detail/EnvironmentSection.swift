@@ -45,8 +45,8 @@ struct EnvironmentSection: View {
 
             Group {
                 switch environment.state {
-                case .idle, .loading: message("Loading…")
-                case .failed(let error): message(error, color: Palette.danger)
+                case .idle, .loading: MessageCard("Loading…")
+                case .failed(let error): MessageCard(error, color: Palette.danger)
                 case .loaded: table
                 }
             }
@@ -97,14 +97,6 @@ struct EnvironmentSection: View {
         }
         .cardSurface()
         .clipShape(.rect(cornerRadius: 14))
-    }
-
-    private func message(_ text: String, color: Color = Palette.secondary) -> some View {
-        Text(text)
-            .font(.ui(13))
-            .foregroundStyle(color)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .cardSurface()
     }
 }
 

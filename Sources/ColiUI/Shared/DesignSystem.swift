@@ -182,6 +182,27 @@ extension View {
     }
 }
 
+/// A card that fills the space with one centred message (loading, empty, or an error in `Palette.danger`).
+struct MessageCard: View {
+    let text: String
+    var color: Color = Palette.secondary
+
+    init(_ text: String, color: Color = Palette.secondary) {
+        self.text = text
+        self.color = color
+    }
+
+    var body: some View {
+        Text(text)
+            .font(.ui(13))
+            .foregroundStyle(color)
+            .multilineTextAlignment(.center)
+            .padding(24)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .cardSurface()
+    }
+}
+
 struct SegmentOption<Value: Hashable>: Identifiable {
     let value: Value
     let title: String
