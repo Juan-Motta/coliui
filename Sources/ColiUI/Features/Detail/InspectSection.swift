@@ -59,7 +59,9 @@ struct InspectSection: View {
 
     private var tree: some View {
         let rows = inspect.rows
-        return ScrollView([.vertical, .horizontal]) {
+        // Vertical only: a lazy stack in a two-axis scroll view sizes its width from the visible rows
+        // and lands off to the side. Long values truncate instead (tooltip and click-to-copy keep them whole).
+        return ScrollView(.vertical) {
             LazyVStack(alignment: .leading, spacing: 0) {
                 ForEach(rows) { row in
                     TreeRow(row: row, toggle: { inspect.toggle(row) }, copy: copy)
@@ -91,6 +93,7 @@ struct InspectSection: View {
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .defaultScrollAnchor(.topLeading)
         .background(Palette.logBackground, in: .rect(cornerRadius: 14))
         .accessibilityLabel("docker inspect JSON")
     }
@@ -135,13 +138,14 @@ private struct TreeRow: View {
                 }
                 if let key = row.key {
                     Text("\(Text(verbatim: key).foregroundStyle(Palette.jsonKey))\(Text(verbatim: ": ").foregroundStyle(Palette.jsonPunctuation))")
+                        .fixedSize()
                 }
                 if let copyText = row.copyText {
                     Button { copy(copyText) } label: {
-                        Text(verbatim: row.value).foregroundStyle(color)
+                        Text(verbatim: row.value).foregroundStyle(color).truncationMode(.tail)
                     }
                     .buttonStyle(.plain)
-                    .help("Copy value")
+                    .help(copyText.count > 80 ? "\(copyText)\n\nClick to copy" : "Copy value")
                 } else if !row.value.isEmpty {
                     Text(verbatim: row.value).foregroundStyle(Palette.jsonPunctuation)
                 }
@@ -151,7 +155,6 @@ private struct TreeRow: View {
             }
             .font(.mono(12))
             .lineLimit(1)
-            .fixedSize()
             .padding(.leading, CGFloat(row.depth * 18 + 4))
             .padding(.trailing, 12)
             .frame(height: 24)
