@@ -316,8 +316,7 @@ private struct PreviewPanel: View {
                     .buttonStyle(PillButtonStyle())
                     .disabled(files.isDownloading || entry?.kind == .symlink || entry?.kind == .other)
                     Button {
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(files.selectedPath ?? files.path, forType: .string)
+                        Clipboard.copy(files.selectedPath ?? files.path)
                     } label: {
                         HStack(spacing: 6) {
                             LineIcon(kind: .copy).icon(Palette.text, size: 13)

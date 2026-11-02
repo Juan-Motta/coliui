@@ -454,15 +454,10 @@ struct ContainerMenu: View {
         }
         Button("Restart") { Task { await containers.perform(.restart, on: container) } }
         Divider()
-        Button("Copy Container ID") { copy(container.id) }
-        Button("Copy “docker exec -it \(container.shortID) sh”") { copy("docker exec -it \(container.shortID) sh") }
+        Button("Copy Container ID") { Clipboard.copy(container.id) }
+        Button("Copy “docker exec -it \(container.shortID) sh”") { Clipboard.copy("docker exec -it \(container.shortID) sh") }
         Divider()
         Button("Remove…", role: .destructive) { containers.pendingRemoval = container }
-    }
-
-    private func copy(_ text: String) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
     }
 }
 

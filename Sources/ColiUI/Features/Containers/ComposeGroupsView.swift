@@ -180,8 +180,7 @@ private struct ServiceRow: View {
 
             HStack(spacing: 2) {
                 Button {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(command, forType: .string)
+                    Clipboard.copy(command)
                     containers.showToast("Copied \(command)")
                 } label: {
                     Label { Text("Copy exec command") } icon: { LineIcon(kind: .copy).icon(Palette.text, size: 14) }

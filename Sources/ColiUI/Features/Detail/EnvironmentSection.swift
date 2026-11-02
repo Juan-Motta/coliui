@@ -32,7 +32,7 @@ struct EnvironmentSection: View {
                 .buttonStyle(PillButtonStyle(isOn: environment.revealAll))
                 .accessibilityAddTraits(environment.revealAll ? .isSelected : [])
 
-                Button { copy(environment.dotEnv) } label: {
+                Button { Clipboard.copy(environment.dotEnv) } label: {
                     HStack(spacing: 6) {
                         LineIcon(kind: .copy).icon(Palette.text, size: 13)
                         Text("Copy as .env")
@@ -83,7 +83,7 @@ struct EnvironmentSection: View {
             ScrollView {
                 LazyVStack(spacing: 0) {
                     ForEach(rows) { row in
-                        VariableRow(row: row, toggle: { environment.toggleReveal(row.name) }, copy: copy)
+                        VariableRow(row: row, toggle: { environment.toggleReveal(row.name) }, copy: Clipboard.copy)
                     }
                 }
             }
@@ -107,11 +107,6 @@ struct EnvironmentSection: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Palette.card, in: .rect(cornerRadius: 14))
             .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
-    }
-
-    private func copy(_ text: String) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
     }
 }
 

@@ -139,8 +139,7 @@ struct RunContainerSheet: View {
                         Text("Equivalent command").font(.ui(12, .semibold)).foregroundStyle(Palette.tertiary)
                         Spacer()
                         addButton("Copy") {
-                            NSPasteboard.general.clearContents()
-                            NSPasteboard.general.setString(form.commandToCopy, forType: .string)
+                            Clipboard.copy(form.commandToCopy)
                         }
                         .help("Copy the command with real values")
                     }

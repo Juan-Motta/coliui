@@ -229,8 +229,7 @@ private struct TerminalPanel: NSViewRepresentable {
         nonisolated func clipboardCopy(source: TerminalView, content: Data) {
             guard let text = String(data: content, encoding: .utf8) else { return }
             MainActor.assumeIsolated {
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(text, forType: .string)
+                Clipboard.copy(text)
             }
         }
 

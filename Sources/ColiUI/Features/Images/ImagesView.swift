@@ -340,8 +340,7 @@ private struct ImageRow: View {
         .contextMenu {
             Button("Run Container…") { model.openRunForm(image: image.isDangling ? image.imageID : image.reference) }
             Button("Copy Image ID") {
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(image.imageID, forType: .string)
+                Clipboard.copy(image.imageID)
             }
             Divider()
             Button("Remove…", role: .destructive) { images.pendingRemoval = image }

@@ -28,7 +28,7 @@ struct InspectSection: View {
                 Button("Collapse all") { inspect.collapseAll() }
                     .buttonStyle(PillButtonStyle())
                     .disabled(inspect.mode == .raw)
-                Button { copy(inspect.rawJSON) } label: {
+                Button { Clipboard.copy(inspect.rawJSON) } label: {
                     HStack(spacing: 6) {
                         LineIcon(kind: .copy).icon(Palette.text, size: 13)
                         Text("Copy JSON")
@@ -64,7 +64,7 @@ struct InspectSection: View {
         return ScrollView(.vertical) {
             LazyVStack(alignment: .leading, spacing: 0) {
                 ForEach(rows) { row in
-                    TreeRow(row: row, toggle: { inspect.toggle(row) }, copy: copy)
+                    TreeRow(row: row, toggle: { inspect.toggle(row) }, copy: Clipboard.copy)
                 }
             }
             .padding(.vertical, 10)
@@ -107,11 +107,6 @@ struct InspectSection: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Palette.card, in: .rect(cornerRadius: 14))
             .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
-    }
-
-    private func copy(_ text: String) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
     }
 }
 
