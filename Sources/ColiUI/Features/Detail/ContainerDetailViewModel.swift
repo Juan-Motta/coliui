@@ -47,6 +47,8 @@ final class ContainerDetailViewModel {
     let liveStats: LiveStatsViewModel
     /// The Terminal tab; nil when no shell connector is available.
     let terminal: TerminalViewModel?
+    /// The Inspect tab; nil when the repository can't inspect.
+    let inspect: InspectViewModel?
 
     private let repository: ContainerRepository
     private let logSource: ContainerLogSource
@@ -59,6 +61,7 @@ final class ContainerDetailViewModel {
         logSource: ContainerLogSource,
         range: LogRange = .fifteenMinutes,
         shellConnector: ShellConnector? = nil,
+        inspector: ContainerInspector? = nil,
         now: @escaping () -> Date = Date.init
     ) {
         self.containerID = containerID
@@ -68,6 +71,7 @@ final class ContainerDetailViewModel {
         self.now = now
         liveStats = LiveStatsViewModel(containerID: containerID, repository: repository)
         terminal = shellConnector.map { TerminalViewModel(containerID: containerID, connector: $0) }
+        inspect = inspector.map { InspectViewModel(containerID: containerID, inspector: $0) }
     }
 
     private var regex: Regex<AnyRegexOutput>? {

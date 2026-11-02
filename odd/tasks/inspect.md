@@ -15,7 +15,7 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 ## Tasks
 
 - T1 — S2–S5 · inline · core: ordered JSON parser + printer, Env masking, `ContainerInspector` over `/containers/{id}/json` + tests — done (live: real inspect parsed in key order and round-trips)
-- T2 — S1–S6 · inline · view model + tab + tests
+- T2 — S1–S6 · inline · view model + tab + tests — done (239 tests). Visual check pending.
 
 ## Log
 
