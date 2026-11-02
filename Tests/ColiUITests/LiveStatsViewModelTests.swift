@@ -88,3 +88,29 @@ private func makeModel() -> LiveStatsViewModel {
         #expect(RateFormat.pair(300_000, 1_200_000) == "0.3 MB/s · 1.2 MB/s")
     }
 }
+
+@Suite struct StatsValueFormatTests {
+    @Test func axisAndReadoutLabels() {
+        #expect(StatsValueFormat.percent(3.14) == "3.1%")
+        #expect(StatsValueFormat.percent(50) == "50%")
+        #expect(StatsValueFormat.bytes(0) == "0")
+        #expect(StatsValueFormat.bytes(214 * 1_048_576) == "214 MiB")
+        #expect(StatsValueFormat.bytes(1_610_612_736) == "1.5 GiB")
+        #expect(StatsValueFormat.rate(0) == "0")
+        #expect(StatsValueFormat.rate(500) == "500 B/s")
+        #expect(StatsValueFormat.rate(42_000) == "42 KB/s")
+        #expect(StatsValueFormat.rate(1_200_000) == "1.2 MB/s")
+    }
+
+    @MainActor
+    @Test func hoverPicksTheNearestSample() {
+        let model = LiveStatsViewModel(containerID: "c1", repository: FakeContainerRepository([]))
+        for second in [0.0, 2, 4] {
+            model.record(ContainerStats(cpuPercent: second, memoryBytes: 0, sampledAt: Date(timeIntervalSince1970: 1_000 + second)))
+        }
+        model.hoveredTime = Date(timeIntervalSince1970: 1_002.7)
+        #expect(model.hoveredPoint?.cpu == 2)
+        model.hoveredTime = nil
+        #expect(model.hoveredPoint == nil)
+    }
+}

@@ -44,6 +44,29 @@ enum RateFormat {
     }
 }
 
+/// Axis and hover labels: "3.1%", "214 MiB", "42 KB/s".
+enum StatsValueFormat {
+    static func percent(_ value: Double) -> String {
+        value < 10 ? String(format: "%.1f%%", value) : "\(Int(value.rounded()))%"
+    }
+
+    static func bytes(_ value: Double) -> String {
+        guard value > 0 else { return "0" }
+        let mib = value / 1_048_576
+        if mib < 1024 { return "\(Int(mib.rounded())) MiB" }
+        return String(format: "%.1f GiB", mib / 1024)
+    }
+
+    static func rate(_ value: Double) -> String {
+        switch value {
+        case ...0: "0"
+        case ..<1_000: "\(Int(value.rounded())) B/s"
+        case ..<1_000_000: "\(Int((value / 1_000).rounded())) KB/s"
+        default: String(format: "%.1f MB/s", value / 1_000_000)
+        }
+    }
+}
+
 /// LiveStats.dc.html: samples one container every 2 s while visible and keeps 15 minutes of history.
 @MainActor
 @Observable
@@ -55,6 +78,8 @@ final class LiveStatsViewModel {
     private(set) var latest: ContainerStats?
     private(set) var isPaused = false
     var isWindowHidden = false
+    /// Where the pointer is over any chart; every chart marks the same moment.
+    var hoveredTime: Date?
     private(set) var errorMessage: String?
 
     let containerID: String
@@ -118,6 +143,11 @@ final class LiveStatsViewModel {
     var visiblePoints: [StatsPoint] {
         guard let end = points.last?.time else { return [] }
         return points.filter { end.timeIntervalSince($0.time) <= range.seconds }
+    }
+
+    var hoveredPoint: StatsPoint? {
+        guard let hoveredTime else { return nil }
+        return visiblePoints.min { abs($0.time.timeIntervalSince(hoveredTime)) < abs($1.time.timeIntervalSince(hoveredTime)) }
     }
 
     // MARK: Headlines

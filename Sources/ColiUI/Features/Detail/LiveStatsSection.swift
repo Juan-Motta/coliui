@@ -1,4 +1,5 @@
 import AppKit
+import Charts
 import SwiftUI
 
 /// LiveStats.dc.html: range segments, sampling note, Pause, then four chart cards in two columns.
@@ -27,18 +28,16 @@ struct LiveStatsSection: View {
 
                 Grid(horizontalSpacing: 14, verticalSpacing: 14) {
                     GridRow {
-                        ChartCard(title: "CPU", detail: stats.cpuDetail, value: stats.cpuValue,
-                                  series: [points.map(\.cpu)], range: stats.range, times: points.map(\.time))
-                        ChartCard(title: "Memory", detail: stats.memoryDetail, value: stats.memoryValue,
-                                  series: [points.map { Double($0.memory) }], range: stats.range, times: points.map(\.time))
+                        ChartCard(stats: stats, title: "CPU", detail: stats.cpuDetail, value: stats.cpuValue,
+                                  series: [("CPU", \.cpu)], format: StatsValueFormat.percent)
+                        ChartCard(stats: stats, title: "Memory", detail: stats.memoryDetail, value: stats.memoryValue,
+                                  series: [("Memory", { Double($0.memory) })], format: StatsValueFormat.bytes)
                     }
                     GridRow {
-                        ChartCard(title: "Network I/O", detail: "rx / tx", value: stats.networkValue,
-                                  series: [points.map(\.received), points.map(\.sent)], legend: ("Received", "Sent"),
-                                  range: stats.range, times: points.map(\.time))
-                        ChartCard(title: "Block I/O", detail: "read / write", value: stats.blockValue,
-                                  series: [points.map(\.read), points.map(\.written)], legend: ("Read", "Write"),
-                                  range: stats.range, times: points.map(\.time))
+                        ChartCard(stats: stats, title: "Network I/O", detail: "rx / tx", value: stats.networkValue,
+                                  series: [("Received", \.received), ("Sent", \.sent)], format: StatsValueFormat.rate)
+                        ChartCard(stats: stats, title: "Block I/O", detail: "read / write", value: stats.blockValue,
+                                  series: [("Read", \.read), ("Write", \.written)], format: StatsValueFormat.rate)
                     }
                 }
             }
@@ -80,14 +79,13 @@ private struct RangeSegments: View {
 }
 
 private struct ChartCard: View {
+    let stats: LiveStatsViewModel
     let title: String
     let detail: String
     let value: String
-    /// One or two series; the first gets the area fill.
-    let series: [[Double]]
-    var legend: (String, String)?
-    let range: StatsRange
-    let times: [Date]
+    /// One or two series; the first is blue with the area fill, the second orange.
+    let series: [(name: String, value: (StatsPoint) -> Double)]
+    let format: (Double) -> String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -104,15 +102,14 @@ private struct ChartCard: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
 
-            LineChart(series: series, times: times, window: range.seconds)
+            StatsChart(stats: stats, series: series, format: format)
                 .frame(height: 120)
-                .accessibilityElement()
-                .accessibilityLabel("\(title) over the last \(range.rawValue), currently \(value)")
+                .accessibilityLabel("\(title) over the last \(stats.range.rawValue), currently \(value)")
 
-            if let legend {
+            if series.count > 1 {
                 HStack(spacing: 16) {
-                    LegendKey(color: Palette.accent, title: legend.0)
-                    LegendKey(color: Palette.diskCache, title: legend.1)
+                    LegendKey(color: Palette.accent, title: series[0].name)
+                    LegendKey(color: Palette.diskCache, title: series[1].name)
                 }
                 .font(.ui(12))
                 .foregroundStyle(Palette.tertiary)
@@ -137,44 +134,99 @@ private struct LegendKey: View {
     }
 }
 
-/// Gridlines at quarters, a 2 pt blue line with a 10% area, an orange second line.
-/// The right edge is the newest sample, so a fresh chart fills in from the right.
-private struct LineChart: View {
-    let series: [[Double]]
-    let times: [Date]
-    let window: TimeInterval
+/// Values on the leading axis, clock time below, and a shared hover rule with the exact reading.
+private struct StatsChart: View {
+    let stats: LiveStatsViewModel
+    let series: [(name: String, value: (StatsPoint) -> Double)]
+    let format: (Double) -> String
 
     var body: some View {
-        Canvas { context, size in
-            for fraction in [0.25, 0.5, 0.75] {
-                var grid = Path()
-                grid.move(to: CGPoint(x: 0, y: size.height * fraction))
-                grid.addLine(to: CGPoint(x: size.width, y: size.height * fraction))
-                context.stroke(grid, with: .color(Palette.chartGrid), lineWidth: 1)
-            }
-            guard let end = times.last, times.count > 1 else { return }
-            // Headroom above the peak; a flat zero line sits on the bottom edge.
-            let peak = max(series.flatMap { $0 }.max() ?? 0, 0) * 1.25
-            let top = peak > 0 ? peak : 1
-            func point(_ index: Int, _ value: Double) -> CGPoint {
-                let age = end.timeIntervalSince(times[index])
-                return CGPoint(x: size.width * (1 - age / window), y: size.height * (1 - value / top))
-            }
-            for (number, values) in series.enumerated() {
-                var line = Path()
-                for (index, value) in values.enumerated() {
-                    index == 0 ? line.move(to: point(index, value)) : line.addLine(to: point(index, value))
+        @Bindable var stats = stats
+        let points = stats.visiblePoints
+        let end = points.last?.time ?? Date()
+        let start = end.addingTimeInterval(-stats.range.seconds)
+        let peak = points.flatMap { point in series.map { $0.value(point) } }.max() ?? 0
+        let top = peak > 0 ? peak * 1.25 : 1
+        let hovered = stats.hoveredPoint
+        Chart {
+            ForEach(Array(series.enumerated()), id: \.offset) { number, line in
+                let color = number == 0 ? Palette.accent : Palette.diskCache
+                ForEach(points, id: \.time) { point in
+                    if number == 0 {
+                        AreaMark(x: .value("Time", point.time), y: .value(line.name, line.value(point)))
+                            .foregroundStyle(Palette.accent.opacity(0.10))
+                            .interpolationMethod(.linear)
+                    }
+                    LineMark(x: .value("Time", point.time), y: .value(line.name, line.value(point)), series: .value("Series", line.name))
+                        .foregroundStyle(color)
+                        .lineStyle(StrokeStyle(lineWidth: 2, lineJoin: .round))
                 }
-                if number == 0 {
-                    var area = line
-                    area.addLine(to: CGPoint(x: point(values.count - 1, 0).x, y: size.height))
-                    area.addLine(to: CGPoint(x: point(0, 0).x, y: size.height))
-                    area.closeSubpath()
-                    context.fill(area, with: .color(Palette.accent.opacity(0.10)))
+            }
+            if let hovered {
+                RuleMark(x: .value("Time", hovered.time))
+                    .foregroundStyle(Palette.secondary.opacity(0.5))
+                    .lineStyle(StrokeStyle(lineWidth: 1))
+                    .annotation(position: .top, spacing: 2, overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
+                        HoverReadout(time: hovered.time, readings: series.map { ($0.name, format($0.value(hovered))) },
+                                     showSeconds: true)
+                    }
+                ForEach(Array(series.enumerated()), id: \.offset) { number, line in
+                    PointMark(x: .value("Time", hovered.time), y: .value(line.name, line.value(hovered)))
+                        .foregroundStyle(number == 0 ? Palette.accent : Palette.diskCache)
+                        .symbolSize(28)
                 }
-                context.stroke(line, with: .color(number == 0 ? Palette.accent : Palette.diskCache),
-                               style: StrokeStyle(lineWidth: 2, lineJoin: .round))
             }
         }
+        .chartXScale(domain: start...end)
+        .chartYScale(domain: 0...top)
+        .chartXAxis {
+            AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine().foregroundStyle(Palette.chartGrid)
+                AxisValueLabel {
+                    if let date = value.as(Date.self) {
+                        Text(date, format: stats.range == .oneMinute
+                             ? .dateTime.hour().minute().second() : .dateTime.hour().minute())
+                    }
+                }
+                .font(.ui(10))
+                .foregroundStyle(Palette.secondary)
+            }
+        }
+        .chartYAxis {
+            AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine().foregroundStyle(Palette.chartGrid)
+                AxisValueLabel {
+                    if let number = value.as(Double.self) { Text(verbatim: format(number)) }
+                }
+                .font(.ui(10))
+                .foregroundStyle(Palette.secondary)
+            }
+        }
+        .chartLegend(.hidden)
+        .chartXSelection(value: $stats.hoveredTime)
+    }
+}
+
+/// Small card above the hover rule: the sample's time and each series' value.
+private struct HoverReadout: View {
+    let time: Date
+    let readings: [(String, String)]
+    let showSeconds: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(time, format: .dateTime.hour().minute().second())
+                .font(.ui(10))
+                .foregroundStyle(Palette.secondary)
+            ForEach(readings, id: \.0) { name, value in
+                Text(verbatim: readings.count > 1 ? "\(name) \(value)" : value)
+                    .font(.ui(11, .semibold))
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(Palette.card, in: .rect(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Palette.cardBorder, lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
     }
 }
