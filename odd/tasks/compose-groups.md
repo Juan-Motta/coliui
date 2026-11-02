@@ -12,10 +12,12 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 
 ## Tasks
 
-- T1 — S1–S3 · inline · core labels + view model groups/actions + tests — pending
-- T2 — S1–S4 · inline · Compose groups view — pending
+- T1 — S1–S3 · inline · core labels + view model groups/actions + tests — done (fd17733)
+- T2 — S1–S4 · inline · Compose groups view — done (529200f; 73 tests green). Visual check pending.
 
 ## Log
 
 - L1 (2026-11-01, user, verbatim): "ademas estoy corriendo varios contenedores mediante un compose.yml es posible agruparlos?"
 - L2: Real labels include `com.docker.compose.project`, `.service`, `.project.config_files`, `.project.working_dir`.
+- L3 (user): "me gustaria alg tipo de feedback para los links de los puertos para saber que puedo clickearlos cuando hago hover" → PortLink underlines + link cursor.
+- L4 (user): "ademas me gustaria que comose groups fuera la vista por defecto y lista por si se quiere cambiar" → default viewMode .compose; toggle order kept as designed.
