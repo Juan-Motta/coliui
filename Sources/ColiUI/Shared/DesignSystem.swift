@@ -167,6 +167,12 @@ struct Hoverable<Content: View>: View {
 }
 
 extension View {
+    /// `.card`: white (dark gray in dark mode) with a hairline border.
+    func cardSurface(radius: CGFloat = 14) -> some View {
+        background(Palette.card, in: .rect(cornerRadius: radius))
+            .overlay(RoundedRectangle(cornerRadius: radius).strokeBorder(Palette.cardBorder, lineWidth: 1))
+    }
+
     /// The selected / hovered wash of a table row. Hover lives in the row (`Hoverable`), so moving the pointer
     /// redraws one row instead of every row that read a shared "hovered ID".
     func rowWash(isSelected: Bool) -> some View {

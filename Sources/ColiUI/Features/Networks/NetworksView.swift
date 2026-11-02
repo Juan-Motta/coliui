@@ -231,9 +231,8 @@ private struct NetworksCard: View {
                     }
                 }
                 .frame(width: geometry.size.width)
-                .background(Palette.card)
+                .cardSurface()
                 .clipShape(.rect(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
                 .frame(maxHeight: .infinity, alignment: .top)
             }
             .defaultScrollAnchor(.top)

@@ -389,8 +389,7 @@ private struct InfoCards: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.card, in: .rect(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
+        .cardSurface()
     }
 
     private func row(_ key: String, _ value: String) -> some View {

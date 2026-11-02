@@ -118,8 +118,7 @@ private struct ChartCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Palette.card, in: .rect(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
+        .cardSurface()
     }
 }
 
@@ -227,8 +226,7 @@ private struct HoverReadout: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
-        .background(Palette.card, in: .rect(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Palette.cardBorder, lineWidth: 1))
+        .cardSurface(radius: 8)
         .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
     }
 }

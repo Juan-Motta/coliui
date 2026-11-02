@@ -88,8 +88,7 @@ struct FilesSection: View {
             .multilineTextAlignment(.center)
             .padding(24)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Palette.card, in: .rect(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
+            .cardSurface()
     }
 }
 
@@ -176,9 +175,8 @@ private struct FolderTable: View {
                 .frame(height: 30)
                 .overlay(alignment: .top) { Palette.headerDivider.frame(height: 1) }
         }
-        .background(Palette.card, in: .rect(cornerRadius: 14))
+        .cardSurface()
         .clipShape(.rect(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
     }
 }
 
@@ -341,9 +339,8 @@ private struct PreviewPanel: View {
             content(entry)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(Palette.card, in: .rect(cornerRadius: 14))
+        .cardSurface()
         .clipShape(.rect(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
     }
 
     @ViewBuilder

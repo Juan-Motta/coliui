@@ -144,8 +144,7 @@ private struct DiskCard: View {
                 .foregroundStyle(Palette.secondary)
         }
         .padding(20)
-        .background(Palette.card, in: .rect(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
+        .cardSurface()
     }
 
     private func legend(color: Color, text: String) -> some View {

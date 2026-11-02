@@ -78,8 +78,7 @@ struct InspectSection: View {
                     .foregroundStyle(Palette.secondary)
             }
         }
-        .background(Palette.card, in: .rect(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
+        .cardSurface()
         .accessibilityLabel("docker inspect")
     }
 
@@ -105,8 +104,7 @@ struct InspectSection: View {
             .font(.ui(13))
             .foregroundStyle(color)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Palette.card, in: .rect(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
+            .cardSurface()
     }
 }
 

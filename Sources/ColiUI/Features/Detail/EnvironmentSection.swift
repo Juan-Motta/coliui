@@ -95,9 +95,8 @@ struct EnvironmentSection: View {
                 }
             }
         }
-        .background(Palette.card, in: .rect(cornerRadius: 14))
+        .cardSurface()
         .clipShape(.rect(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
     }
 
     private func message(_ text: String, color: Color = Palette.secondary) -> some View {
@@ -105,8 +104,7 @@ struct EnvironmentSection: View {
             .font(.ui(13))
             .foregroundStyle(color)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Palette.card, in: .rect(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
+            .cardSurface()
     }
 }
 

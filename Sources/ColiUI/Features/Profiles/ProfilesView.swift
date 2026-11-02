@@ -85,8 +85,7 @@ private struct ProfileList: View {
             }
         }
         .padding(6)
-        .background(Palette.card, in: .rect(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
+        .cardSurface()
     }
 }
 
@@ -254,8 +253,7 @@ private struct ProfileEditor: View {
         }
         .disabled(profiles.isBusy)
         .padding(20)
-        .background(Palette.card, in: .rect(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
+        .cardSurface()
     }
 
     private func stepButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {

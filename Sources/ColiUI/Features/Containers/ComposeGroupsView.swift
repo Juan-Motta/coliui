@@ -61,9 +61,8 @@ private struct GroupCard: View {
                 }
             }
         }
-        .background(Palette.card, in: .rect(cornerRadius: 14))
+        .cardSurface()
         .clipShape(.rect(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
     }
 }
 
