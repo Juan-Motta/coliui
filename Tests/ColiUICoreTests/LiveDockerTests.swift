@@ -86,4 +86,19 @@ struct LiveDockerTests {
         print("live stats:", container.name, stats.cpuDisplay, stats.memoryDisplay, "cpus", stats.onlineCPUs,
               "limit", stats.memoryLimit ?? -1, "net", stats.networkReceived, stats.networkSent, "blk", stats.blockRead, stats.blockWritten)
     }
+
+    /// Opens /bin/sh in a running container, echoes, exits. Changes nothing.
+    @Test func runsAnInteractiveShell() async throws {
+        let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket))
+        let container = try #require(try await repository.listContainers().first { $0.isRunning })
+        let session = try await DockerShell(socketPath: socket)
+            .openShell(containerID: container.id, shell: "/bin/sh", user: "", columns: 100, rows: 30)
+        session.resize(columns: 120, rows: 40)
+        session.send(Data("echo coliui-$((40+2))\nexit\n".utf8))
+        var output = Data()
+        for try await chunk in session.output { output.append(chunk) }
+        let text = String(decoding: output, as: UTF8.self)
+        #expect(text.contains("coliui-42"))
+        print("live shell:", container.name, text.replacingOccurrences(of: "\r", with: "").suffix(80))
+    }
 }

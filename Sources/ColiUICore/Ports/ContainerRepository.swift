@@ -54,3 +54,16 @@ public protocol NetworkRepository: Sendable {
     /// Fails for built-in networks and while containers are connected.
     func removeNetwork(id: String) async throws
 }
+
+/// An interactive shell inside a container (`docker exec -it`).
+public protocol ShellSession: AnyObject, Sendable {
+    /// Raw TTY output; finishes when the shell exits or the session closes.
+    var output: AsyncThrowingStream<Data, Error> { get }
+    func send(_ data: Data)
+    func resize(columns: Int, rows: Int)
+    func close()
+}
+
+public protocol ShellConnector: Sendable {
+    func openShell(containerID: String, shell: String, user: String, columns: Int, rows: Int) async throws -> ShellSession
+}
