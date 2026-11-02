@@ -60,7 +60,8 @@ struct ContainerDetailView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .task(id: detail.tab) {
+        // Also keyed on the running state, so Files starts when the container starts while the tab is open.
+        .task(id: TabLoad(tab: detail.tab, isRunning: container?.isRunning ?? false)) {
             if detail.tab == .stats { await detail.liveStats.run() }
             if detail.tab == .inspect { await detail.inspect?.load() }
             if detail.tab == .environment { await detail.environment?.load() }
@@ -405,4 +406,10 @@ private struct InfoCards: View {
         let home = NSHomeDirectory()
         return path.hasPrefix(home) ? "~" + path.dropFirst(home.count) : path
     }
+}
+
+/// What the detail's per-tab loading depends on.
+private struct TabLoad: Hashable {
+    let tab: DetailTab
+    let isRunning: Bool
 }

@@ -50,6 +50,8 @@ struct ComposeGroup: Identifiable {
 final class ContainersViewModel {
     private(set) var containers: [Container] = []
     @ObservationIgnored private var refreshes = LatestRequest()
+    /// The Search field has focus, so text-editing keys (⌘⌫) belong to it.
+    var isSearchFocused = false
     /// CPU / memory for running containers, keyed by container ID.
     private(set) var stats: [String: ContainerStats] = [:]
     private(set) var busyIDs: Set<String> = []

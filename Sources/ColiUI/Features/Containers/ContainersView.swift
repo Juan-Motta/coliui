@@ -120,6 +120,8 @@ private struct SelectionShortcuts: View {
                 .keyboardShortcut("o")
             Button("Remove Selected") { containers.requestRemoveSelected() }
                 .keyboardShortcut(.delete, modifiers: .command)
+                // In the Search field ⌘⌫ deletes the text; it must not ask to remove the container.
+                .disabled(containers.isSearchFocused)
             Button("Open Shell") { if let selected { model.openDetail(selected, tab: .terminal) } }
                 .keyboardShortcut("t", modifiers: [.command, .shift])
                 .disabled(selected?.isRunning != true)
@@ -191,6 +193,7 @@ private struct Header: View {
                     .textFieldStyle(.plain)
                     .font(.ui(13))
                     .focused($searchFocused)
+                    .onChange(of: searchFocused) { containers.isSearchFocused = searchFocused }
             }
             .background {
                 Button("Search") { searchFocused = true }

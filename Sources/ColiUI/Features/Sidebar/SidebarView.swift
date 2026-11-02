@@ -50,6 +50,8 @@ struct MainWindow: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
+        // While the Settings modal is up, the screen behind it takes no clicks or shortcuts (⌘⌫, ⌘N, Esc…).
+        .disabled(model.isSettingsPresented)
         .foregroundStyle(Palette.text)
         .background(Palette.window)
         .ignoresSafeArea()
