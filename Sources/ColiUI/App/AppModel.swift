@@ -10,6 +10,7 @@ final class AppModel {
     let colima: ColimaViewModel
     let cleanup: CleanupViewModel
     let profiles: ProfilesViewModel
+    let images: ImagesViewModel
     var section: SidebarSection? = .containers
     private(set) var summary: DockerSummary?
     /// The open container detail, if any (shown in place of the list).
@@ -32,6 +33,7 @@ final class AppModel {
         colima: ColimaViewModel,
         cleanup: CleanupViewModel,
         profiles: ProfilesViewModel,
+        images: ImagesViewModel,
         repository: ContainerRepository? = nil,
         runner: ContainerRunner? = nil,
         logSource: ContainerLogSource? = nil,
@@ -42,6 +44,7 @@ final class AppModel {
         self.colima = colima
         self.cleanup = cleanup
         self.profiles = profiles
+        self.images = images
         self.repository = repository
         self.runner = runner
         self.logSource = logSource
@@ -63,9 +66,15 @@ final class AppModel {
         Task { await detail.start() }
     }
 
-    func openRunForm() {
+    /// Opens the Run sheet; from the Images screen the image is filled in and already local, so no pull.
+    func openRunForm(image: String? = nil) {
         guard let runner, runForm == nil else { return }
-        runForm = RunContainerViewModel(runner: runner)
+        let form = RunContainerViewModel(runner: runner)
+        if let image {
+            form.image = image
+            form.pull = false
+        }
+        runForm = form
     }
 
     func closeRunForm() {
@@ -76,7 +85,11 @@ final class AppModel {
         guard let form = runForm, let started = await form.run() else { return }
         runForm = nil
         await containers.refresh()
-        containers.showToast("Started \(started)")
+        if section == .images {
+            images.showToast("Started \(started)")
+        } else {
+            containers.showToast("Started \(started)")
+        }
     }
 
     func closeDetail() {
@@ -93,6 +106,9 @@ final class AppModel {
         if section == .profiles {
             Task { await profiles.load() }
         }
+        if section == .images {
+            Task { await images.refresh() }
+        }
     }
 
     static func live(profile: String = "default") -> AppModel {
@@ -102,14 +118,20 @@ final class AppModel {
             profile: profile
         )
         let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socketPath))
+        let containers = ContainersViewModel(repository: repository)
         let runtime: ColimaRuntime = ColimaCLIRuntime.locateExecutable()
             .map { ColimaCLIRuntime(runner: ProcessCommandRunner(), executable: $0) }
             ?? UnavailableColimaRuntime()
         return AppModel(
-            containers: ContainersViewModel(repository: repository),
+            containers: containers,
             colima: ColimaViewModel(runtime: runtime, profile: profile),
             cleanup: CleanupViewModel(maintenance: repository),
             profiles: ProfilesViewModel(runtime: runtime, activeProfile: profile),
+            images: ImagesViewModel(
+                repository: repository,
+                puller: DockerImagePuller(socketPath: socketPath),
+                containers: { containers.containers }
+            ),
             repository: repository,
             runner: repository,
             logSource: DockerLogStream(socketPath: socketPath),
@@ -144,6 +166,7 @@ final class AppModel {
                 if tick % 5 == 0 {
                     await colima.refresh()
                     summary = try? await inventory?.summary()
+                    if section == .images { await images.refresh() }
                 }
                 await containers.refresh()
                 tick += 1

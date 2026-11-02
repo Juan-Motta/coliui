@@ -39,6 +39,8 @@ enum Palette {
     /// `.pill` / logs filter field fill and its hover.
     static let field = dynamic(rgb(0, 0, 0, 0.05), rgb(255, 255, 255, 0.08))
     static let fieldHover = dynamic(rgb(0, 0, 0, 0.09), rgb(255, 255, 255, 0.14))
+    /// Images pull bar: `rgba(0,0,0,0.08)` progress track.
+    static let progressTrack = dynamic(rgb(0, 0, 0, 0.08), rgb(255, 255, 255, 0.12))
     static let toggleOn = dynamic(rgb(0, 102, 204, 0.14), rgb(77, 163, 255, 0.24))
     static let toggleOnText = dynamic(rgb(0x0B, 0x4F, 0x8A), rgb(0x7B, 0xBB, 0xFF))
     static let greenPill = dynamic(rgb(0xE7, 0xF6, 0xEC), rgb(48, 209, 88, 0.16))

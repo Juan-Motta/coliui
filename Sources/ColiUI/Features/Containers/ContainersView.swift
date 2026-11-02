@@ -417,7 +417,7 @@ struct ContainerMenu: View {
     }
 }
 
-private struct ErrorBanner: View {
+struct ErrorBanner: View {
     let message: String
     let onDismiss: () -> Void
 

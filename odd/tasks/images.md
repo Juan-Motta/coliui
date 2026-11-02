@@ -13,8 +13,8 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 
 ## Tasks
 
-- T1 — S1–S5 · inline · core: image list, remove, streamed pull progress, container image ID + tests
-- T2 — S1–S5 · inline · view model + screen + tests
+- T1 — S1–S5 · inline · core: image list, remove, streamed pull progress, container image ID + tests — done (bbe2125; live list + hello-world re-pull)
+- T2 — S1–S5 · inline · view model + screen + tests — done (136 tests). Visual check pending; no real remove run.
 
 ## Log
 

@@ -47,4 +47,14 @@ struct LiveDockerTests {
             "\($0.rawValue) \(ByteFormat.short(usage.category($0).totalBytes)) (\(ByteFormat.short(usage.category($0).reclaimableBytes)) reclaimable, \(usage.category($0).reclaimableItems.count) items)"
         }.joined(separator: "; "))
     }
+
+    /// Lists images, then re-pulls hello-world (already local, so nothing changes) through the streaming puller.
+    @Test func listsImagesAndPullsHelloWorld() async throws {
+        let images = try await DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket)).images()
+        #expect(!images.isEmpty)
+        var last: PullProgress?
+        for try await progress in DockerImagePuller(socketPath: socket).pull("hello-world") { last = progress }
+        #expect(last?.phase == .done)
+        print("live images:", images.count, "rows;", images.prefix(3).map { "\($0.reference) \($0.shortID) \(ByteFormat.short($0.size))" }, "pull:", last?.title ?? "nil")
+    }
 }
