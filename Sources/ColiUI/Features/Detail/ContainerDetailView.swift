@@ -40,12 +40,8 @@ struct ContainerDetailView: View {
                     } else if detail.tab == .logs {
                         LogsSection(detail: detail, name: container?.name ?? detail.details?.name ?? "container")
                     } else {
-                        Text("Designed, not built yet.")
-                            .font(.ui(13))
-                            .foregroundStyle(Palette.secondary)
-                            .frame(maxWidth: .infinity)
-                            .padding(48)
-                            .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+                        // Terminal, Files, Inspect and Environment need the Docker socket.
+                        MessageCard("This tab needs the Docker socket, which isn't available.")
                     }
                 }
                 .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)

@@ -70,7 +70,7 @@ struct TerminalSection: View {
             .frame(maxHeight: .infinity)
             .background { TerminalShortcuts(terminal: terminal) }
 
-            (Text("Runs ") + Text("docker exec -it").font(.mono(12)) + Text(" through the Engine API · ⌘K clears · ⌘+/⌘− font size"))
+            Text("Runs \(Text("docker exec -it").font(.mono(12))) through the Engine API · ⌘K clears · ⌘+/⌘− font size")
                 .font(.ui(12))
                 .foregroundStyle(Palette.secondary)
         }

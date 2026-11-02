@@ -44,8 +44,6 @@ struct MainWindow: View {
                     VolumesView()
                 case .networks:
                     NetworksView()
-                case let other:
-                    PlaceholderScreen(section: other)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -231,21 +229,5 @@ struct ColimaCard: View {
             }
         }
         .buttonStyle(.plain)
-    }
-}
-
-/// Screens that are designed but not built yet keep the window header.
-struct PlaceholderScreen: View {
-    let section: SidebarSection
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(section.title)
-                .font(.ui(15, .semibold))
-                .padding(.leading, 16)
-                .frame(minHeight: 60)
-            ContentUnavailableView(section.title, systemImage: "hammer", description: Text("Designed, not built yet."))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
     }
 }
