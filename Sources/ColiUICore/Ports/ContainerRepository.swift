@@ -29,3 +29,14 @@ public protocol ContainerLogSource: Sendable {
     /// Streams log lines, starting with the last `tail` lines since `since`, until cancelled.
     func logs(id: String, since: Date?, tail: Int, tty: Bool) -> AsyncThrowingStream<LogLine, Error>
 }
+
+public protocol ImageRepository: Sendable {
+    func images() async throws -> [DockerImage]
+    /// Removes a tag (or an untagged image by ID); fails while a container uses it.
+    func removeImage(_ reference: String) async throws
+}
+
+public protocol ImagePuller: Sendable {
+    /// Streams overall progress until the image is pulled; cancelling stops the pull.
+    func pull(_ reference: String) -> AsyncThrowingStream<PullProgress, Error>
+}

@@ -16,11 +16,7 @@ extension DockerEngineRepository: ContainerRunner {
     }
 
     private func pull(_ image: String) async throws {
-        let parts = RunRequest.imageParts(image)
-        let allowed = CharacterSet.urlQueryAllowed.subtracting(CharacterSet(charactersIn: "&=+?"))
-        let repository = parts.repository.addingPercentEncoding(withAllowedCharacters: allowed) ?? parts.repository
-        let tag = parts.tag.addingPercentEncoding(withAllowedCharacters: allowed) ?? parts.tag
-        let response = try await transport.send(method: "POST", path: "/images/create?fromImage=\(repository)&tag=\(tag)", body: nil)
+        let response = try await transport.send(method: "POST", path: DockerImagePull.path(for: image), body: nil)
         try Self.check(response)
         // Pull failures arrive as {"error": "..."} lines inside a 200 progress stream.
         for line in response.body.split(separator: UInt8(ascii: "\n")) {

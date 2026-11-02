@@ -38,6 +38,8 @@ public struct Container: Identifiable, Sendable, Equatable {
     public let composeService: String?
     /// First file of `com.docker.compose.project.config_files`.
     public let composeConfigFile: String?
+    /// "sha256:…" of the image the container was created from.
+    public let imageID: String?
 
     public init(
         id: String,
@@ -48,7 +50,8 @@ public struct Container: Identifiable, Sendable, Equatable {
         ports: [PortMapping] = [],
         composeProject: String? = nil,
         composeService: String? = nil,
-        composeConfigFile: String? = nil
+        composeConfigFile: String? = nil,
+        imageID: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -59,6 +62,7 @@ public struct Container: Identifiable, Sendable, Equatable {
         self.composeProject = composeProject
         self.composeService = composeService
         self.composeConfigFile = composeConfigFile
+        self.imageID = imageID
     }
 
     public var shortID: String { String(id.prefix(12)) }

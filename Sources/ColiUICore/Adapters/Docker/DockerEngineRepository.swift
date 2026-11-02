@@ -205,13 +205,14 @@ private struct ContainerDTO: Decodable {
     let id: String
     let names: [String]
     let image: String
+    let imageID: String?
     let state: String
     let status: String
     let ports: [PortDTO]?
     let labels: [String: String]?
 
     enum CodingKeys: String, CodingKey {
-        case id = "Id", names = "Names", image = "Image", state = "State"
+        case id = "Id", names = "Names", image = "Image", imageID = "ImageID", state = "State"
         case status = "Status", ports = "Ports", labels = "Labels"
     }
 
@@ -233,7 +234,8 @@ private struct ContainerDTO: Decodable {
             composeProject: labels?["com.docker.compose.project"],
             composeService: labels?["com.docker.compose.service"],
             composeConfigFile: labels?["com.docker.compose.project.config_files"]?
-                .split(separator: ",").first.map(String.init)
+                .split(separator: ",").first.map(String.init),
+            imageID: imageID
         )
     }
 }
