@@ -1,7 +1,7 @@
 import Foundation
 
 /// `ContainerRepository` backed by the Docker Engine REST API.
-public struct DockerEngineRepository: ContainerRepository, ContainerInspector, DockerInventory {
+public struct DockerEngineRepository: ContainerRepository, ContainerInspector, ContainerEnvironmentSource, DockerInventory {
     let transport: HTTPTransport
 
     public init(transport: HTTPTransport) {
@@ -81,6 +81,17 @@ public struct DockerEngineRepository: ContainerRepository, ContainerInspector, D
         let response = try await transport.send(method: "GET", path: "/containers/\(id)/json", body: nil)
         try Self.check(response)
         return Self.maskingEnvSecrets(try JSONValue.parse(response.body))
+    }
+
+    public func environment(id: String) async throws -> [EnvironmentEntry] {
+        let id = try Self.validated(id)
+        let container = try await decode(EnvironmentDTO.self, path: "/containers/\(id)/json")
+        var image: [String] = []
+        // Image IDs are `sha256:<hex>`; anything else stays out of the path. A missing image leaves `image` empty.
+        if let imageID = container.image, imageID.wholeMatch(of: /sha256:[0-9a-f]{12,64}/) != nil {
+            image = (try? await decode(EnvironmentDTO.self, path: "/images/\(imageID)/json"))?.config?.env ?? []
+        }
+        return EnvironmentEntry.list(container: container.config?.env ?? [], image: image)
     }
 
     /// Masks the entries of the top-level `Config.Env`, the only place Docker puts the environment.
@@ -189,6 +200,17 @@ private struct InspectDTO: Decodable {
             tty: config.tty ?? false
         )
     }
+}
+
+/// The parts of a container or image inspect that hold the environment.
+private struct EnvironmentDTO: Decodable {
+    struct ConfigDTO: Decodable {
+        let env: [String]?
+        enum CodingKeys: String, CodingKey { case env = "Env" }
+    }
+    let image: String?
+    let config: ConfigDTO?
+    enum CodingKeys: String, CodingKey { case image = "Image", config = "Config" }
 }
 
 private struct VolumesDTO: Decodable {

@@ -99,6 +99,16 @@ struct LiveDockerTests {
         print("live inspect:", container.name, members.count, "keys")
     }
 
+    /// Reads a running container's environment and its image's; reads only, prints no values.
+    @Test func readsAContainersEnvironment() async throws {
+        let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket))
+        let container = try #require(try await repository.listContainers().first { $0.isRunning })
+        let variables = try await repository.environment(id: container.id)
+        #expect(variables.contains { $0.name == "PATH" })
+        print("live env:", container.name, variables.count, "vars,",
+              variables.filter { $0.source == .image }.count, "from the image,", variables.filter(\.isSecret).count, "secret")
+    }
+
     /// Opens /bin/sh in a running container, echoes, exits. Changes nothing.
     @Test func runsAnInteractiveShell() async throws {
         let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket))

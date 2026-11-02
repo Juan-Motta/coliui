@@ -15,6 +15,11 @@ public protocol ContainerInspector: Sendable {
     func inspect(id: String) async throws -> JSONValue
 }
 
+/// A container's environment, each variable marked as inherited from the image or set by the container.
+public protocol ContainerEnvironmentSource: Sendable {
+    func environment(id: String) async throws -> [EnvironmentEntry]
+}
+
 public protocol DockerInventory: Sendable {
     func summary() async throws -> DockerSummary
 }

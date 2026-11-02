@@ -5,12 +5,17 @@ public enum SecretMask {
 
     /// `NAME=value` with a secret-looking name, or a URL carrying a password, becomes `NAME=••••••`.
     public static func masked(_ entry: String) -> String {
-        guard let equals = entry.firstIndex(of: "=") else { return entry }
+        guard isSecret(entry), let equals = entry.firstIndex(of: "=") else { return entry }
+        return entry[...equals] + placeholder
+    }
+
+    /// A non-empty value under a secret-looking name, or a URL carrying a password.
+    public static func isSecret(_ entry: String) -> Bool {
+        guard let equals = entry.firstIndex(of: "=") else { return false }
         let name = entry[..<equals].uppercased()
         let value = entry[entry.index(after: equals)...]
-        guard !value.isEmpty else { return entry }
-        let isSecret = secretWords.contains { name.contains($0) }
+        guard !value.isEmpty else { return false }
+        return secretWords.contains { name.contains($0) }
             || value.contains(/:\/\/[^\/@\s:]+:[^\/@\s]+@/)
-        return isSecret ? entry[...equals] + placeholder : entry
     }
 }
