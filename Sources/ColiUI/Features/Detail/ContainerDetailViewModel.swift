@@ -6,6 +6,7 @@ enum DetailTab: String, CaseIterable, Identifiable {
     case logs = "Logs"
     case stats = "Stats"
     case terminal = "Terminal"
+    case files = "Files"
     case inspect = "Inspect"
     case environment = "Environment"
 
@@ -51,6 +52,8 @@ final class ContainerDetailViewModel {
     let inspect: InspectViewModel?
     /// The Environment tab; nil when the repository can't read the environment.
     let environment: EnvironmentViewModel?
+    /// The Files tab; nil when the repository can't browse files.
+    let files: FilesViewModel?
 
     private let repository: ContainerRepository
     private let logSource: ContainerLogSource
@@ -70,6 +73,7 @@ final class ContainerDetailViewModel {
         shellConnector: ShellConnector? = nil,
         inspector: ContainerInspector? = nil,
         environmentSource: ContainerEnvironmentSource? = nil,
+        fileBrowser: ContainerFileBrowser? = nil,
         now: @escaping () -> Date = Date.init
     ) {
         self.containerID = containerID
@@ -81,6 +85,7 @@ final class ContainerDetailViewModel {
         terminal = shellConnector.map { TerminalViewModel(containerID: containerID, connector: $0) }
         inspect = inspector.map { InspectViewModel(containerID: containerID, inspector: $0) }
         environment = environmentSource.map { EnvironmentViewModel(containerID: containerID, source: $0) }
+        files = fileBrowser.map { FilesViewModel(containerID: containerID, browser: $0) }
     }
 
     private var regex: Regex<AnyRegexOutput>? {
@@ -103,6 +108,12 @@ final class ContainerDetailViewModel {
     func start() async {
         details = try? await repository.details(id: containerID)
         startLogs()
+    }
+
+    /// Files › Shell here: the Terminal tab, `cd` into `folder`.
+    func openShell(in folder: String) {
+        tab = .terminal
+        terminal?.run("cd -- " + TerminalViewModel.shellQuoted(folder))
     }
 
     func stop() {

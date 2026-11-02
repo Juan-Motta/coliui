@@ -363,7 +363,7 @@ struct LineIcon: Shape {
         case refresh, sort, search, plus, trash
         case chevronLeft, chevronRight, terminal, download
         case folder, copy, external, check, warning, minus
-        case bell, keyboard, eye, lock
+        case bell, keyboard, eye, lock, arrowUp, link
     }
 
     let kind: Kind
@@ -473,6 +473,13 @@ struct LineIcon: Shape {
             path.addLine(to: p(8, 8))
             path.addArc(center: p(12, 8), radius: 4, startAngle: .degrees(180), endAngle: .degrees(360), clockwise: false)
             path.addLine(to: p(16, 11))
+        case .arrowUp:
+            line(p(12, 19), p(12, 6)); line(p(6, 11), p(12, 5), p(18, 11))
+        case .link:
+            // Two overlapping chain links, tilted 45°.
+            let tilt = CGAffineTransform(translationX: 12, y: 12).rotated(by: -.pi / 4).translatedBy(x: -12, y: -12)
+            path.addPath(Path(roundedRect: CGRect(x: 2.5, y: 9, width: 11, height: 6), cornerRadius: 3), transform: tilt)
+            path.addPath(Path(roundedRect: CGRect(x: 10.5, y: 9, width: 11, height: 6), cornerRadius: 3), transform: tilt)
         case .download:
             line(p(12, 4), p(12, 15)); line(p(7, 10), p(12, 15), p(17, 10)); line(p(5, 20), p(19, 20))
         }

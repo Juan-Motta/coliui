@@ -33,6 +33,8 @@ struct ContainerDetailView: View {
                         TerminalSection(terminal: terminal, container: container)
                     } else if detail.tab == .inspect, let inspect = detail.inspect {
                         InspectSection(inspect: inspect)
+                    } else if detail.tab == .files, let files = detail.files {
+                        FilesSection(files: files, container: container) { detail.openShell(in: $0) }
                     } else if detail.tab == .environment, let environment = detail.environment {
                         EnvironmentSection(environment: environment)
                     } else if detail.tab == .logs {
@@ -62,6 +64,7 @@ struct ContainerDetailView: View {
             if detail.tab == .stats { await detail.liveStats.run() }
             if detail.tab == .inspect { await detail.inspect?.load() }
             if detail.tab == .environment { await detail.environment?.load() }
+            if detail.tab == .files, container?.isRunning ?? false { await detail.files?.start() }
         }
         .confirmationDialog(
             "Remove “\(pendingRemoval?.name ?? "")”?",

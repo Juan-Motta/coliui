@@ -75,6 +75,18 @@ private final class ChangeCounter {
         model.stop()
     }
 
+    @Test func shellHereOpensTheTerminalInThatFolder() async {
+        let connector = FakeShellConnector()
+        let model = ContainerDetailViewModel(
+            containerID: "c1", repository: FakeContainerRepository([]), logSource: FakeLogSource(lines: []),
+            shellConnector: connector, now: { now }
+        )
+        model.openShell(in: "/app/my src")
+        #expect(model.tab == .terminal)
+        await model.terminal?.connect(columns: 80, rows: 24)
+        #expect(connector.sessions[0].sent == [Data("cd -- '/app/my src'\n".utf8)])
+    }
+
     @Test func startLoadsDetailsAndStreamsTheLast15Minutes() async {
         let (model, source) = makeModel([line(0, "Starting server", level: .info), line(1, "GET /health 200")])
         await model.start()

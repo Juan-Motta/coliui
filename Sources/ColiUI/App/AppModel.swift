@@ -85,7 +85,8 @@ final class AppModel {
             range: container.isRunning ? .fifteenMinutes : .all,
             shellConnector: socketPath.isEmpty ? nil : DockerShell(socketPath: socketPath),
             inspector: repository as? ContainerInspector,
-            environmentSource: repository as? ContainerEnvironmentSource
+            environmentSource: repository as? ContainerEnvironmentSource,
+            fileBrowser: repository as? ContainerFileBrowser
         )
         detail.tab = tab
         self.detail = detail

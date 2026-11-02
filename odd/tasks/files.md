@@ -14,7 +14,7 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 ## Tasks
 
 - T1 — S1, S3–S5 · inline · core: listing via `docker exec sh -c 'stat …'`, archive reads (tar), working directory + tests — done (live: 11 containers — GNU stat, BusyBox, 3 distroless reported as no shell)
-- T2 — S1–S5 · inline · view model + tab + tests
+- T2 — S1–S5 · inline · view model + tab + tests — done (284 tests). Visual check pending.
 
 ## Log
 

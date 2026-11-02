@@ -29,6 +29,8 @@ final class TerminalViewModel {
     private var readTask: Task<Void, Never>?
     private var sink: ((Data) -> Void)?
     private var size = (columns: 80, rows: 24)
+    /// Commands asked for before the shell connected; sent as soon as it does.
+    private var queued: [String] = []
 
     init(containerID: String, connector: ShellConnector) {
         self.containerID = containerID
@@ -53,6 +55,8 @@ final class TerminalViewModel {
             let session = try await connector.openShell(containerID: containerID, shell: shell, user: user, columns: columns, rows: rows)
             self.session = session
             state = .connected
+            for command in queued { session.send(Data((command + "\n").utf8)) }
+            queued = []
             readTask = Task { [weak self] in
                 do {
                     for try await chunk in session.output { self?.receive(chunk) }
@@ -82,6 +86,11 @@ final class TerminalViewModel {
 
     func send(_ data: Data) {
         session?.send(data)
+    }
+
+    /// Types a command and Return; waits for the connection if needed.
+    func run(_ command: String) {
+        if let session { session.send(Data((command + "\n").utf8)) } else { queued.append(command) }
     }
 
     func resize(columns: Int, rows: Int) {

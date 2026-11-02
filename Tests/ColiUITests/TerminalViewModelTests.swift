@@ -132,6 +132,18 @@ private func waitUntil(_ condition: @MainActor () -> Bool) async {
         #expect(connector.sessions[0].sent == [Data([0x0c])])
     }
 
+    /// Files › Shell here: the command waits for the shell when it isn't connected yet.
+    @Test func runsACommandOnceConnected() async {
+        let connector = FakeShellConnector()
+        let model = TerminalViewModel(containerID: "c1", connector: connector)
+        model.run("cd -- /app")
+        await model.connect(columns: 80, rows: 24)
+        #expect(connector.sessions[0].sent == [Data("cd -- /app\n".utf8)])
+
+        model.run("ls")
+        #expect(connector.sessions[0].sent.last == Data("ls\n".utf8))
+    }
+
     @Test func fontSizeStaysReadable() {
         let model = TerminalViewModel(containerID: "c1", connector: FakeShellConnector())
         for _ in 0..<20 { model.biggerFont() }
