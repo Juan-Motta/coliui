@@ -20,3 +20,4 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 
 - L1 (2026-11-02, user, verbatim): "finalmente me gustaria tener una opcion para ver los files del contenedor y explorar por las carpetas del mismo" — designed first on the canvas, approved: "Se ve bien".
 - L2 (2026-11-02): assumption — folders are listed before files (the mockup mixes dot files first); listing needs `sh` and `stat` in the container.
+- L3 (2026-11-02, user, verbatim): "hay una esquina u cuadro blanco abajo a la derecha" — the scroll-bar corner of the two-axis preview drew in light mode; dark panels now use dark scrollers (also Inspect Raw).

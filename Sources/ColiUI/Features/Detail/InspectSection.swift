@@ -95,6 +95,8 @@ struct InspectSection: View {
         }
         .defaultScrollAnchor(.topLeading)
         .background(Palette.logBackground, in: .rect(cornerRadius: 14))
+        // Dark scrollers on the dark panel; otherwise the corner where both scroll bars meet stays white.
+        .environment(\.colorScheme, .dark)
         .accessibilityLabel("docker inspect JSON")
     }
 

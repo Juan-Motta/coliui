@@ -359,6 +359,8 @@ private struct PreviewPanel: View {
             }
             .defaultScrollAnchor(.topLeading)
             .background(Palette.logBackground)
+            // Dark scrollers on the dark panel; otherwise the corner where both scroll bars meet stays white.
+            .environment(\.colorScheme, .dark)
         case .loading: note("Loading…")
         case .binary: note("This file isn't text, so it can't be previewed. Download it instead.")
         case .tooLarge: note("Too large to preview (over 256 KB). Download it instead.")
