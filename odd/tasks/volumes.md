@@ -14,8 +14,9 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 ## Tasks
 
 - T1 — S1–S5 · inline · core: volume list with sizes, create, remove, container volume mounts + tests — done (80a3179; live read-only list)
-- T2 — S1–S5 · inline · view model + screen + tests — done (150 tests). Visual check pending; no real create/remove run.
+- T2 — S1–S5 · inline · view model + screen + tests — done (150 tests). Visually accepted (L2); no real create/remove run.
 
 ## Log
 
 - L1 (2026-11-01, user, verbatim): "Volumes" — designed first on the canvas, approved: "Se ve bien".
+- L2 (2026-11-01, user, verbatim): "Se ve bien"
