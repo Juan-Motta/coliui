@@ -42,4 +42,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         MainActor.assumeIsolated { AppModel.shared.applySystemSettings() }
         NSApp.activate()
     }
+
+    /// Closing the window keeps ColiUI in the menu bar; Quit there (or ⌘Q) is the only way out.
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
+    }
 }
