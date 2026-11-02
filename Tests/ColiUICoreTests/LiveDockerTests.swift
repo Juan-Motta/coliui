@@ -31,6 +31,14 @@ struct LiveDockerTests {
         print("live run:", id.prefix(12))
     }
 
+    /// Read-only: parses the real ~/.colima/default/colima.yaml.
+    @Test func readsTheDefaultProfileSettings() async throws {
+        let runtime = ColimaCLIRuntime(runner: ProcessCommandRunner(), executable: "colima")
+        let settings = try await runtime.settings(profile: "default")
+        #expect(settings.cpus > 0)
+        print("live profile:", settings)
+    }
+
     /// Read-only: never prunes.
     @Test func readsDiskUsage() async throws {
         let usage = try await DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket)).diskUsage()

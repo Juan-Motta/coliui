@@ -156,4 +156,8 @@ private struct UnavailableColimaRuntime: ColimaRuntime {
     func start(profile: String) async throws { throw ColimaError.notInstalled }
     func stop(profile: String) async throws { throw ColimaError.notInstalled }
     func restart(profile: String) async throws { throw ColimaError.notInstalled }
+    func settings(profile: String) async throws -> ColimaProfileSettings { throw ColimaError.notInstalled }
+    func apply(_ settings: ColimaProfileSettings, to profile: String, isRunning: Bool) async throws { throw ColimaError.notInstalled }
+    func create(profile: String, settings: ColimaProfileSettings) async throws { throw ColimaError.notInstalled }
+    func delete(profile: String) async throws { throw ColimaError.notInstalled }
 }

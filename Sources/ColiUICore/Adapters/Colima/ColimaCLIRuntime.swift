@@ -18,10 +18,41 @@ public enum ColimaError: Error, Equatable, LocalizedError {
 public struct ColimaCLIRuntime: ColimaRuntime {
     private let runner: CommandRunner
     private let executable: String
+    private let readConfig: @Sendable (String) -> String?
 
-    public init(runner: CommandRunner, executable: String) {
+    public init(
+        runner: CommandRunner,
+        executable: String,
+        readConfig: @escaping @Sendable (String) -> String? = ColimaCLIRuntime.readConfigFile
+    ) {
         self.runner = runner
         self.executable = executable
+        self.readConfig = readConfig
+    }
+
+    public static let readConfigFile: @Sendable (String) -> String? = { profile in
+        try? String(contentsOfFile: "\(NSHomeDirectory())/.colima/\(profile)/colima.yaml", encoding: .utf8)
+    }
+
+    public func settings(profile: String) async throws -> ColimaProfileSettings {
+        guard let yaml = readConfig(profile), let settings = ColimaProfileSettings(yaml: yaml) else {
+            throw ColimaError.unexpectedOutput
+        }
+        return settings
+    }
+
+    public func apply(_ settings: ColimaProfileSettings, to profile: String, isRunning: Bool) async throws {
+        if isRunning { _ = try await execute(["stop", profile]) }
+        _ = try await execute(["start", profile] + settings.resourceArguments)
+    }
+
+    public func create(profile: String, settings: ColimaProfileSettings) async throws {
+        _ = try await execute(["start", profile] + settings.resourceArguments
+            + ["--vm-type", settings.vmType, "--runtime", settings.runtime])
+    }
+
+    public func delete(profile: String) async throws {
+        _ = try await execute(["delete", profile, "--force"])
     }
 
     public static let candidatePaths = ["/opt/homebrew/bin/colima", "/usr/local/bin/colima"]

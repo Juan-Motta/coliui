@@ -156,6 +156,29 @@ final class FakeColimaRuntime: ColimaRuntime, @unchecked Sendable {
     func start(profile: String) async throws { lock.withLock { _commands.append("start \(profile)") } }
     func stop(profile: String) async throws { lock.withLock { _commands.append("stop \(profile)") } }
     func restart(profile: String) async throws { lock.withLock { _commands.append("restart \(profile)") } }
+
+    var settingsByProfile: [String: ColimaProfileSettings] = [:]
+    var commandError: Error?
+
+    func settings(profile: String) async throws -> ColimaProfileSettings {
+        guard let settings = settingsByProfile[profile] else { throw ColimaError.unexpectedOutput }
+        return settings
+    }
+
+    func apply(_ settings: ColimaProfileSettings, to profile: String, isRunning: Bool) async throws {
+        lock.withLock { _commands.append("apply \(profile) cpus=\(settings.cpus) running=\(isRunning)") }
+        if let commandError { throw commandError }
+    }
+
+    func create(profile: String, settings: ColimaProfileSettings) async throws {
+        lock.withLock { _commands.append("create \(profile) \(settings.vmType)") }
+        if let commandError { throw commandError }
+    }
+
+    func delete(profile: String) async throws {
+        lock.withLock { _commands.append("delete \(profile)") }
+        if let commandError { throw commandError }
+    }
 }
 
 @MainActor
