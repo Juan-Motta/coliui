@@ -8,6 +8,7 @@ import Observation
 final class AppModel {
     let containers: ContainersViewModel
     let colima: ColimaViewModel
+    let cleanup: CleanupViewModel
     var section: SidebarSection? = .containers
     private(set) var summary: DockerSummary?
     /// The open container detail, if any (shown in place of the list).
@@ -25,6 +26,7 @@ final class AppModel {
     init(
         containers: ContainersViewModel,
         colima: ColimaViewModel,
+        cleanup: CleanupViewModel,
         repository: ContainerRepository? = nil,
         logSource: ContainerLogSource? = nil,
         inventory: DockerInventory? = nil,
@@ -32,6 +34,7 @@ final class AppModel {
     ) {
         self.containers = containers
         self.colima = colima
+        self.cleanup = cleanup
         self.repository = repository
         self.logSource = logSource
         self.inventory = inventory
@@ -60,6 +63,9 @@ final class AppModel {
     func select(_ section: SidebarSection) {
         closeDetail()
         self.section = section
+        if section == .cleanup {
+            Task { await cleanup.scan() }
+        }
     }
 
     static func live(profile: String = "default") -> AppModel {
@@ -75,6 +81,7 @@ final class AppModel {
         return AppModel(
             containers: ContainersViewModel(repository: repository),
             colima: ColimaViewModel(runtime: runtime, profile: profile),
+            cleanup: CleanupViewModel(maintenance: repository),
             repository: repository,
             logSource: DockerLogStream(socketPath: socketPath),
             inventory: repository,
@@ -100,6 +107,8 @@ final class AppModel {
     func startPolling() {
         startEvents()
         guard pollTask == nil else { return }
+        // `docker system df` takes about a second, so measure once at launch and on demand.
+        Task { await cleanup.scan() }
         pollTask = Task {
             var tick = 0
             while !Task.isCancelled {

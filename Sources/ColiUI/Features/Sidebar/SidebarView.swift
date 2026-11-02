@@ -1,3 +1,4 @@
+import ColiUICore
 import SwiftUI
 
 enum SidebarSection: String, Hashable, CaseIterable {
@@ -33,6 +34,8 @@ struct MainWindow: View {
                     } else {
                         ContainersView()
                     }
+                case .cleanup:
+                    CleanupView()
                 case let other:
                     PlaceholderScreen(section: other)
                 }
@@ -59,7 +62,7 @@ struct SidebarPanel: View {
                 (.networks, model.summary.map { "\($0.networks)" }),
             ])
             group("SYSTEM", [
-                (.cleanup, nil),
+                (.cleanup, model.cleanup.usage.map { _ in ByteFormat.short(model.cleanup.totalReclaimable) }),
                 (.profiles, model.colima.profileCount > 0 ? "\(model.colima.profileCount)" : nil),
             ])
             SettingsLink {

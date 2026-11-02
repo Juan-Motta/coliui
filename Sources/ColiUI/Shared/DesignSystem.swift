@@ -44,6 +44,16 @@ enum Palette {
     static let greenPill = dynamic(rgb(0xE7, 0xF6, 0xEC), rgb(48, 209, 88, 0.16))
     static let orangePill = dynamic(rgb(0xFE, 0xF3, 0xE7), rgb(255, 159, 10, 0.16))
 
+    /// Cleanup option cards when selected.
+    static let optionSelected = dynamic(rgb(0xF6, 0xF9, 0xFE), rgb(77, 163, 255, 0.1))
+    static let optionSelectedBorder = dynamic(rgb(0, 102, 204, 0.4), rgb(77, 163, 255, 0.45))
+    static let destructive = dynamic(rgb(0xC4, 0x32, 0x0A), rgb(0xE0, 0x45, 0x1A))
+    /// Disk bar segments: images, build cache, volumes, containers.
+    static let diskImages = Color(nsColor: rgb(0x00, 0x66, 0xCC))
+    static let diskCache = Color(nsColor: rgb(0xC2, 0x41, 0x0C))
+    static let diskVolumes = Color(nsColor: rgb(0x7C, 0x5C, 0xD6))
+    static let diskContainers = Color(nsColor: rgb(0x1E, 0x7F, 0x3C))
+
     /// Log panel (same in light and dark).
     static let logBackground = Color(nsColor: rgb(0x1C, 0x1C, 0x1E))
     static let logTime = Color(nsColor: rgb(0x8E, 0x8E, 0x93))
@@ -333,7 +343,7 @@ struct LineIcon: Shape {
         case containers, images, volumes, networks, cleanup, profiles, settings
         case refresh, sort, search, plus, trash
         case chevronLeft, chevronRight, terminal, download
-        case folder, copy, external, check
+        case folder, copy, external, check, warning
     }
 
     let kind: Kind
@@ -410,6 +420,10 @@ struct LineIcon: Shape {
             line(p(7, 17), p(17, 7)); line(p(9, 7), p(17, 7), p(17, 15))
         case .check:
             line(p(5, 12), p(10, 17), p(19, 7))
+        case .warning:
+            line(p(12, 3), p(22, 21), p(2, 21), p(12, 3))
+            line(p(12, 10), p(12, 15))
+            line(p(12, 18), p(12, 18.5))
         case .terminal:
             line(p(4, 17), p(10, 12), p(4, 7)); line(p(12, 19), p(20, 19))
         case .download:

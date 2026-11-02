@@ -56,4 +56,11 @@ public enum ByteFormat {
         default: return String(format: "%.1f GB", value / 1_000_000_000)
         }
     }
+
+    /// Binary units like Colima reports disk sizes: "41.2 GiB", "512 MiB".
+    public static func binary(_ bytes: Int64) -> String {
+        let gib = Double(bytes) / 1_073_741_824
+        if gib >= 1 { return String(format: "%.1f GiB", gib) }
+        return "\(Int((Double(bytes) / 1_048_576).rounded())) MiB"
+    }
 }
