@@ -38,6 +38,7 @@ private func response(_ status: Int, _ body: String = "") -> HTTPResponse {
 @Suite struct DockerEngineRepositoryTests {
     static let listJSON = """
     [{"Id":"e81b3f0c55d2aaaabbbb","Names":["/api-server"],"Image":"myapp/api:latest","ImageID":"sha256:4be1c0","State":"running",
+      "Mounts":[{"Type":"volume","Name":"shop_pgdata","Destination":"/data"},{"Type":"bind","Source":"/Users/me","Destination":"/src"}],
       "Status":"Up 12 minutes",
       "Ports":[{"IP":"0.0.0.0","PrivatePort":8080,"PublicPort":8080,"Type":"tcp"},
                {"IP":"::","PrivatePort":8080,"PublicPort":8080,"Type":"tcp"},
@@ -64,6 +65,8 @@ private func response(_ status: Int, _ body: String = "") -> HTTPResponse {
         #expect(containers[1].composeService == nil)
         #expect(api.imageID == "sha256:4be1c0")
         #expect(containers[1].imageID == nil)
+        #expect(api.volumeNames == ["shop_pgdata"])
+        #expect(containers[1].volumeNames.isEmpty)
         #expect(api.ports == [
             PortMapping(privatePort: 8080, publicPort: 8080, proto: "tcp"),
             PortMapping(privatePort: 9229, publicPort: nil, proto: "tcp"),

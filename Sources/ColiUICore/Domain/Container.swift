@@ -40,6 +40,8 @@ public struct Container: Identifiable, Sendable, Equatable {
     public let composeConfigFile: String?
     /// "sha256:…" of the image the container was created from.
     public let imageID: String?
+    /// Names of the volumes mounted into the container.
+    public let volumeNames: [String]
 
     public init(
         id: String,
@@ -51,7 +53,8 @@ public struct Container: Identifiable, Sendable, Equatable {
         composeProject: String? = nil,
         composeService: String? = nil,
         composeConfigFile: String? = nil,
-        imageID: String? = nil
+        imageID: String? = nil,
+        volumeNames: [String] = []
     ) {
         self.id = id
         self.name = name
@@ -63,6 +66,7 @@ public struct Container: Identifiable, Sendable, Equatable {
         self.composeService = composeService
         self.composeConfigFile = composeConfigFile
         self.imageID = imageID
+        self.volumeNames = volumeNames
     }
 
     public var shortID: String { String(id.prefix(12)) }

@@ -210,10 +210,17 @@ private struct ContainerDTO: Decodable {
     let status: String
     let ports: [PortDTO]?
     let labels: [String: String]?
+    let mounts: [MountDTO]?
+
+    struct MountDTO: Decodable {
+        let type: String?
+        let name: String?
+        enum CodingKeys: String, CodingKey { case type = "Type", name = "Name" }
+    }
 
     enum CodingKeys: String, CodingKey {
         case id = "Id", names = "Names", image = "Image", imageID = "ImageID", state = "State"
-        case status = "Status", ports = "Ports", labels = "Labels"
+        case status = "Status", ports = "Ports", labels = "Labels", mounts = "Mounts"
     }
 
     func toDomain() -> Container {
@@ -235,7 +242,8 @@ private struct ContainerDTO: Decodable {
             composeService: labels?["com.docker.compose.service"],
             composeConfigFile: labels?["com.docker.compose.project.config_files"]?
                 .split(separator: ",").first.map(String.init),
-            imageID: imageID
+            imageID: imageID,
+            volumeNames: (mounts ?? []).filter { $0.type == "volume" }.compactMap(\.name)
         )
     }
 }

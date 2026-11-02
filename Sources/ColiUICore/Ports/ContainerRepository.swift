@@ -40,3 +40,10 @@ public protocol ImagePuller: Sendable {
     /// Streams overall progress until the image is pulled; cancelling stops the pull.
     func pull(_ reference: String) -> AsyncThrowingStream<PullProgress, Error>
 }
+
+public protocol VolumeRepository: Sendable {
+    func volumes() async throws -> [DockerVolume]
+    func createVolume(name: String) async throws
+    /// Deletes the volume and its data; fails while a container uses it.
+    func removeVolume(name: String) async throws
+}

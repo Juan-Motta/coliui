@@ -57,4 +57,12 @@ struct LiveDockerTests {
         #expect(last?.phase == .done)
         print("live images:", images.count, "rows;", images.prefix(3).map { "\($0.reference) \($0.shortID) \(ByteFormat.short($0.size))" }, "pull:", last?.title ?? "nil")
     }
+
+    /// Read-only: lists volumes with their sizes and which containers mount them.
+    @Test func listsVolumes() async throws {
+        let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket))
+        let volumes = try await repository.volumes()
+        let mounted = Set(try await repository.listContainers().flatMap(\.volumeNames))
+        print("live volumes:", volumes.count, volumes.prefix(4).map { "\($0.name) \($0.composeProject ?? "-") \($0.size.map(ByteFormat.short) ?? "?") used=\(mounted.contains($0.name))" })
+    }
 }
