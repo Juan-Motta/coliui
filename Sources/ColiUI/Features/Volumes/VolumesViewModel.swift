@@ -106,9 +106,7 @@ final class VolumesViewModel {
     var nameError: String? {
         let name = newName.trimmingCharacters(in: .whitespaces)
         if name.isEmpty { return "Enter a name." }
-        if name.range(of: #"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$"#, options: .regularExpression) == nil {
-            return "Names can use letters, digits, “_”, “.” and “-”, and must start with a letter or digit."
-        }
+        if let error = DockerName.formatError(name) { return error }
         if volumes.contains(where: { $0.name == name }) { return "A volume named “\(name)” already exists." }
         return nil
     }

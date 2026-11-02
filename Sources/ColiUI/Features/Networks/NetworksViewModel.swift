@@ -107,9 +107,7 @@ final class NetworksViewModel {
     var nameError: String? {
         let name = newName.trimmingCharacters(in: .whitespaces)
         if name.isEmpty { return "Enter a name." }
-        if name.range(of: #"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$"#, options: .regularExpression) == nil {
-            return "Names can use letters, digits, “_”, “.” and “-”, and must start with a letter or digit."
-        }
+        if let error = DockerName.formatError(name) { return error }
         if networks.contains(where: { $0.name == name }) { return "A network named “\(name)” already exists." }
         return nil
     }

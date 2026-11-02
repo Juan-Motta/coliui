@@ -50,9 +50,7 @@ final class RunContainerViewModel {
         let image = image.trimmingCharacters(in: .whitespaces)
         if image.isEmpty { return "Enter an image, like nginx:latest." }
         let name = name.trimmingCharacters(in: .whitespaces)
-        if !name.isEmpty, name.range(of: #"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$"#, options: .regularExpression) == nil {
-            return "Names can use letters, digits, “_”, “.” and “-”, and must start with a letter or digit."
-        }
+        if !name.isEmpty, let error = DockerName.formatError(name) { return error }
         for row in filledPorts {
             if Self.port(row.container) == nil { return "Container port must be a number from 1 to 65535." }
             if !row.host.trimmingCharacters(in: .whitespaces).isEmpty, Self.port(row.host) == nil {
