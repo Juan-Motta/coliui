@@ -363,7 +363,7 @@ struct LineIcon: Shape {
         case refresh, sort, search, plus, trash
         case chevronLeft, chevronRight, terminal, download
         case folder, copy, external, check, warning, minus
-        case bell, keyboard
+        case bell, keyboard, eye, lock
     }
 
     let kind: Kind
@@ -459,6 +459,20 @@ struct LineIcon: Shape {
             line(p(12, 18), p(12, 18.5))
         case .terminal:
             line(p(4, 17), p(10, 12), p(4, 7)); line(p(12, 19), p(20, 19))
+        case .eye:
+            // M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z  + circle r3
+            path.move(to: p(2, 12))
+            path.addQuadCurve(to: p(12, 5), control: p(5.6, 5))
+            path.addQuadCurve(to: p(22, 12), control: p(18.4, 5))
+            path.addQuadCurve(to: p(12, 19), control: p(18.4, 19))
+            path.addQuadCurve(to: p(2, 12), control: p(5.6, 19))
+            path.addEllipse(in: CGRect(x: 9, y: 9, width: 6, height: 6))
+        case .lock:
+            path.addRoundedRect(in: CGRect(x: 5, y: 11, width: 14, height: 10), cornerSize: CGSize(width: 2, height: 2))
+            path.move(to: p(8, 11))
+            path.addLine(to: p(8, 8))
+            path.addArc(center: p(12, 8), radius: 4, startAngle: .degrees(180), endAngle: .degrees(360), clockwise: false)
+            path.addLine(to: p(16, 11))
         case .download:
             line(p(12, 4), p(12, 15)); line(p(7, 10), p(12, 15), p(17, 10)); line(p(5, 20), p(19, 20))
         }

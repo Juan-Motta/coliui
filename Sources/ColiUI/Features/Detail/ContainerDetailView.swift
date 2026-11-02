@@ -33,6 +33,8 @@ struct ContainerDetailView: View {
                         TerminalSection(terminal: terminal, container: container)
                     } else if detail.tab == .inspect, let inspect = detail.inspect {
                         InspectSection(inspect: inspect)
+                    } else if detail.tab == .environment, let environment = detail.environment {
+                        EnvironmentSection(environment: environment)
                     } else if detail.tab == .logs {
                         LogsSection(detail: detail, name: container?.name ?? detail.details?.name ?? "container")
                     } else {
@@ -46,8 +48,8 @@ struct ContainerDetailView: View {
                 }
                 .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
-                // LiveStats.dc.html, Terminal.dc.html and Inspect.dc.html use the full width.
-                if detail.tab != .stats, detail.tab != .terminal, detail.tab != .inspect {
+                // Only the Logs tab keeps the info cards; the other tabs' designs use the full width.
+                if detail.tab == .logs {
                     InfoCards(details: detail.details, container: container)
                         .frame(minWidth: 260, idealWidth: 300, maxWidth: 320)
                 }
@@ -59,6 +61,7 @@ struct ContainerDetailView: View {
         .task(id: detail.tab) {
             if detail.tab == .stats { await detail.liveStats.run() }
             if detail.tab == .inspect { await detail.inspect?.load() }
+            if detail.tab == .environment { await detail.environment?.load() }
         }
         .confirmationDialog(
             "Remove “\(pendingRemoval?.name ?? "")”?",

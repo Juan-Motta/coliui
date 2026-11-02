@@ -14,7 +14,7 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 ## Tasks
 
 - T1 — S2–S3 · inline · core: variables with source and secret flag from container + image inspect + tests — done (live: 58 vars, 6 from the image, 12 secret)
-- T2 — S1–S5 · inline · view model + tab + tests
+- T2 — S1–S5 · inline · view model + tab + tests — done (253 tests). Visual check pending.
 
 ## Log
 

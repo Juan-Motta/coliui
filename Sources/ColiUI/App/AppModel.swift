@@ -84,7 +84,8 @@ final class AppModel {
             logSource: logSource,
             range: container.isRunning ? .fifteenMinutes : .all,
             shellConnector: socketPath.isEmpty ? nil : DockerShell(socketPath: socketPath),
-            inspector: repository as? ContainerInspector
+            inspector: repository as? ContainerInspector,
+            environmentSource: repository as? ContainerEnvironmentSource
         )
         detail.tab = tab
         self.detail = detail
