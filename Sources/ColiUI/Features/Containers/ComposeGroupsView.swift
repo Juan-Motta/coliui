@@ -149,16 +149,11 @@ private struct ServiceRow: View {
             Circle().fill(container.statusTint).frame(width: 8, height: 8)
                 .frame(width: GroupColumns.dot, alignment: .leading)
 
-            Button { model.openDetail(container) } label: {
-                Text(container.composeService ?? container.name)
-                    .font(.ui(13, .medium))
-                    .foregroundStyle(Palette.text)
-                    .lineLimit(1)
-                    .contentShape(.rect)
-            }
-            .buttonStyle(.plain)
-            .help("Show logs and details of \(container.name)")
-            .frame(width: columns.name, alignment: .leading)
+            Text(container.composeService ?? container.name)
+                .font(.ui(13, .medium))
+                .foregroundStyle(Palette.text)
+                .lineLimit(1)
+                .frame(width: columns.name, alignment: .leading)
 
             Text(container.image)
                 .font(.mono(12))
@@ -219,6 +214,9 @@ private struct ServiceRow: View {
         .background(containers.hoveredID == container.id ? Palette.rowHover : .clear)
         .overlay(alignment: .top) { Palette.rowDivider.frame(height: 1) }
         .contentShape(.rect)
+        // The whole row opens the detail; the port link and the buttons keep their own clicks.
+        .onTapGesture { model.openDetail(container) }
+        .help("Show logs and details of \(container.name)")
         .onHover { inside in
             if inside {
                 containers.hoveredID = container.id

@@ -252,15 +252,10 @@ private struct ContainerRow: View {
     var body: some View {
         let containers = model.containers
         HStack(spacing: Columns.gap) {
-            Button { model.openDetail(container) } label: {
-                VStack(alignment: .leading, spacing: 0) {
-                    Text(container.name).font(.ui(13, .medium)).foregroundStyle(Palette.text).lineLimit(1)
-                    Text(container.shortID).font(.mono(11)).foregroundStyle(Palette.secondary)
-                }
-                .contentShape(.rect)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(container.name).font(.ui(13, .medium)).foregroundStyle(Palette.text).lineLimit(1)
+                Text(container.shortID).font(.mono(11)).foregroundStyle(Palette.secondary)
             }
-            .buttonStyle(.plain)
-            .help("Show logs and details")
             .frame(width: columns.name, alignment: .leading)
 
             Text(container.image)
@@ -294,6 +289,9 @@ private struct ContainerRow: View {
         .background(containers.hoveredID == container.id ? Palette.rowHover : .clear)
         .overlay(alignment: .bottom) { Palette.rowDivider.frame(height: 1) }
         .contentShape(.rect)
+        // The whole row opens the detail; the port link and the buttons keep their own clicks.
+        .onTapGesture { model.openDetail(container) }
+        .help("Show logs and details of \(container.name)")
         .onHover { inside in
             if inside {
                 containers.hoveredID = container.id
