@@ -20,3 +20,4 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 
 - L1 (2026-11-02, user, verbatim): "Diseñar Environment" — designed first on the canvas, approved: "Se ve bien".
 - L2 (2026-11-02): decision — per-row COPY copies the real value; "Copy as .env" follows what is shown (not in the design text; chosen so masking still protects bulk copies).
+- L3 (2026-11-02, user): a one-off "can't connect to Docker" in this tab did not reproduce (500 parallel connections fine, no Colima errors, no fd leak). User: "Sí, agrégala" — the connection error now carries the system reason (strerror) for diagnosis.

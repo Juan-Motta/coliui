@@ -14,7 +14,8 @@ public struct HTTPResponse: Sendable, Equatable {
 }
 
 public enum DockerError: Error, Equatable, LocalizedError {
-    case socketUnavailable(path: String)
+    /// `reason` is the system's explanation (`strerror`), so a one-off failure can be diagnosed.
+    case socketUnavailable(path: String, reason: String = "")
     case connectionFailed(String)
     case malformedResponse
     case invalidContainerID
@@ -22,7 +23,8 @@ public enum DockerError: Error, Equatable, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .socketUnavailable(let path): "Docker isn't reachable at \(path). Is Colima running?"
+        case .socketUnavailable(let path, let reason):
+            "Docker isn't reachable at \(path)\(reason.isEmpty ? "" : " (\(reason))"). Is Colima running?"
         case .connectionFailed(let reason): "Lost connection to Docker: \(reason)"
         case .malformedResponse: "Docker returned an unexpected response."
         case .invalidContainerID: "Invalid container identifier."

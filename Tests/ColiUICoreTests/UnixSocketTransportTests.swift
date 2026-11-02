@@ -71,3 +71,17 @@ private final class SlowServer: @unchecked Sendable {
         try? FileManager.default.removeItem(atPath: (path as NSString).deletingLastPathComponent)
     }
 }
+
+@Suite struct UnixSocketConnectErrorTests {
+    /// The system's reason says why Docker couldn't be reached (missing socket, refused, …).
+    @Test func connectionErrorsCarryTheSystemReason() async {
+        let path = FileManager.default.temporaryDirectory.appendingPathComponent("coliui-missing.sock").path
+        do {
+            _ = try await UnixSocketTransport(socketPath: path).send(method: "GET", path: "/_ping", body: nil)
+            Issue.record("expected a connection error")
+        } catch {
+            #expect(error as? DockerError == .socketUnavailable(path: path, reason: "No such file or directory"))
+            #expect(error.localizedDescription == "Docker isn't reachable at \(path) (No such file or directory). Is Colima running?")
+        }
+    }
+}

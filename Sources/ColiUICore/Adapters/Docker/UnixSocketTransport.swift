@@ -61,7 +61,7 @@ public struct UnixSocketTransport: HTTPTransport {
         let capacity = MemoryLayout.size(ofValue: address.sun_path)
         guard socketPath.utf8.count < capacity else {
             close(fd)
-            throw DockerError.socketUnavailable(path: socketPath)
+            throw DockerError.socketUnavailable(path: socketPath, reason: "Socket path is too long")
         }
         withUnsafeMutablePointer(to: &address.sun_path) { pointer in
             pointer.withMemoryRebound(to: CChar.self, capacity: capacity) { _ = strncpy($0, socketPath, capacity - 1) }
@@ -72,8 +72,9 @@ public struct UnixSocketTransport: HTTPTransport {
             }
         }
         guard connected == 0 else {
+            let reason = String(cString: strerror(errno)) // before close() can change errno
             close(fd)
-            throw DockerError.socketUnavailable(path: socketPath)
+            throw DockerError.socketUnavailable(path: socketPath, reason: reason)
         }
         return fd
     }
