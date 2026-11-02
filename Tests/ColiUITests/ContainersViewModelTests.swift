@@ -9,6 +9,8 @@ final class FakeContainerRepository: ContainerRepository, @unchecked Sendable {
     private var _actions: [String] = []
     var listError: Error?
     var actionError: Error?
+    /// When set, `details` waits for it.
+    var detailsGate: Gate?
 
     init(_ containers: [Container]) { _containers = containers }
 
@@ -27,7 +29,8 @@ final class FakeContainerRepository: ContainerRepository, @unchecked Sendable {
     }
 
     func details(id: String) async throws -> ContainerDetails {
-        ContainerDetails(
+        await detailsGate?.wait()
+        return ContainerDetails(
             id: id, name: "api-server", image: "myapp/api:latest", created: nil, restartPolicy: "no",
             network: "bridge", ipAddress: "172.17.0.4", mounts: [], environment: [], tty: false
         )

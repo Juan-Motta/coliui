@@ -75,6 +75,23 @@ private final class ChangeCounter {
         model.stop()
     }
 
+    /// Closing the detail before its details arrive must not open a log stream nobody will close.
+    @Test func stoppingBeforeStartFinishesOpensNoLogStream() async {
+        let repository = FakeContainerRepository([])
+        let gate = Gate()
+        repository.detailsGate = gate
+        let source = FakeLogSource(lines: [])
+        let model = ContainerDetailViewModel(containerID: "c1", repository: repository, logSource: source, now: { now })
+
+        let starting = Task { await model.start() }
+        await Task.yield()
+        model.stop()
+        gate.release()
+        await starting.value
+
+        #expect(source.calls.isEmpty)
+    }
+
     @Test func shellHereOpensTheTerminalInThatFolder() async {
         let connector = FakeShellConnector()
         let model = ContainerDetailViewModel(

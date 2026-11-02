@@ -59,6 +59,7 @@ final class ContainerDetailViewModel {
     private let logSource: ContainerLogSource
     private let now: () -> Date
     private var streamTask: Task<Void, Never>?
+    private var isStopped = false
     /// Lines waiting for the next flush; a whole history arrives in a few updates instead of one per line,
     /// so the panel opens at the newest line instead of visibly scrolling through the backlog.
     private var pending: [LogLine] = []
@@ -107,6 +108,8 @@ final class ContainerDetailViewModel {
 
     func start() async {
         details = try? await repository.details(id: containerID)
+        // Closed while the details were loading: a stream started now would never be stopped.
+        guard !isStopped else { return }
         startLogs()
     }
 
@@ -117,6 +120,7 @@ final class ContainerDetailViewModel {
     }
 
     func stop() {
+        isStopped = true
         streamTask?.cancel()
         streamTask = nil
         terminal?.disconnect()

@@ -29,6 +29,8 @@ final class TerminalViewModel {
     private var readTask: Task<Void, Never>?
     private var sink: ((Data) -> Void)?
     private var size = (columns: 80, rows: 24)
+    /// Bumped by each connect and disconnect, so a connection that arrives late is closed instead of used.
+    private var attempt = 0
     /// Commands asked for before the shell connected; sent as soon as it does.
     private var queued: [String] = []
 
@@ -51,8 +53,15 @@ final class TerminalViewModel {
         guard state != .connecting, state != .connected else { return }
         size = (columns, rows)
         state = .connecting
+        attempt += 1
+        let thisAttempt = attempt
         do {
             let session = try await connector.openShell(containerID: containerID, shell: shell, user: user, columns: columns, rows: rows)
+            // Disconnected (or a new session started) while this exec was being created.
+            guard thisAttempt == attempt else {
+                session.close()
+                return
+            }
             self.session = session
             state = .connected
             for command in queued { session.send(Data((command + "\n").utf8)) }
@@ -66,6 +75,7 @@ final class TerminalViewModel {
                 }
             }
         } catch {
+            guard thisAttempt == attempt else { return }
             state = .failed(error.localizedDescription)
         }
     }
@@ -99,6 +109,7 @@ final class TerminalViewModel {
     }
 
     func disconnect() {
+        attempt += 1
         let session = session
         self.session = nil
         readTask?.cancel()

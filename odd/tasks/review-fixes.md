@@ -12,7 +12,7 @@ Branch: `fix/review-findings` · Delivery: work-unit commits, no push · Runner:
 ## Tasks
 
 - T1 — S1 · inline · stream fd lifecycle (logs, events, pull) — done (StreamingSocket; 288 tests, 12 live). RED not observable: the reuse race is timing-dependent; the invariant is pinned by StreamingSocketTests.
-- T2 — S1 · inline · detail start after stop; terminal connect after disconnect
+- T2 — S1 · inline · detail start after stop; terminal connect after disconnect — done (RED observed for both, then GREEN; 290 tests)
 - T3 — S1 · inline · stale results: profiles, Files, resource refreshes
 - T4 — S1 · inline · digest references
 - T5 — S1 · inline · Files start on container start; shortcuts behind Settings

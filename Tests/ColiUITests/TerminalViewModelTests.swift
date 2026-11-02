@@ -32,12 +32,15 @@ final class FakeShellConnector: ShellConnector, @unchecked Sendable {
     private var _opened: [String] = []
     private var _sessions: [FakeShellSession] = []
     var error: Error?
+    /// When set, `openShell` waits for it.
+    var gate: Gate?
 
     var opened: [String] { lock.withLock { _opened } }
     var sessions: [FakeShellSession] { lock.withLock { _sessions } }
 
     func openShell(containerID: String, shell: String, user: String, columns: Int, rows: Int) async throws -> ShellSession {
         lock.withLock { _opened.append("\(containerID) \(shell) \(user) \(columns)x\(rows)") }
+        await gate?.wait()
         if let error { throw error }
         let session = FakeShellSession()
         lock.withLock { _sessions.append(session) }
@@ -142,6 +145,24 @@ private func waitUntil(_ condition: @MainActor () -> Bool) async {
 
         model.run("ls")
         #expect(connector.sessions[0].sent.last == Data("ls\n".utf8))
+    }
+
+    /// Closing the detail (or New session) while the exec is still being created must not leave
+    /// a shell running in the container with nothing attached to it.
+    @Test func disconnectingWhileConnectingClosesTheLateSession() async {
+        let connector = FakeShellConnector()
+        let gate = Gate()
+        connector.gate = gate
+        let model = TerminalViewModel(containerID: "c1", connector: connector)
+        let connecting = Task { await model.connect(columns: 80, rows: 24) }
+        await waitUntil { !connector.opened.isEmpty }
+
+        model.disconnect()
+        gate.release()
+        await connecting.value
+
+        #expect(model.state == .ended)
+        #expect(connector.sessions.first?.closed == true)
     }
 
     @Test func fontSizeStaysReadable() {
