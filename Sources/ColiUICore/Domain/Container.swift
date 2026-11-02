@@ -35,6 +35,9 @@ public struct Container: Identifiable, Sendable, Equatable {
     public let status: String
     public let ports: [PortMapping]
     public let composeProject: String?
+    public let composeService: String?
+    /// First file of `com.docker.compose.project.config_files`.
+    public let composeConfigFile: String?
 
     public init(
         id: String,
@@ -43,7 +46,9 @@ public struct Container: Identifiable, Sendable, Equatable {
         state: ContainerState,
         status: String,
         ports: [PortMapping] = [],
-        composeProject: String? = nil
+        composeProject: String? = nil,
+        composeService: String? = nil,
+        composeConfigFile: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -52,6 +57,8 @@ public struct Container: Identifiable, Sendable, Equatable {
         self.status = status
         self.ports = ports
         self.composeProject = composeProject
+        self.composeService = composeService
+        self.composeConfigFile = composeConfigFile
     }
 
     public var shortID: String { String(id.prefix(12)) }

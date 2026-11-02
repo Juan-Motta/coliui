@@ -29,7 +29,8 @@ private func response(_ status: Int, _ body: String = "") -> HTTPResponse {
       "Ports":[{"IP":"0.0.0.0","PrivatePort":8080,"PublicPort":8080,"Type":"tcp"},
                {"IP":"::","PrivatePort":8080,"PublicPort":8080,"Type":"tcp"},
                {"PrivatePort":9229,"Type":"tcp"}],
-      "Labels":{"com.docker.compose.project":"shop"}},
+      "Labels":{"com.docker.compose.project":"shop","com.docker.compose.service":"api",
+                "com.docker.compose.project.config_files":"/Users/me/shop/docker-compose.yml,/Users/me/shop/override.yml"}},
      {"Id":"5b6e28d1f034cccc","Names":["/worker"],"Image":"myapp/worker","State":"weird","Status":"Exited (1) 2 hours ago",
       "Ports":[],"Labels":{}}]
     """
@@ -45,6 +46,9 @@ private func response(_ status: Int, _ body: String = "") -> HTTPResponse {
         #expect(api.shortID == "e81b3f0c55d2")
         #expect(api.state == .running)
         #expect(api.composeProject == "shop")
+        #expect(api.composeService == "api")
+        #expect(api.composeConfigFile == "/Users/me/shop/docker-compose.yml")
+        #expect(containers[1].composeService == nil)
         #expect(api.ports == [
             PortMapping(privatePort: 8080, publicPort: 8080, proto: "tcp"),
             PortMapping(privatePort: 9229, publicPort: nil, proto: "tcp"),

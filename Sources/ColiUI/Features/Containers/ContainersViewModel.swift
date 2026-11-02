@@ -28,6 +28,23 @@ enum ContainerAction {
     case start, stop, restart, remove
 }
 
+enum GroupAction {
+    case stopAll, startAll, restart
+}
+
+/// Containers of one Compose project, or the standalone ones.
+struct ComposeGroup: Identifiable {
+    static let standaloneID = "standalone"
+
+    let id: String
+    let name: String
+    let configFile: String?
+    let containers: [Container]
+
+    var isStandalone: Bool { id == Self.standaloneID }
+    var runningCount: Int { containers.filter(\.isRunning).count }
+}
+
 @MainActor
 @Observable
 final class ContainersViewModel {
@@ -45,11 +62,95 @@ final class ContainersViewModel {
     var showRunComingSoon = false
     /// Set to ask for confirmation before removing.
     var pendingRemoval: Container?
+    private(set) var collapsedGroups: Set<String> = []
+    private(set) var toast: String?
 
     private let repository: ContainerRepository
+    private let toastDuration: Duration
+    private var toastTask: Task<Void, Never>?
 
-    init(repository: ContainerRepository) {
+    init(repository: ContainerRepository, toastDuration: Duration = .seconds(2)) {
         self.repository = repository
+        self.toastDuration = toastDuration
+    }
+
+    /// Compose projects by name, then standalone containers. Search applies; the state filter
+    /// belongs to the list view and doesn't.
+    var composeGroups: [ComposeGroup] {
+        let matching = containers.filter(matchesSearch)
+        let byProject = Dictionary(grouping: matching.filter { $0.composeProject != nil }) { $0.composeProject! }
+        var groups = byProject.keys.sorted { $0.localizedStandardCompare($1) == .orderedAscending }.map { project in
+            let members = byProject[project]!.sorted {
+                ($0.composeService ?? $0.name).localizedStandardCompare($1.composeService ?? $1.name) == .orderedAscending
+            }
+            return ComposeGroup(id: project, name: project, configFile: members.first?.composeConfigFile, containers: members)
+        }
+        let standalone = matching.filter { $0.composeProject == nil }
+        if !standalone.isEmpty {
+            groups.append(ComposeGroup(id: ComposeGroup.standaloneID, name: "Standalone containers", configFile: nil, containers: standalone))
+        }
+        return groups
+    }
+
+    func toggleGroup(_ id: String) {
+        if collapsedGroups.contains(id) {
+            collapsedGroups.remove(id)
+        } else {
+            collapsedGroups.insert(id)
+        }
+    }
+
+    func perform(_ action: GroupAction, on group: ComposeGroup) async {
+        let targets: [Container] = switch action {
+        case .stopAll: group.containers.filter(\.isRunning)
+        case .startAll: group.containers.filter { !$0.isRunning }
+        case .restart: group.containers
+        }
+        targets.forEach { busyIDs.insert($0.id) }
+        defer { targets.forEach { busyIDs.remove($0.id) } }
+        let repository = repository
+        let failures = await withTaskGroup(of: String?.self) { tasks in
+            for container in targets {
+                tasks.addTask {
+                    do {
+                        switch action {
+                        case .stopAll: try await repository.stop(id: container.id)
+                        case .startAll: try await repository.start(id: container.id)
+                        case .restart: try await repository.restart(id: container.id)
+                        }
+                        return nil
+                    } catch {
+                        return error.localizedDescription
+                    }
+                }
+            }
+            var messages: [String] = []
+            for await message in tasks {
+                if let message { messages.append(message) }
+            }
+            return messages
+        }
+        await refresh()
+        if let first = failures.first { errorMessage = first }
+    }
+
+    func showToast(_ message: String) {
+        toast = message
+        toastTask?.cancel()
+        let duration = toastDuration
+        toastTask = Task { [weak self] in
+            try? await Task.sleep(for: duration)
+            guard !Task.isCancelled else { return }
+            self?.toast = nil
+        }
+    }
+
+    private func matchesSearch(_ container: Container) -> Bool {
+        let query = searchText.trimmingCharacters(in: .whitespaces)
+        return query.isEmpty
+            || container.name.localizedCaseInsensitiveContains(query)
+            || container.image.localizedCaseInsensitiveContains(query)
+            || (container.composeService?.localizedCaseInsensitiveContains(query) ?? false)
     }
 
     var runningCount: Int { containers.filter(\.isRunning).count }

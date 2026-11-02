@@ -230,7 +230,10 @@ private struct ContainerDTO: Decodable {
             state: ContainerState(rawValue: state) ?? .unknown,
             status: status,
             ports: mappings,
-            composeProject: labels?["com.docker.compose.project"]
+            composeProject: labels?["com.docker.compose.project"],
+            composeService: labels?["com.docker.compose.service"],
+            composeConfigFile: labels?["com.docker.compose.project.config_files"]?
+                .split(separator: ",").first.map(String.init)
         )
     }
 }
