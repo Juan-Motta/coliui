@@ -215,7 +215,7 @@ private struct VolumesCard: View {
         GeometryReader { geometry in
             let columns = VolumeColumns(width: geometry.size.width)
             ScrollView(.vertical) {
-                VStack(spacing: 0) {
+                LazyVStack(spacing: 0) {
                     VolumesHeaderRow(columns: columns)
                     ForEach(volumes.visibleVolumes) { volume in
                         VolumeListRow(volume: volume, columns: columns)

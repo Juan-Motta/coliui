@@ -224,7 +224,7 @@ private struct NetworksCard: View {
         GeometryReader { geometry in
             let columns = NetworkColumns(width: geometry.size.width)
             ScrollView(.vertical) {
-                VStack(spacing: 0) {
+                LazyVStack(spacing: 0) {
                     NetworksHeaderRow(columns: columns)
                     ForEach(networks.visibleNetworks) { network in
                         NetworkListRow(network: network, columns: columns)

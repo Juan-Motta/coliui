@@ -145,9 +145,12 @@ final class LiveStatsViewModel {
         return points.filter { end.timeIntervalSince($0.time) <= range.seconds }
     }
 
-    var hoveredPoint: StatsPoint? {
+    var hoveredPoint: StatsPoint? { hoveredPoint(in: visiblePoints) }
+
+    /// The sample nearest the pointer among `points` (a chart passes the ones it already filtered).
+    func hoveredPoint(in points: [StatsPoint]) -> StatsPoint? {
         guard let hoveredTime else { return nil }
-        return visiblePoints.min { abs($0.time.timeIntervalSince(hoveredTime)) < abs($1.time.timeIntervalSince(hoveredTime)) }
+        return points.min { abs($0.time.timeIntervalSince(hoveredTime)) < abs($1.time.timeIntervalSince(hoveredTime)) }
     }
 
     // MARK: Headlines

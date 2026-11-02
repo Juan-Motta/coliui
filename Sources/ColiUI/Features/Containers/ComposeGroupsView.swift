@@ -212,7 +212,7 @@ private struct ServiceRow: View {
         .padding(.leading, GroupColumns.leading)
         .padding(.trailing, GroupColumns.trailing)
         .frame(height: 48)
-        .background(containers.selectedID == container.id ? Palette.rowSelected : containers.hoveredID == container.id ? Palette.rowHover : .clear)
+        .rowWash(isSelected: containers.selectedID == container.id)
         .overlay(alignment: .top) { Palette.rowDivider.frame(height: 1) }
         .contentShape(.rect)
         // The whole row opens the detail; the port link and the buttons keep their own clicks.
@@ -221,13 +221,6 @@ private struct ServiceRow: View {
             model.openDetail(container)
         }
         .help("Show logs and details of \(container.name)")
-        .onHover { inside in
-            if inside {
-                containers.hoveredID = container.id
-            } else if containers.hoveredID == container.id {
-                containers.hoveredID = nil
-            }
-        }
         .contextMenu { ContainerMenu(container: container) }
     }
 }

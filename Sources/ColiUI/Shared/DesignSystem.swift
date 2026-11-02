@@ -166,6 +166,16 @@ struct Hoverable<Content: View>: View {
     }
 }
 
+extension View {
+    /// The selected / hovered wash of a table row. Hover lives in the row (`Hoverable`), so moving the pointer
+    /// redraws one row instead of every row that read a shared "hovered ID".
+    func rowWash(isSelected: Bool) -> some View {
+        Hoverable { hovered in
+            background(isSelected ? Palette.rowSelected : hovered ? Palette.rowHover : .clear)
+        }
+    }
+}
+
 struct SegmentOption<Value: Hashable>: Identifiable {
     let value: Value
     let title: String

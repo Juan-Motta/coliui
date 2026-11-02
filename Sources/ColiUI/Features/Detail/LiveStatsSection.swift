@@ -8,7 +8,6 @@ struct LiveStatsSection: View {
 
     var body: some View {
         @Bindable var stats = stats
-        let points = stats.visiblePoints
         // The two rows share the height the window gives them; charts grow instead of leaving space below.
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
@@ -145,11 +144,11 @@ private struct StatsChart: View {
     var body: some View {
         @Bindable var stats = stats
         let points = stats.visiblePoints
+        let hovered = stats.hoveredPoint(in: points)
         let end = points.last?.time ?? Date()
         let start = end.addingTimeInterval(-stats.range.seconds)
         let peak = points.flatMap { point in series.map { $0.value(point) } }.max() ?? 0
         let top = peak > 0 ? peak * 1.25 : 1
-        let hovered = stats.hoveredPoint
         Chart {
             ForEach(Array(series.enumerated()), id: \.offset) { number, line in
                 let color = number == 0 ? Palette.accent : Palette.diskCache

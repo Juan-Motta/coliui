@@ -61,7 +61,6 @@ final class ContainersViewModel {
     var sort: ContainerSort = .name
     var searchText = ""
     var viewMode: ContainerViewMode = .compose
-    var hoveredID: Container.ID?
     /// Keyboard selection (↑/↓); Space, ⌘L, ⌘O and ⌘⌫ act on it.
     var selectedID: Container.ID?
     /// Set to ask for confirmation before removing.

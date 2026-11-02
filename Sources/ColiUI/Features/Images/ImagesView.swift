@@ -244,7 +244,7 @@ private struct ImagesCard: View {
         GeometryReader { geometry in
             let columns = ImageColumns(width: geometry.size.width)
             ScrollView(.vertical) {
-                VStack(spacing: 0) {
+                LazyVStack(spacing: 0) {
                     ImagesHeaderRow(columns: columns)
                     ForEach(images.visibleImages) { image in
                         ImageRow(image: image, columns: columns)

@@ -253,7 +253,7 @@ private struct ContainersCard: View {
         GeometryReader { geometry in
             let columns = Columns(width: geometry.size.width)
             ScrollView(.vertical) {
-                VStack(spacing: 0) {
+                LazyVStack(spacing: 0) {
                     HeaderRow(columns: columns)
                     ForEach(containers.visibleContainers) { container in
                         ContainerRow(container: container, stats: containers.stats[container.id], columns: columns)
@@ -337,7 +337,7 @@ private struct ContainerRow: View {
         }
         .padding(.horizontal, Columns.padding)
         .frame(height: 52)
-        .background(containers.selectedID == container.id ? Palette.rowSelected : containers.hoveredID == container.id ? Palette.rowHover : .clear)
+        .rowWash(isSelected: containers.selectedID == container.id)
         .overlay(alignment: .bottom) { Palette.rowDivider.frame(height: 1) }
         .contentShape(.rect)
         // The whole row opens the detail; the port link and the buttons keep their own clicks.
@@ -346,13 +346,6 @@ private struct ContainerRow: View {
             model.openDetail(container)
         }
         .help("Show logs and details of \(container.name)")
-        .onHover { inside in
-            if inside {
-                containers.hoveredID = container.id
-            } else if containers.hoveredID == container.id {
-                containers.hoveredID = nil
-            }
-        }
         .contextMenu { ContainerMenu(container: container) }
     }
 }
