@@ -1,4 +1,4 @@
-// Renders the Graphite app icon (Icons.dc.html) into Resources/AppIcon.icns.
+// Renders the Paper app icon (Icons.dc.html: white squircle, dark mark) into Resources/AppIcon.icns.
 // Usage: swift scripts/make-icon.swift
 //
 // Geometry follows the macOS icon grid: an 824 px body centred on a 1024 px canvas.
@@ -59,21 +59,29 @@ func render(pixels: Int) -> Data {
     context.setShadow(offset: CGSize(width: 0, height: -size * 10 / 1024), blur: size * 20 / 1024,
                       color: CGColor(gray: 0, alpha: 0.3))
     context.addPath(squircle)
-    context.setFillColor(CGColor(srgbRed: 0x1C / 255, green: 0x1C / 255, blue: 0x1E / 255, alpha: 1))
+    context.setFillColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 1))
     context.fillPath()
     context.restoreGState()
 
+    // Hairline edge so the white body still reads on light Docks and wallpapers.
+    let edgeWidth = max(size * 2 / 1024, 0.5)
+    context.addPath(CGPath(roundedRect: body.insetBy(dx: edgeWidth / 2, dy: edgeWidth / 2),
+                           cornerWidth: radius, cornerHeight: radius, transform: nil))
+    context.setStrokeColor(CGColor(srgbRed: 0xD1 / 255, green: 0xD1 / 255, blue: 0xD6 / 255, alpha: 1))
+    context.setLineWidth(edgeWidth)
+    context.strokePath()
+
     // Mark, in the design's 100-unit box mapped onto the body.
-    let light = CGColor(srgbRed: 0xF5 / 255, green: 0xF5 / 255, blue: 0xF7 / 255, alpha: 1)
+    let ink = CGColor(srgbRed: 0x1C / 255, green: 0x1C / 255, blue: 0x1E / 255, alpha: 1)
     context.translateBy(x: body.minX, y: body.minY)
     context.scaleBy(x: body.width / 100, y: body.height / 100)
-    context.setStrokeColor(light)
+    context.setStrokeColor(ink)
     context.setLineWidth(frameStroke(forPixels: pixels))
     context.addPath(CGPath(roundedRect: CGRect(x: 20, y: 20, width: 60, height: 60), cornerWidth: 12.9, cornerHeight: 12.9, transform: nil))
     context.strokePath()
     context.translateBy(x: 22.9, y: 22.9)
     context.scaleBy(x: 0.557, y: 0.557)
-    context.setFillColor(light)
+    context.setFillColor(ink)
     context.addPath(llamaPath())
     context.fillPath()
 
