@@ -14,10 +14,11 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 ## Tasks
 
 - T1 — S1–S3 · inline · core disk usage + prune + tests — done (047cd27; live df read matches docker)
-- T2 — S1–S4 · inline · view model + view + sidebar total + tests — done (83 tests green; RED caught a lost prune error after rescan). Visual check pending; no real prune executed (destructive on the user's data).
+- T2 — S1–S4 · inline · view model + view + sidebar total + tests — done (83 tests green; RED caught a lost prune error after rescan). Visually accepted; no real prune executed (destructive on the user's data).
 
 ## Log
 
 - L1 (2026-11-01, user, verbatim): "Sí, limpieza"
 - L2: Real `/system/df` (API 1.54) returns ImageUsage/ContainerUsage/VolumeUsage/BuildCacheUsage with TotalSize and Reclaimable next to the per-item arrays; took ~1 s. The VM root fs (`colima ssh -- df /`) isn't the Docker data disk, so usage is Docker's own total over the configured disk size.
 - L3: Disk card shows Docker's own total over the Colima disk size in GiB ("used by Docker") since VM-level usage isn't available through the API; reclaimable sizes use decimal GB like the design.
+- L4 (user): "Se ve bien" — Cleanup screen visually accepted.
