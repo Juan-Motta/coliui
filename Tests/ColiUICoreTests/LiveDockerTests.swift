@@ -109,6 +109,24 @@ struct LiveDockerTests {
               variables.filter { $0.source == .image }.count, "from the image,", variables.filter(\.isSecret).count, "secret")
     }
 
+    /// Lists /etc and reads /etc/hostname in every running container (GNU stat, BusyBox, distroless); reads only.
+    @Test func browsesContainerFiles() async throws {
+        let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket))
+        for container in try await repository.listContainers().filter(\.isRunning) {
+            do {
+                let start = try await repository.workingDirectory(id: container.id)
+                let files = try await repository.listFiles(id: container.id, path: "/etc")
+                let hostname = String(decoding: try await repository.readFile(id: container.id, path: "/etc/hostname"), as: UTF8.self)
+                #expect(files.contains { $0.name == "hostname" && $0.kind == .file })
+                #expect(!hostname.isEmpty)
+                print("live files:", container.name, "start", start, "·", files.count, "entries in /etc,",
+                      files.filter { $0.kind == .symlink }.count, "links")
+            } catch ContainerFilesError.noShell {
+                print("live files:", container.name, "has no shell")
+            }
+        }
+    }
+
     /// Opens /bin/sh in a running container, echoes, exits. Changes nothing.
     @Test func runsAnInteractiveShell() async throws {
         let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket))

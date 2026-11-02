@@ -20,6 +20,16 @@ public protocol ContainerEnvironmentSource: Sendable {
     func environment(id: String) async throws -> [EnvironmentEntry]
 }
 
+/// Read-only access to a container's filesystem.
+public protocol ContainerFileBrowser: Sendable {
+    func workingDirectory(id: String) async throws -> String
+    func listFiles(id: String, path: String) async throws -> [ContainerFile]
+    /// The contents of one file.
+    func readFile(id: String, path: String) async throws -> Data
+    /// A tar of a file or folder, as `docker cp` gets it.
+    func archive(id: String, path: String) async throws -> Data
+}
+
 public protocol DockerInventory: Sendable {
     func summary() async throws -> DockerSummary
 }
