@@ -251,6 +251,31 @@ extension View {
     }
 }
 
+/// A published port that opens in the browser: blue mono text that underlines and shows the
+/// pointing-hand cursor on hover, so it reads as clickable.
+struct PortLink: View {
+    let title: String
+    let url: URL
+    var showsArrow = false
+
+    var body: some View {
+        Link(destination: url) {
+            Hoverable { hovered in
+                HStack(spacing: 4) {
+                    Text(verbatim: title).underline(hovered)
+                    if showsArrow {
+                        LineIcon(kind: .external).icon(Palette.accent, size: 11, svgStrokeWidth: 2.4)
+                    }
+                }
+                .contentShape(.rect)
+            }
+        }
+        .foregroundStyle(Palette.accent)
+        .pointerStyle(.link)
+        .help("Open \(url.absoluteString) in the browser")
+    }
+}
+
 /// CSS `flex-wrap: wrap` for a row of controls: children keep their natural size and move to the
 /// next line when they don't fit; each line's children are centred vertically.
 struct FlowLayout: Layout {
@@ -307,7 +332,8 @@ struct LineIcon: Shape {
     enum Kind {
         case containers, images, volumes, networks, cleanup, profiles, settings
         case refresh, sort, search, plus, trash
-        case chevronLeft, terminal, download
+        case chevronLeft, chevronRight, terminal, download
+        case folder, copy, external, check
     }
 
     let kind: Kind
@@ -373,6 +399,17 @@ struct LineIcon: Shape {
             line(p(12, 5), p(12, 19)); line(p(5, 12), p(19, 12))
         case .chevronLeft:
             line(p(15, 5), p(8, 12), p(15, 19))
+        case .chevronRight:
+            line(p(9, 6), p(15, 12), p(9, 18))
+        case .folder:
+            line(p(3, 7), p(10, 7), p(12, 9), p(21, 9), p(21, 19), p(3, 19), p(3, 7))
+        case .copy:
+            path.addRoundedRect(in: CGRect(x: 8, y: 8, width: 12, height: 12), cornerSize: CGSize(width: 2, height: 2))
+            line(p(16, 8), p(16, 5), p(15, 4), p(5, 4), p(4, 5), p(4, 15), p(5, 16), p(8, 16))
+        case .external:
+            line(p(7, 17), p(17, 7)); line(p(9, 7), p(17, 7), p(17, 15))
+        case .check:
+            line(p(5, 12), p(10, 17), p(19, 7))
         case .terminal:
             line(p(4, 17), p(10, 12), p(4, 7)); line(p(12, 19), p(20, 19))
         case .download:

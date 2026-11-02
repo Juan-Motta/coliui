@@ -335,9 +335,7 @@ private struct InfoCards: View {
                     if let url = port.localURL, let hostPort = port.publicPort {
                         // `verbatim`: a localized string key would format 8002 as "8.002".
                         HStack(spacing: 6) {
-                            Link(destination: url) { Text(verbatim: "localhost:\(hostPort)") }
-                                .foregroundStyle(Palette.accent)
-                                .help("Open \(url.absoluteString) in the browser")
+                            PortLink(title: "localhost:\(hostPort)", url: url)
                             Text(verbatim: "→ \(port.privatePort)/\(port.proto)")
                                 .foregroundStyle(Palette.secondary)
                         }

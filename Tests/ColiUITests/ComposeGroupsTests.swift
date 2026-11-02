@@ -15,6 +15,10 @@ private let fleet = [
 
 @MainActor
 @Suite struct ComposeGroupsTests {
+    @Test func composeGroupsIsTheDefaultView() {
+        #expect(ContainersViewModel(repository: FakeContainerRepository(fleet)).viewMode == .compose)
+    }
+
     @Test func groupsByProjectWithStandaloneLast() async {
         let model = ContainersViewModel(repository: FakeContainerRepository(fleet))
         await model.refresh()

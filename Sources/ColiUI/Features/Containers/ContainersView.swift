@@ -26,13 +26,10 @@ struct ContainersView: View {
                             .foregroundStyle(Palette.secondary)
                     }
                     content
+                } else if containers.composeGroups.isEmpty {
+                    content
                 } else {
-                    ContentUnavailableView(
-                        "Compose groups",
-                        systemImage: "square.stack.3d.down.right",
-                        description: Text("Designed, not built yet.")
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    ComposeGroupsView()
                 }
             }
             .padding(.top, 4)
@@ -59,8 +56,11 @@ struct ContainersView: View {
             if let error = containers.errorMessage, !containers.containers.isEmpty {
                 ErrorBanner(message: error) { containers.errorMessage = nil }
                     .padding(.bottom, 16)
+            } else if let toast = containers.toast {
+                ToastView(message: toast).padding(.bottom, 20)
             }
         }
+        .animation(.easeOut(duration: 0.2), value: containers.toast)
     }
 
     @ViewBuilder
@@ -317,8 +317,7 @@ private struct PortsLabel: View {
                     ForEach(Array(container.ports.enumerated()), id: \.element) { index, port in
                         let text = port.publicPort.map { "\($0)→\(port.privatePort)" } ?? "\(port.privatePort)"
                         if let url = port.localURL {
-                            Link(text, destination: url)
-                                .help("Open \(url.absoluteString) in the browser")
+                            PortLink(title: text, url: url)
                         } else {
                             Text(text)
                         }
@@ -387,7 +386,7 @@ private struct RowActions: View {
     }
 }
 
-private struct ContainerMenu: View {
+struct ContainerMenu: View {
     @Environment(AppModel.self) private var model
     let container: Container
 
