@@ -70,7 +70,7 @@ public struct DockerImagePuller: ImagePuller {
     public func pull(_ reference: String) -> AsyncThrowingStream<PullProgress, Error> {
         let socketPath = socketPath
         return AsyncThrowingStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
-            let reader = Task.detached(priority: .utility) {
+            BlockingIO.start {
                 do {
                     let fd = try UnixSocketTransport.connect(socketPath: socketPath, timeoutSeconds: 0)
                     defer { close(fd) }
@@ -82,7 +82,7 @@ public struct DockerImagePuller: ImagePuller {
                     var tracker = PullProgressTracker()
                     var pending = Data()
                     var chunk = [UInt8](repeating: 0, count: 16 * 1024)
-                    while !Task.isCancelled {
+                    while true {
                         let count = read(fd, &chunk, chunk.count)
                         if count > 0 {
                             pending.append(http.feed(Data(chunk[0..<count])))
@@ -106,7 +106,6 @@ public struct DockerImagePuller: ImagePuller {
                     continuation.finish(throwing: error)
                 }
             }
-            _ = reader
         }
     }
 }

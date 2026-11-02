@@ -19,9 +19,9 @@ public struct UnixSocketTransport: HTTPTransport {
         let request = HTTPMessage.request(method: method, path: path, body: body)
         let socketPath = socketPath
         let timeout = timeoutSeconds
-        let raw = try await Task.detached(priority: .userInitiated) {
+        let raw = try await BlockingIO.run {
             try Self.exchange(request, socketPath: socketPath, timeoutSeconds: timeout)
-        }.value
+        }
         return try HTTPMessage.parseResponse(raw)
     }
 

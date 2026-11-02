@@ -45,7 +45,7 @@ public struct DockerShell: ShellConnector {
         let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socketPath))
         let execID = try await repository.createExec(containerID: containerID, shell: shell, user: user, columns: columns, rows: rows)
         let socketPath = socketPath
-        let (fd, leftover) = try await Task.detached(priority: .userInitiated) {
+        let (fd, leftover) = try await BlockingIO.run {
             let fd = try UnixSocketTransport.connect(socketPath: socketPath, timeoutSeconds: 0)
             do {
                 try UnixSocketTransport.writeAll(Self.startRequest(execID: execID), to: fd)
@@ -66,7 +66,7 @@ public struct DockerShell: ShellConnector {
                 close(fd)
                 throw error
             }
-        }.value
+        }
         return DockerShellSession(fd: fd, leftover: leftover, execID: execID, repository: repository)
     }
 
@@ -118,7 +118,7 @@ final class DockerShellSession: ShellSession, @unchecked Sendable {
         output = stream
         if !leftover.isEmpty { continuation.yield(leftover) }
         let (lock, writer) = (lock, writer)
-        Task.detached(priority: .userInitiated) { [weak self] in
+        BlockingIO.start { [weak self] in
             var chunk = [UInt8](repeating: 0, count: 32 * 1024)
             var failure: Error?
             while true {

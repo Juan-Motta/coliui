@@ -189,7 +189,7 @@ public struct DockerLogStream: ContainerLogSource {
     public func logs(id: String, since: Date?, tail: Int, tty: Bool) -> AsyncThrowingStream<LogLine, Error> {
         let socketPath = socketPath
         return AsyncThrowingStream { continuation in
-            let reader = Task.detached(priority: .utility) {
+            BlockingIO.start {
                 do {
                     let id = try DockerEngineRepository.validated(id)
                     let fd = try UnixSocketTransport.connect(socketPath: socketPath, timeoutSeconds: 0)
@@ -211,7 +211,7 @@ public struct DockerLogStream: ContainerLogSource {
                     }
 
                     var chunk = [UInt8](repeating: 0, count: 32 * 1024)
-                    while !Task.isCancelled {
+                    while true {
                         let count = read(fd, &chunk, chunk.count)
                         if count > 0 {
                             let body = http.feed(Data(chunk[0..<count]))
@@ -231,7 +231,6 @@ public struct DockerLogStream: ContainerLogSource {
                     continuation.finish(throwing: error)
                 }
             }
-            _ = reader
         }
     }
 }

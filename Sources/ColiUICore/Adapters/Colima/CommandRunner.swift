@@ -22,7 +22,7 @@ public struct ProcessCommandRunner: CommandRunner {
     public init() {}
 
     public func run(_ executable: String, _ arguments: [String]) async throws -> CommandResult {
-        try await Task.detached(priority: .userInitiated) {
+        try await BlockingIO.run {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: executable)
             process.arguments = arguments
@@ -55,6 +55,6 @@ public struct ProcessCommandRunner: CommandRunner {
                 stdout: String(decoding: try Data(contentsOf: stdoutURL), as: UTF8.self),
                 stderr: String(decoding: try Data(contentsOf: stderrURL), as: UTF8.self)
             )
-        }.value
+        }
     }
 }
