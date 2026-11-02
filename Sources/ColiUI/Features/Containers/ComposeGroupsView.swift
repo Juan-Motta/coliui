@@ -205,6 +205,7 @@ private struct ServiceRow: View {
                 .menuIndicator(.hidden)
                 .fixedSize()
                 .help("More actions")
+                .accessibilityLabel("More actions")
             }
             .frame(width: GroupColumns.actions, alignment: .trailing)
         }

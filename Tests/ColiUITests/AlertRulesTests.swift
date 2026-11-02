@@ -10,6 +10,16 @@ private func container(_ state: ContainerState, _ status: String, id: String = "
 }
 
 @Suite struct AlertRulesTests {
+    /// Short-lived containers come and go; what the rules remember must not grow forever.
+    @Test func forgetsContainersThatAreGone() {
+        var rules = AlertRules()
+        for index in 0..<50 {
+            _ = rules.containersChanged([container(.restarting, "Restarting", id: "c\(index)")], now: t0)
+        }
+        _ = rules.containersChanged([container(.running, "Up", id: "keep")], now: t0)
+        #expect(rules.trackedContainers == 1)
+    }
+
     @Test func crashAlertsOnlyForNonZeroExitAfterRunning() {
         var rules = AlertRules()
         #expect(rules.containersChanged([container(.exited, "Exited (1) 2 hours ago")], now: t0).isEmpty)

@@ -34,7 +34,14 @@ final class FakeFileBrowser: ContainerFileBrowser, @unchecked Sendable {
         return contents[path] ?? Data()
     }
 
-    func archive(id: String, path: String) async throws -> Data { Data("tar of \(path)".utf8) }
+    var archiveGate: Gate?
+    var archiveError: Error?
+
+    func archive(id: String, path: String) async throws -> Data {
+        await archiveGate?.wait()
+        if let archiveError { throw archiveError }
+        return Data("tar of \(path)".utf8)
+    }
 }
 
 private let date = Date(timeIntervalSince1970: 1_793_500_000)
@@ -141,17 +148,36 @@ private func started(_ fake: FakeFileBrowser = browser()) async -> FilesViewMode
     @Test func downloadsAFileOrAFolderAsTar() async throws {
         let model = await started()
         await model.select(model.visibleEntries.first { $0.name == "package.json" }!)
-        let fileDownload = try await model.download()
+        let fileDownload = try #require(await model.download())
         #expect(fileDownload.filename == "package.json")
         #expect(fileDownload.data == Data(#"{"name":"api"}"#.utf8))
 
         await model.select(model.visibleEntries[0])
-        let folderDownload = try await model.download()
+        let folderDownload = try #require(await model.download())
         #expect(folderDownload.filename == "src.tar")
         #expect(folderDownload.data == Data("tar of /app/src".utf8))
 
         model.clearSelection()
-        #expect(try await model.download().filename == "app.tar")
+        #expect(await model.download()?.filename == "app.tar")
+    }
+
+    /// A big folder takes a while: a second click doesn't start another download, and a failure says why.
+    @Test func oneDownloadAtATimeAndFailuresAreShown() async {
+        let fake = browser()
+        let gate = Gate()
+        fake.archiveGate = gate
+        let model = await started(fake)
+        let first = Task { await model.download() }
+        for _ in 0..<1_000 where !model.isDownloading { await Task.yield() }
+        #expect(model.isDownloading)
+        #expect(await model.download() == nil)
+        gate.release()
+        #expect(await first.value?.filename == "app.tar")
+        #expect(!model.isDownloading)
+
+        fake.archiveError = ContainerFilesError.cannotOpen(path: "/app", reason: "Permission denied")
+        #expect(await model.download() == nil)
+        #expect(model.notice == "Can't open /app: Permission denied")
     }
 
     @Test func shellFolderIsTheSelectedFolderOrTheCurrentOne() async {

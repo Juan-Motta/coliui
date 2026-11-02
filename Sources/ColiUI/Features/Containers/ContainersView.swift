@@ -185,6 +185,7 @@ private struct Header: View {
                 .menuIndicator(.hidden)
                 .fixedSize()
                 .help("Sort by name or status")
+                .accessibilityLabel("Sort")
             }
 
             HStack(spacing: 6) {

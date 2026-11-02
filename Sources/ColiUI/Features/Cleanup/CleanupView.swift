@@ -54,7 +54,8 @@ private struct CleanupHeader: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Cleanup").font(.ui(15, .semibold))
-                Text(subtitle(cleanup))
+                // Re-rendered every 30 s so "Last scanned 2 min ago" doesn't go stale.
+                TimelineView(.periodic(from: .now, by: 30)) { _ in Text(subtitle(cleanup)) }
                     .font(.ui(11))
                     .foregroundStyle(Palette.secondary)
             }

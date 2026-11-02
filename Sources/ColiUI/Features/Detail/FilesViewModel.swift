@@ -153,13 +153,25 @@ final class FilesViewModel {
         preview = .none
     }
 
+    /// A download is being fetched; the button waits for it instead of starting another.
+    private(set) var isDownloading = false
+
     /// A file downloads as itself; a folder (the selected one, or the one shown) as a `.tar`.
-    func download() async throws -> (filename: String, data: Data) {
-        if let selected, selected.kind == .file, let selectedPath {
-            return (selected.name, try await browser.readFile(id: containerID, path: selectedPath))
+    /// Nil while another download runs or when it fails (the reason goes to `notice`).
+    func download() async -> (filename: String, data: Data)? {
+        guard !isDownloading else { return nil }
+        isDownloading = true
+        defer { isDownloading = false }
+        do {
+            if let selected, selected.kind == .file, let selectedPath {
+                return (selected.name, try await browser.readFile(id: containerID, path: selectedPath))
+            }
+            let folder = selected.flatMap { $0.kind == .directory ? selectedPath : nil } ?? path
+            let name = ContainerPath.components(of: folder).last ?? "root"
+            return (name + ".tar", try await browser.archive(id: containerID, path: folder))
+        } catch {
+            notice = error.localizedDescription
+            return nil
         }
-        let folder = selected.flatMap { $0.kind == .directory ? selectedPath : nil } ?? path
-        let name = ContainerPath.components(of: folder).last ?? "root"
-        return (name + ".tar", try await browser.archive(id: containerID, path: folder))
     }
 }

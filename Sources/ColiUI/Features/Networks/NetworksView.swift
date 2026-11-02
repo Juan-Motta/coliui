@@ -107,6 +107,7 @@ private struct NetworksHeader: View {
                 .menuIndicator(.hidden)
                 .fixedSize()
                 .help("Sort by name or connected containers")
+                .accessibilityLabel("Sort")
             }
 
             HStack(spacing: 6) {

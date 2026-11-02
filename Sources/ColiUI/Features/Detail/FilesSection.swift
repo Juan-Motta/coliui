@@ -305,12 +305,16 @@ private struct PreviewPanel: View {
                 FlowLayout(spacing: 6, lineSpacing: 6) {
                     Button { download() } label: {
                         HStack(spacing: 6) {
-                            LineIcon(kind: .download).icon(Palette.text, size: 13)
+                            if files.isDownloading {
+                                ProgressView().controlSize(.mini)
+                            } else {
+                                LineIcon(kind: .download).icon(Palette.text, size: 13)
+                            }
                             Text(entry?.kind == .file ? "Download…" : "Download folder…")
                         }
                     }
                     .buttonStyle(PillButtonStyle())
-                    .disabled(entry?.kind == .symlink || entry?.kind == .other)
+                    .disabled(files.isDownloading || entry?.kind == .symlink || entry?.kind == .other)
                     Button {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(files.selectedPath ?? files.path, forType: .string)
@@ -407,15 +411,15 @@ private struct PreviewPanel: View {
     /// Fetches through the archive API, then asks where to save it.
     private func download() {
         Task {
+            guard let (filename, data) = await files.download() else { return }
+            let panel = NSSavePanel()
+            panel.nameFieldStringValue = filename
+            if filename.hasSuffix(".tar") { panel.allowedContentTypes = [UTType(filenameExtension: "tar") ?? .data] }
+            guard panel.runModal() == .OK, let url = panel.url else { return }
             do {
-                let (filename, data) = try await files.download()
-                let panel = NSSavePanel()
-                panel.nameFieldStringValue = filename
-                if filename.hasSuffix(".tar") { panel.allowedContentTypes = [UTType(filenameExtension: "tar") ?? .data] }
-                guard panel.runModal() == .OK, let url = panel.url else { return }
                 try data.write(to: url)
             } catch {
-                NSSound.beep()
+                NSAlert(error: error).runModal()
             }
         }
     }

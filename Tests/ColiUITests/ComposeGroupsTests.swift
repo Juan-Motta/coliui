@@ -15,6 +15,17 @@ private let fleet = [
 
 @MainActor
 @Suite struct ComposeGroupsTests {
+    /// Searching by Compose service finds the container in the list view too, not only in the grouped view.
+    @Test func listSearchAlsoMatchesTheComposeService() async {
+        let web = Container(id: "f", name: "shop-1", image: "nginx", state: .running, status: "Up",
+                            composeProject: "shop", composeService: "frontend", composeConfigFile: "/code/shop/compose.yaml")
+        let model = ContainersViewModel(repository: FakeContainerRepository([web]))
+        await model.refresh()
+        model.viewMode = .list
+        model.searchText = "frontend"
+        #expect(model.visibleContainers.map(\.id) == ["f"])
+    }
+
     @Test func composeGroupsIsTheDefaultView() {
         #expect(ContainersViewModel(repository: FakeContainerRepository(fleet)).viewMode == .compose)
     }

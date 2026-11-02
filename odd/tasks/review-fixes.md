@@ -18,6 +18,7 @@ Branch: `fix/review-findings` · Delivery: work-unit commits, no push · Runner:
 - T5 — S1 · inline · Files start on container start; shortcuts behind Settings — done (view-only; no unit test: SwiftUI focus, disabled and task identity; built and suite green)
 - T6 — S1 · inline · one secret rule; cancellable colima commands — done (RED observed for both; 297 tests; live colima list ok)
 - T6b — S1 · inline · core edge cases: `~other` binds, ASCII-only IDs, chunk-size overflow (crashed the test process: RED), lone surrogate escape, huge folders via `find -exec stat {} +` — done (303 tests; live files ok on 11 containers)
+- T6c — S1 · inline · app minor bugs: list search ignored the Compose service, AlertRules never forgot removed containers, Files download could start twice and failed silently (RED observed for these three), terminal resizes now sent in order, "Last scanned" refreshes every 30 s, VoiceOver names for the sort and "More actions" menus — done (306 tests)
 - T7 — S2 · inline · performance items
 - T8 — S3 · inline · cleanup items
 

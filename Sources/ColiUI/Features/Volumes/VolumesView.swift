@@ -110,6 +110,7 @@ private struct VolumesHeader: View {
                 .menuIndicator(.hidden)
                 .fixedSize()
                 .help("Sort by name, creation date or size")
+                .accessibilityLabel("Sort")
             }
 
             HStack(spacing: 6) {

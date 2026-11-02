@@ -115,6 +115,7 @@ private struct ImagesHeader: View {
                 .menuIndicator(.hidden)
                 .fixedSize()
                 .help("Sort by creation date, repository or size")
+                .accessibilityLabel("Sort")
             }
 
             HStack(spacing: 6) {

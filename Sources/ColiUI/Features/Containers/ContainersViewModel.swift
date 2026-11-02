@@ -172,7 +172,6 @@ final class ContainersViewModel {
     }
 
     var visibleContainers: [Container] {
-        let query = searchText.trimmingCharacters(in: .whitespaces)
         let ordered = sort == .name ? containers : containers.filter(\.isRunning) + containers.filter { !$0.isRunning }
         return ordered.filter { container in
             let matchesFilter = switch filter {
@@ -180,10 +179,7 @@ final class ContainersViewModel {
             case .running: container.isRunning
             case .stopped: !container.isRunning
             }
-            guard matchesFilter else { return false }
-            return query.isEmpty
-                || container.name.localizedCaseInsensitiveContains(query)
-                || container.image.localizedCaseInsensitiveContains(query)
+            return matchesFilter && matchesSearch(container)
         }
     }
 

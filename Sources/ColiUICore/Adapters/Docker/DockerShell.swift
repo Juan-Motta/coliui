@@ -109,6 +109,7 @@ final class DockerShellSession: ShellSession, @unchecked Sendable {
     private let writer = DispatchQueue(label: "ColiUI.shell.writer")
     private let lock = NSLock()
     private var finished = false
+    private var lastResize: Task<Void, Never>?
 
     init(fd: Int32, leftover: Data, execID: String, repository: DockerEngineRepository) {
         self.fd = fd
@@ -150,9 +151,16 @@ final class DockerShellSession: ShellSession, @unchecked Sendable {
         }
     }
 
+    /// Sent in order, each after the previous one, so a window drag can't leave an older size last.
     func resize(columns: Int, rows: Int) {
         let (repository, execID) = (repository, execID)
-        Task { try? await repository.resizeExec(id: execID, columns: columns, rows: rows) }
+        lock.withLock {
+            let previous = lastResize
+            lastResize = Task {
+                await previous?.value
+                try? await repository.resizeExec(id: execID, columns: columns, rows: rows)
+            }
+        }
     }
 
     func close() {

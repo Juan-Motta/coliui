@@ -19,11 +19,20 @@ struct AlertRules {
     private var restarts: [String: [Date]] = [:]
     private var loopAlertedAt: [String: Date] = [:]
     private var colimaWasRunning: Bool?
+    /// How many containers the rules remember (for tests).
+    var trackedContainers: Int { states.count }
     private var diskAlerted = false
 
     /// Call with every container list; the first sighting of a container never alerts.
     mutating func containersChanged(_ containers: [Container], now: Date) -> [Alert] {
         var alerts: [Alert] = []
+        // Only the containers in this list matter next time; forget the ones that are gone.
+        defer {
+            let current = Set(containers.map(\.id))
+            states = states.filter { current.contains($0.key) }
+            restarts = restarts.filter { current.contains($0.key) }
+            loopAlertedAt = loopAlertedAt.filter { current.contains($0.key) }
+        }
         for container in containers {
             defer { states[container.id] = container.state }
             guard let previous = states[container.id], previous != container.state else { continue }
