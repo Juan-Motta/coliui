@@ -22,3 +22,4 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 - L1 (2026-11-02, user, verbatim): "Diseñar Inspect" — designed first on the canvas, approved: "Se ve bien".
 - L2 (2026-11-02, user, verbatim): "Se ve bien"
 - L3 (2026-11-02, user, verbatim): "inpect aparece con un espacio en blanco a la izqw" — the lazy tree in a two-axis ScrollView was placed off to the side; the tree now scrolls vertically and truncates long values (tooltip + click-to-copy keep them whole); Raw keeps two-axis scrolling anchored top-leading.
+- L4 (2026-11-02, user, verbatim): "se ve bien" — left-gap fix accepted.
