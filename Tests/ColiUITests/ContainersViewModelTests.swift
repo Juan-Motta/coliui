@@ -11,16 +11,25 @@ final class FakeContainerRepository: ContainerRepository, @unchecked Sendable {
     var actionError: Error?
     /// When set, `details` waits for it.
     var detailsGate: Gate?
+    /// When set, the next `listContainers` answers with the containers of the moment it was asked, after this opens.
+    var listGate: Gate?
 
     init(_ containers: [Container]) { _containers = containers }
 
     var actions: [String] { lock.withLock { _actions } }
 
     func setContainers(_ containers: [Container]) { lock.withLock { _containers = containers } }
+    /// True until a `listContainers` call has taken `listGate`.
+    var isListGatePending: Bool { lock.withLock { listGate != nil } }
 
     func listContainers() async throws -> [Container] {
         if let listError { throw listError }
-        return lock.withLock { _containers }
+        let (snapshot, gate) = lock.withLock { () -> ([Container], Gate?) in
+            defer { listGate = nil }
+            return (_containers, listGate)
+        }
+        await gate?.wait()
+        return snapshot
     }
 
     private func record(_ action: String) throws {
@@ -63,6 +72,23 @@ private let sample = [
         #expect(model.stoppedCount == 1)
         #expect(model.errorMessage == nil)
         #expect(model.hasLoaded)
+    }
+
+    /// The poll, Docker events and actions refresh at the same time; an older answer arriving last
+    /// must not bring back a container that is already gone.
+    @Test func anOlderListArrivingLastIsIgnored() async {
+        let repository = FakeContainerRepository(sample)
+        let model = ContainersViewModel(repository: repository)
+        let gate = Gate()
+        repository.listGate = gate
+        let slow = Task { await model.refresh() }
+        for _ in 0..<1_000 where repository.isListGatePending { await Task.yield() }
+        repository.setContainers(Array(sample.dropFirst()))
+        await model.refresh()
+        gate.release()
+        await slow.value
+
+        #expect(model.containers.map(\.name) == ["api-server", "postgres"])
     }
 
     @Test func filterAndSearchNarrowVisibleContainers() async {
@@ -169,9 +195,11 @@ final class FakeColimaRuntime: ColimaRuntime, @unchecked Sendable {
     func restart(profile: String) async throws { lock.withLock { _commands.append("restart \(profile)") } }
 
     var settingsByProfile: [String: ColimaProfileSettings] = [:]
+    var settingsGates: [String: Gate] = [:]
     var commandError: Error?
 
     func settings(profile: String) async throws -> ColimaProfileSettings {
+        await settingsGates[profile]?.wait()
         guard let settings = settingsByProfile[profile] else { throw ColimaError.unexpectedOutput }
         return settings
     }

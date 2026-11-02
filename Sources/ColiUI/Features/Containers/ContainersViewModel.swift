@@ -49,6 +49,7 @@ struct ComposeGroup: Identifiable {
 @Observable
 final class ContainersViewModel {
     private(set) var containers: [Container] = []
+    @ObservationIgnored private var refreshes = LatestRequest()
     /// CPU / memory for running containers, keyed by container ID.
     private(set) var stats: [String: ContainerStats] = [:]
     private(set) var busyIDs: Set<String> = []
@@ -185,13 +186,17 @@ final class ContainersViewModel {
     }
 
     func refresh() async {
+        let request = refreshes.next()
         do {
-            containers = try await repository.listContainers()
+            let list = try await repository.listContainers()
                 .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+            guard refreshes.isLatest(request) else { return }
+            containers = list
             errorMessage = nil
             if let selectedID, !containers.contains(where: { $0.id == selectedID }) { self.selectedID = nil }
             onRefresh?(containers)
         } catch {
+            guard refreshes.isLatest(request) else { return }
             // A stale list would suggest containers are still there while Docker is down.
             containers = []
             stats = [:]

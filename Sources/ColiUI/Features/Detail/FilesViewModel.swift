@@ -29,6 +29,8 @@ final class FilesViewModel {
     /// A folder that couldn't be opened; the listing stays where it was.
     private(set) var notice: String?
     private var history: [String] = []
+    /// Refreshes and folder changes overlap; only the newest listing is shown.
+    @ObservationIgnored private var listings = LatestRequest()
 
     let containerID: String
     private let browser: ContainerFileBrowser
@@ -48,11 +50,15 @@ final class FilesViewModel {
 
     func refresh() async {
         if entries.isEmpty { state = .loading }
+        let request = listings.next()
         do {
-            entries = try await browser.listFiles(id: containerID, path: path)
+            let listing = try await browser.listFiles(id: containerID, path: path)
+            guard listings.isLatest(request) else { return }
+            entries = listing
             state = .loaded
             if let selected, !entries.contains(where: { $0.name == selected.name }) { clearSelection() }
         } catch {
+            guard listings.isLatest(request) else { return }
             entries = []
             state = .failed(error.localizedDescription)
         }
@@ -84,8 +90,10 @@ final class FilesViewModel {
 
     /// Lists `folder` and moves there; on failure stays put and says why.
     private func show(_ folder: String) async -> Bool {
+        let request = listings.next()
         do {
             let listing = try await browser.listFiles(id: containerID, path: folder)
+            guard listings.isLatest(request) else { return false }
             path = folder
             entries = listing
             state = .loaded
@@ -94,7 +102,7 @@ final class FilesViewModel {
             clearSelection()
             return true
         } catch {
-            notice = error.localizedDescription
+            if listings.isLatest(request) { notice = error.localizedDescription }
             return false
         }
     }

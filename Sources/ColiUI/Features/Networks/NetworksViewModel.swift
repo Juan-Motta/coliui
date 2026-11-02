@@ -22,6 +22,7 @@ final class NetworksViewModel {
     static let drivers = ["bridge", "macvlan"]
 
     private(set) var networks: [DockerNetwork] = []
+    @ObservationIgnored private var refreshes = LatestRequest()
     private(set) var isLoading = false
     var filter: NetworkFilter = .all
     var sort: NetworkSort = .name
@@ -119,13 +120,17 @@ final class NetworksViewModel {
 
     func refresh() async {
         isLoading = true
-        defer { isLoading = false }
+        let request = refreshes.next()
         do {
-            networks = try await repository.networks()
+            let list = try await repository.networks()
+            guard refreshes.isLatest(request) else { return }
+            networks = list
             errorMessage = nil
         } catch {
+            guard refreshes.isLatest(request) else { return }
             errorMessage = error.localizedDescription
         }
+        isLoading = false
     }
 
     func remove(_ network: DockerNetwork) async {

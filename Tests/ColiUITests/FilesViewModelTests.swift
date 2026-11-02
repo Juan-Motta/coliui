@@ -11,6 +11,8 @@ final class FakeFileBrowser: ContainerFileBrowser, @unchecked Sendable {
     var contents: [String: Data] = [:]
     var start = "/app"
     var listError: Error?
+    /// When set for a path, its listing waits for the gate.
+    var listGates: [String: Gate] = [:]
 
     init(_ folders: [String: [ContainerFile]]) { self.folders = folders }
     var listed: [String] { lock.withLock { _listed } }
@@ -20,8 +22,10 @@ final class FakeFileBrowser: ContainerFileBrowser, @unchecked Sendable {
 
     func listFiles(id: String, path: String) async throws -> [ContainerFile] {
         lock.withLock { _listed.append(path) }
+        let (files, gate) = lock.withLock { (folders[path], listGates.removeValue(forKey: path)) }
+        await gate?.wait()
         if let listError { throw listError }
-        guard let files = folders[path] else { throw ContainerFilesError.cannotOpen(path: path, reason: "No such file or directory") }
+        guard let files else { throw ContainerFilesError.cannotOpen(path: path, reason: "No such file or directory") }
         return files
     }
 
@@ -165,6 +169,37 @@ private func started(_ fake: FakeFileBrowser = browser()) async -> FilesViewMode
         let model = await started(fake)
         #expect(model.state == .failed("This container has no shell (sh) or stat command, so its files can't be listed."))
         #expect(model.visibleEntries.isEmpty)
+    }
+
+    /// Reopening the tab refreshes the old folder while the user already moved on.
+    @Test func aLateRefreshDoesNotReplaceTheFolderYouOpened() async {
+        let fake = browser()
+        let model = await started(fake)
+        let gate = Gate()
+        fake.listGates["/app"] = gate
+        let refreshing = Task { await model.refresh() }
+        await Task.yield()
+        await model.go(to: "/app/src")
+        gate.release()
+        await refreshing.value
+
+        #expect(model.path == "/app/src")
+        #expect(model.visibleEntries.map(\.name) == ["server.ts"])
+    }
+
+    @Test func theLastFolderYouOpenedWins() async {
+        let fake = browser()
+        let model = await started(fake)
+        let gate = Gate()
+        fake.listGates["/"] = gate
+        let slow = Task { await model.go(to: "/") }
+        await Task.yield()
+        await model.go(to: "/app/src")
+        gate.release()
+        await slow.value
+
+        #expect(model.path == "/app/src")
+        #expect(model.visibleEntries.map(\.name) == ["server.ts"])
     }
 
     @Test func aFolderThatFailsToOpenKeepsYouWhereYouWere() async {

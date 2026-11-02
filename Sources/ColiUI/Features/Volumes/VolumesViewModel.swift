@@ -21,6 +21,7 @@ enum VolumeSort: String, CaseIterable, Identifiable {
 @Observable
 final class VolumesViewModel {
     private(set) var volumes: [DockerVolume] = []
+    @ObservationIgnored private var refreshes = LatestRequest()
     private(set) var isLoading = false
     var filter: VolumeFilter = .all
     var sort: VolumeSort = .name
@@ -118,13 +119,17 @@ final class VolumesViewModel {
 
     func refresh() async {
         isLoading = true
-        defer { isLoading = false }
+        let request = refreshes.next()
         do {
-            volumes = try await repository.volumes()
+            let list = try await repository.volumes()
+            guard refreshes.isLatest(request) else { return }
+            volumes = list
             errorMessage = nil
         } catch {
+            guard refreshes.isLatest(request) else { return }
             errorMessage = error.localizedDescription
         }
+        isLoading = false
     }
 
     func remove(_ volume: DockerVolume) async {

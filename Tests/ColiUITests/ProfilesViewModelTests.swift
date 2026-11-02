@@ -32,6 +32,24 @@ private func makeModel() -> (ProfilesViewModel, FakeColimaRuntime) {
         #expect(!model.isDirty)
     }
 
+    /// A slow `colima` answer for the profile you left must not fill the one you picked after it,
+    /// or Apply would write the first profile's settings to the second.
+    @Test func aLateAnswerForAnotherProfileIsIgnored() async {
+        let (model, runtime) = makeModel()
+        await model.load()
+        let gate = Gate()
+        runtime.settingsGates["work"] = gate
+        let slow = Task { await model.select("work") }
+        await Task.yield()
+        await model.select("default")
+        gate.release()
+        await slow.value
+
+        #expect(model.selectedName == "default")
+        #expect(model.draft == defaultSettings)
+        #expect(!model.isDirty)
+    }
+
     @Test func editingMarksDirtyAndRevertRestores() async {
         let (model, _) = makeModel()
         await model.load()

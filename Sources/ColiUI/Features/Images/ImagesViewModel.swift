@@ -22,6 +22,7 @@ enum ImageSort: String, CaseIterable, Identifiable {
 @Observable
 final class ImagesViewModel {
     private(set) var images: [DockerImage] = []
+    @ObservationIgnored private var refreshes = LatestRequest()
     private(set) var isLoading = false
     var filter: ImageFilter = .all
     var sort: ImageSort = .created
@@ -117,13 +118,17 @@ final class ImagesViewModel {
 
     func refresh() async {
         isLoading = true
-        defer { isLoading = false }
+        let request = refreshes.next()
         do {
-            images = try await repository.images()
+            let list = try await repository.images()
+            guard refreshes.isLatest(request) else { return }
+            images = list
             errorMessage = nil
         } catch {
+            guard refreshes.isLatest(request) else { return }
             errorMessage = error.localizedDescription
         }
+        isLoading = false
     }
 
     func remove(_ image: DockerImage) async {

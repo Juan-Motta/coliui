@@ -13,7 +13,7 @@ Branch: `fix/review-findings` · Delivery: work-unit commits, no push · Runner:
 
 - T1 — S1 · inline · stream fd lifecycle (logs, events, pull) — done (StreamingSocket; 288 tests, 12 live). RED not observable: the reuse race is timing-dependent; the invariant is pinned by StreamingSocketTests.
 - T2 — S1 · inline · detail start after stop; terminal connect after disconnect — done (RED observed for both, then GREEN; 290 tests)
-- T3 — S1 · inline · stale results: profiles, Files, resource refreshes
+- T3 — S1 · inline · stale results: profiles, Files, resource refreshes — done (LatestRequest; RED observed for profiles, Files ×2, containers; Images/Volumes/Networks share the containers pattern; 294 tests)
 - T4 — S1 · inline · digest references
 - T5 — S1 · inline · Files start on container start; shortcuts behind Settings
 - T6 — S1 · inline · one secret rule; cancellable colima commands

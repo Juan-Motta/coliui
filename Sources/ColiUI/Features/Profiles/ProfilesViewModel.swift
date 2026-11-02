@@ -81,6 +81,8 @@ final class ProfilesViewModel {
         selectedName = name
         let instance = profiles.first { $0.name == name }
         let settings = (try? await runtime.settings(profile: name)) ?? instance.map(Self.fallbackSettings)
+        // Another profile was picked while `colima` answered; its settings must not land on that one.
+        guard selectedName == name, !isCreating else { return }
         original = settings
         draft = settings ?? .newProfile
     }
