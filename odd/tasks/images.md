@@ -14,8 +14,9 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 ## Tasks
 
 - T1 — S1–S5 · inline · core: image list, remove, streamed pull progress, container image ID + tests — done (bbe2125; live list + hello-world re-pull)
-- T2 — S1–S5 · inline · view model + screen + tests — done (136 tests). Visual check pending; no real remove run.
+- T2 — S1–S5 · inline · view model + screen + tests — done (136 tests). Visually accepted (L2); no real remove run.
 
 ## Log
 
 - L1 (2026-11-01, user, verbatim): "Images" — no design existed; the user chose "Diseñar primero", then approved Images.dc.html: "Se ve bien".
+- L2 (2026-11-01, user, verbatim): "Se ve bien"
