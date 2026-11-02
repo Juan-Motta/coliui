@@ -16,7 +16,7 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 
 - T1 — S1–S4, S6 list · inline · settings model, General tab, window shell, stats interval, start-on-open, Dock, theme, login item + tests — done (172 tests)
 - T2 — S5 · inline · notification rules (pure) + Notification Center delivery + tests — done (182 tests; RED not observed for the rules, written together with the code)
-- T3 — S6 · inline · container selection + shortcuts + tests
+- T3 — S6 · inline · container selection + shortcuts + tests — done (188 tests). Visual check pending.
 
 ## Log
 

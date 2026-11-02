@@ -59,6 +59,8 @@ final class ContainersViewModel {
     var searchText = ""
     var viewMode: ContainerViewMode = .compose
     var hoveredID: Container.ID?
+    /// Keyboard selection (↑/↓); Space, ⌘L, ⌘O and ⌘⌫ act on it.
+    var selectedID: Container.ID?
     /// Set to ask for confirmation before removing.
     var pendingRemoval: Container?
     private(set) var collapsedGroups: Set<String> = []
@@ -187,6 +189,7 @@ final class ContainersViewModel {
             containers = try await repository.listContainers()
                 .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
             errorMessage = nil
+            if let selectedID, !containers.contains(where: { $0.id == selectedID }) { self.selectedID = nil }
             onRefresh?(containers)
         } catch {
             // A stale list would suggest containers are still there while Docker is down.
@@ -211,6 +214,46 @@ final class ContainersViewModel {
             }
             return collected
         }
+    }
+
+    // MARK: Selection
+
+    /// Rows in on-screen order: the filtered list, or the expanded Compose groups.
+    var navigationOrder: [Container] {
+        switch viewMode {
+        case .list: visibleContainers
+        case .compose: composeGroups.filter { !collapsedGroups.contains($0.id) }.flatMap(\.containers)
+        }
+    }
+
+    var selectedContainer: Container? {
+        selectedID.flatMap { id in containers.first { $0.id == id } }
+    }
+
+    func selectNext() { moveSelection(by: 1) }
+    func selectPrevious() { moveSelection(by: -1) }
+
+    private func moveSelection(by step: Int) {
+        let order = navigationOrder
+        guard !order.isEmpty else { return }
+        guard let current = order.firstIndex(where: { $0.id == selectedID }) else {
+            selectedID = step > 0 ? order.first?.id : order.last?.id
+            return
+        }
+        selectedID = order[min(max(current + step, 0), order.count - 1)].id
+    }
+
+    func toggleSelected() async {
+        guard let container = selectedContainer else { return }
+        await perform(container.isRunning ? .stop : .start, on: container)
+    }
+
+    func requestRemoveSelected() {
+        pendingRemoval = selectedContainer
+    }
+
+    var selectedPortURL: URL? {
+        selectedContainer?.ports.lazy.compactMap(\.localURL).first
     }
 
     /// Settings › Refresh stats every › Off: CPU and memory show "—".

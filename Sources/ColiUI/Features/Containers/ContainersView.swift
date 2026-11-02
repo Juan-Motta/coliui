@@ -5,6 +5,7 @@ import SwiftUI
 /// Main.dc.html: header (60 pt), filter row, then the containers card.
 struct ContainersView: View {
     @Environment(AppModel.self) private var model
+    @FocusState private var listFocused: Bool
 
     var body: some View {
         @Bindable var containers = model.containers
@@ -35,7 +36,20 @@ struct ContainersView: View {
             .padding(.top, 4)
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
+            // ↑/↓ move the selection, Space starts or stops it (Settings › Shortcuts).
+            .focusable()
+            .focusEffectDisabled()
+            .focused($listFocused)
+            .onKeyPress(.downArrow) { containers.selectNext(); return .handled }
+            .onKeyPress(.upArrow) { containers.selectPrevious(); return .handled }
+            .onKeyPress(.space) {
+                guard containers.selectedContainer != nil else { return .ignored }
+                Task { await containers.toggleSelected() }
+                return .handled
+            }
+            .onAppear { listFocused = true }
         }
+        .background { SelectionShortcuts() }
         .confirmationDialog(
             "Remove “\(pendingRemoval?.name ?? "")”?",
             isPresented: Binding(get: { pendingRemoval != nil }, set: { if !$0 { containers.pendingRemoval = nil } }),
@@ -92,9 +106,32 @@ struct ContainersView: View {
     }
 }
 
+/// ⌘L, ⌘O and ⌘⌫ for the selected container; invisible buttons so the shortcuts work without a menu.
+private struct SelectionShortcuts: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        let containers = model.containers
+        let selected = containers.selectedContainer
+        Group {
+            Button("View Logs") { if let selected { model.openDetail(selected) } }
+                .keyboardShortcut("l")
+            Button("Open Port in Browser") { if let url = containers.selectedPortURL { NSWorkspace.shared.open(url) } }
+                .keyboardShortcut("o")
+            Button("Remove Selected") { containers.requestRemoveSelected() }
+                .keyboardShortcut(.delete, modifiers: .command)
+        }
+        .disabled(selected == nil)
+        .opacity(0)
+        .frame(width: 0, height: 0)
+        .accessibilityHidden(true)
+    }
+}
+
 /// Title + subtitle, view toggle, spacer, refresh/sort capsule, search capsule, Run container.
 private struct Header: View {
     @Environment(AppModel.self) private var model
+    @FocusState private var searchFocused: Bool
 
     var body: some View {
         @Bindable var containers = model.containers
@@ -150,11 +187,18 @@ private struct Header: View {
                 TextField("Search", text: $containers.searchText)
                     .textFieldStyle(.plain)
                     .font(.ui(13))
+                    .focused($searchFocused)
+            }
+            .background {
+                Button("Search") { searchFocused = true }
+                    .keyboardShortcut("f")
+                    .opacity(0)
+                    .accessibilityHidden(true)
             }
             .padding(.horizontal, 12)
             .frame(width: 200, height: 34)
             .glassSurface(Capsule())
-            .help("Search by name or image")
+            .help("Search by name or image (⌘F)")
 
             Button { model.openRunForm() } label: {
                 HStack(spacing: 6) {
@@ -286,11 +330,14 @@ private struct ContainerRow: View {
         }
         .padding(.horizontal, Columns.padding)
         .frame(height: 52)
-        .background(containers.hoveredID == container.id ? Palette.rowHover : .clear)
+        .background(containers.selectedID == container.id ? Palette.rowSelected : containers.hoveredID == container.id ? Palette.rowHover : .clear)
         .overlay(alignment: .bottom) { Palette.rowDivider.frame(height: 1) }
         .contentShape(.rect)
         // The whole row opens the detail; the port link and the buttons keep their own clicks.
-        .onTapGesture { model.openDetail(container) }
+        .onTapGesture {
+            containers.selectedID = container.id
+            model.openDetail(container)
+        }
         .help("Show logs and details of \(container.name)")
         .onHover { inside in
             if inside {

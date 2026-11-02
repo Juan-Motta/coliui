@@ -211,11 +211,14 @@ private struct ServiceRow: View {
         .padding(.leading, GroupColumns.leading)
         .padding(.trailing, GroupColumns.trailing)
         .frame(height: 48)
-        .background(containers.hoveredID == container.id ? Palette.rowHover : .clear)
+        .background(containers.selectedID == container.id ? Palette.rowSelected : containers.hoveredID == container.id ? Palette.rowHover : .clear)
         .overlay(alignment: .top) { Palette.rowDivider.frame(height: 1) }
         .contentShape(.rect)
         // The whole row opens the detail; the port link and the buttons keep their own clicks.
-        .onTapGesture { model.openDetail(container) }
+        .onTapGesture {
+            containers.selectedID = container.id
+            model.openDetail(container)
+        }
         .help("Show logs and details of \(container.name)")
         .onHover { inside in
             if inside {
