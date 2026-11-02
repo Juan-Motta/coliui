@@ -40,6 +40,9 @@ private let postgres = RunRequest(
         ("nginx", "nginx", "latest"),
         ("localhost:5000/team/api:2.1", "localhost:5000/team/api", "2.1"),
         ("localhost:5000/team/api", "localhost:5000/team/api", "latest"),
+        // Pinned by digest: Docker takes the digest where the tag goes.
+        ("nginx@sha256:4f1c8a3e9b2d", "nginx", "sha256:4f1c8a3e9b2d"),
+        ("localhost:5000/team/api:2.1@sha256:4f1c8a3e9b2d", "localhost:5000/team/api", "sha256:4f1c8a3e9b2d"),
     ])
     func splitsImageReferences(reference: String, repository: String, tag: String) {
         let parts = RunRequest.imageParts(reference)

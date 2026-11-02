@@ -92,7 +92,12 @@ public struct RunRequest: Sendable, Equatable {
     }
 
     /// "localhost:5000/team/api:2.1" → ("localhost:5000/team/api", "2.1"); no tag means "latest".
+    /// A digest ("nginx@sha256:…") takes the tag's place, as the Engine API expects.
     public static func imageParts(_ reference: String) -> (repository: String, tag: String) {
+        if let at = reference.firstIndex(of: "@") {
+            let name = String(reference[..<at])
+            return (imageParts(name).repository, String(reference[reference.index(after: at)...]))
+        }
         let lastSlash = reference.lastIndex(of: "/") ?? reference.startIndex
         if let colon = reference[lastSlash...].lastIndex(of: ":") {
             return (String(reference[..<colon]), String(reference[reference.index(after: colon)...]))

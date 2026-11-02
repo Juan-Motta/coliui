@@ -69,6 +69,7 @@ private let hexB = String(repeating: "08ab77", count: 10) + "ef01"
     @Test func pathSplitsTheReference() {
         #expect(DockerImagePull.path(for: "python:3.13-slim") == "/images/create?fromImage=python&tag=3.13-slim")
         #expect(DockerImagePull.path(for: "nginx") == "/images/create?fromImage=nginx&tag=latest")
+        #expect(DockerImagePull.path(for: "nginx@sha256:4f1c8a3e9b2d") == "/images/create?fromImage=nginx&tag=sha256:4f1c8a3e9b2d")
     }
 
     @Test func aggregatesLayerDownloadsThenExtraction() throws {
