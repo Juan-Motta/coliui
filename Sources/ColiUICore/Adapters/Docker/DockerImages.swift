@@ -81,11 +81,12 @@ public struct DockerImagePuller: ImagePuller {
                     try socket.run(socketPath: socketPath, request: request) { data in
                         pending.append(http.feed(data))
                         if let status = http.statusCode, status >= 400 { return }
-                        while let newline = pending.firstIndex(of: UInt8(ascii: "\n")) {
-                            let line = String(decoding: pending[pending.startIndex..<newline], as: UTF8.self)
-                            pending = pending.subdata(in: pending.index(after: newline)..<pending.endIndex)
-                            continuation.yield(try tracker.feed(line))
+                        var start = pending.startIndex
+                        while let newline = pending[start...].firstIndex(of: UInt8(ascii: "\n")) {
+                            continuation.yield(try tracker.feed(String(decoding: pending[start..<newline], as: UTF8.self)))
+                            start = newline + 1
                         }
+                        pending = Data(pending[start...])
                     }
                     if let status = http.statusCode, status >= 400 {
                         try DockerEngineRepository.check(HTTPResponse(statusCode: status, headers: [:], body: pending))

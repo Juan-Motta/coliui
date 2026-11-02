@@ -17,10 +17,12 @@ public struct DockerEventDecoder {
             headersDone = true
         }
         var events = 0
-        while let newline = buffer.firstIndex(of: UInt8(ascii: "\n")) {
-            if buffer[buffer.startIndex] == UInt8(ascii: "{") { events += 1 }
-            buffer = buffer.subdata(in: buffer.index(after: newline)..<buffer.endIndex)
+        var start = buffer.startIndex
+        while let newline = buffer[start...].firstIndex(of: UInt8(ascii: "\n")) {
+            if start < newline, buffer[start] == UInt8(ascii: "{") { events += 1 }
+            start = newline + 1
         }
+        buffer = Data(buffer[start...])
         return events
     }
 }

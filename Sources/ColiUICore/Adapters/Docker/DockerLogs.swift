@@ -29,29 +29,33 @@ public struct ChunkedBodyDecoder {
             return buffer
         }
 
+        // Walk a cursor and drop what was read once at the end: re-copying the rest of the buffer after
+        // every chunk made decoding a big backlog CPU-bound.
         let crlf = Data("\r\n".utf8)
         var body = Data()
+        var cursor = buffer.startIndex
         while !finished {
             if remaining > 0 {
-                guard !buffer.isEmpty else { break }
-                let take = min(remaining, buffer.count)
-                body.append(buffer.subdata(in: 0..<take))
-                buffer = buffer.subdata(in: take..<buffer.endIndex)
+                guard cursor < buffer.endIndex else { break }
+                let take = min(remaining, buffer.endIndex - cursor)
+                body.append(buffer[cursor..<cursor + take])
+                cursor += take
                 remaining -= take
                 expectingChunkEnd = remaining == 0
             } else if expectingChunkEnd {
-                guard buffer.count >= 2 else { break }
-                buffer = buffer.subdata(in: 2..<buffer.endIndex)
+                guard buffer.endIndex - cursor >= 2 else { break }
+                cursor += 2
                 expectingChunkEnd = false
             } else {
-                guard let lineEnd = buffer.range(of: crlf) else { break }
-                let sizeField = String(decoding: buffer.subdata(in: 0..<lineEnd.lowerBound), as: UTF8.self)
+                guard let lineEnd = buffer.range(of: crlf, in: cursor..<buffer.endIndex) else { break }
+                let sizeField = String(decoding: buffer[cursor..<lineEnd.lowerBound], as: UTF8.self)
                     .split(separator: ";").first.map { $0.trimmingCharacters(in: .whitespaces) } ?? ""
-                buffer = buffer.subdata(in: lineEnd.upperBound..<buffer.endIndex)
+                cursor = lineEnd.upperBound
                 guard let size = Int(sizeField, radix: 16) else { continue }
                 if size == 0 { finished = true } else { remaining = size }
             }
         }
+        buffer = Data(buffer[cursor...])
         return body
     }
 }
@@ -81,14 +85,15 @@ public struct DockerLogDecoder {
         guard multiplexed else { return append(data, to: .stdout) }
         buffer.append(data)
         var lines: [RawLogLine] = []
-        while buffer.count >= 8 {
-            let header = [UInt8](buffer.subdata(in: 0..<8))
-            let size = Int(header[4]) << 24 | Int(header[5]) << 16 | Int(header[6]) << 8 | Int(header[7])
-            guard buffer.count >= 8 + size else { break }
-            let payload = buffer.subdata(in: 8..<(8 + size))
-            buffer = buffer.subdata(in: (8 + size)..<buffer.endIndex)
-            lines += append(payload, to: header[0] == 2 ? .stderr : .stdout)
+        var cursor = buffer.startIndex
+        while buffer.endIndex - cursor >= 8 {
+            let size = Int(buffer[cursor + 4]) << 24 | Int(buffer[cursor + 5]) << 16 | Int(buffer[cursor + 6]) << 8 | Int(buffer[cursor + 7])
+            guard buffer.endIndex - cursor >= 8 + size else { break }
+            let stream: LogStreamKind = buffer[cursor] == 2 ? .stderr : .stdout
+            lines += append(buffer[(cursor + 8)..<(cursor + 8 + size)], to: stream)
+            cursor += 8 + size
         }
+        buffer = Data(buffer[cursor...])
         return lines
     }
 
@@ -104,11 +109,12 @@ public struct DockerLogDecoder {
         var pending = partial[stream] ?? Data()
         pending.append(data)
         var lines: [RawLogLine] = []
-        while let newline = pending.firstIndex(of: UInt8(ascii: "\n")) {
-            lines.append(RawLogLine(stream: stream, text: Self.text(pending.subdata(in: pending.startIndex..<newline))))
-            pending = pending.subdata(in: pending.index(after: newline)..<pending.endIndex)
+        var start = pending.startIndex
+        while let newline = pending[start...].firstIndex(of: UInt8(ascii: "\n")) {
+            lines.append(RawLogLine(stream: stream, text: Self.text(pending[start..<newline])))
+            start = newline + 1
         }
-        partial[stream] = pending
+        partial[stream] = Data(pending[start...])
         return lines
     }
 
