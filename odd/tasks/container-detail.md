@@ -15,7 +15,7 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 ## Tasks
 
 - T1 — S3, S5 · inline · core: details + log stream decoding + tests — done (37a41ac; RED: missing types, GREEN: 43 core tests)
-- T2 — S1–S5 · inline · app: detail view model + view + navigation + tests — done (app commit; RED: missing view model, GREEN: 19 app tests; live test read 22 real lines). Visual check pending.
+- T2 — S1–S5 · inline · app: detail view model + view + navigation + tests — done (app commit; RED: missing view model, GREEN: 19 app tests; live test read 22 real lines). Visually accepted.
 
 Route evidence: T2 depends on T1's ports, no parallel writers.
 
@@ -24,3 +24,4 @@ Route evidence: T2 depends on T1's ports, no parallel writers.
 - L1 (2026-11-01, user, verbatim): "Detalle con logs"
 - L2: Docker returns `application/vnd.docker.multiplexed-stream` for non-TTY containers (frame header `01 00 00 00` + big-endian size) with RFC3339Nano timestamps prefixed to each line; inspect provides Created, State.StartedAt, Config.Tty, HostConfig.RestartPolicy.Name, NetworkSettings.Networks.*.IPAddress, Mounts.
 - L3: `swift test --filter` fails with the CLT (TestingMacros plugin not loaded); the full suite works. Live integration test gated by `COLIUI_LIVE=1`. Log lines wrap instead of scrolling horizontally (readability over the mockup's nowrap).
+- L4 (user): "ok se ve bien" — detail with live logs, ports and row navigation visually accepted.
