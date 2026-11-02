@@ -40,6 +40,8 @@ struct MainWindow: View {
                     ProfilesView()
                 case .images:
                     ImagesView()
+                case .volumes:
+                    VolumesView()
                 case let other:
                     PlaceholderScreen(section: other)
                 }

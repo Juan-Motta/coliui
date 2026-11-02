@@ -11,6 +11,7 @@ final class AppModel {
     let cleanup: CleanupViewModel
     let profiles: ProfilesViewModel
     let images: ImagesViewModel
+    let volumes: VolumesViewModel
     var section: SidebarSection? = .containers
     private(set) var summary: DockerSummary?
     /// The open container detail, if any (shown in place of the list).
@@ -34,6 +35,7 @@ final class AppModel {
         cleanup: CleanupViewModel,
         profiles: ProfilesViewModel,
         images: ImagesViewModel,
+        volumes: VolumesViewModel,
         repository: ContainerRepository? = nil,
         runner: ContainerRunner? = nil,
         logSource: ContainerLogSource? = nil,
@@ -45,6 +47,7 @@ final class AppModel {
         self.cleanup = cleanup
         self.profiles = profiles
         self.images = images
+        self.volumes = volumes
         self.repository = repository
         self.runner = runner
         self.logSource = logSource
@@ -109,6 +112,9 @@ final class AppModel {
         if section == .images {
             Task { await images.refresh() }
         }
+        if section == .volumes {
+            Task { await volumes.refresh() }
+        }
     }
 
     static func live(profile: String = "default") -> AppModel {
@@ -132,6 +138,7 @@ final class AppModel {
                 puller: DockerImagePuller(socketPath: socketPath),
                 containers: { containers.containers }
             ),
+            volumes: VolumesViewModel(repository: repository, containers: { containers.containers }),
             repository: repository,
             runner: repository,
             logSource: DockerLogStream(socketPath: socketPath),
@@ -167,6 +174,7 @@ final class AppModel {
                     await colima.refresh()
                     summary = try? await inventory?.summary()
                     if section == .images { await images.refresh() }
+                    if section == .volumes { await volumes.refresh() }
                 }
                 await containers.refresh()
                 tick += 1
