@@ -24,7 +24,6 @@ struct MainWindow: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        @Bindable var model = model
         HStack(spacing: 0) {
             SidebarPanel()
             Group {
@@ -54,9 +53,25 @@ struct MainWindow: View {
         .foregroundStyle(Palette.text)
         .background(Palette.window)
         .ignoresSafeArea()
-        .sheet(isPresented: $model.isSettingsPresented) {
-            SettingsView().environment(model)
+        // A custom modal rather than a sheet: a click outside it closes it.
+        .overlay {
+            if model.isSettingsPresented {
+                ZStack {
+                    Color.black.opacity(0.25)
+                        .contentShape(.rect)
+                        .onTapGesture { model.isSettingsPresented = false }
+                        .accessibilityLabel("Close Settings")
+                        .accessibilityAddTraits(.isButton)
+                    SettingsView()
+                        .clipShape(.rect(cornerRadius: 20))
+                        .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(Palette.cardBorder, lineWidth: 1))
+                        .shadow(color: .black.opacity(0.22), radius: 30, y: 12)
+                        .transition(.scale(scale: 0.96).combined(with: .opacity))
+                }
+                .ignoresSafeArea()
+            }
         }
+        .animation(.easeOut(duration: 0.18), value: model.isSettingsPresented)
         .onChange(of: model.settings.showInDock) { model.applySystemSettings() }
         .onChange(of: model.settings.theme) { model.applySystemSettings() }
     }

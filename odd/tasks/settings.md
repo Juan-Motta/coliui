@@ -23,3 +23,4 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 - L1 (2026-11-01, user, verbatim): "Settings"
 - L2 (2026-11-01, user): shortcuts that need a selected container → "Agregar selección (Recommended)".
 - L3 (2026-11-01, user, verbatim): "quiero ue settings sea mas como un modal en lugar de otra ventana" — Settings is now a sheet on the main window with a Done button (Esc); ⌘, and the sidebar row open it.
+- L4 (2026-11-01, user, verbatim): "si presiono fuera del modal se debe cerrar" — replaced the sheet with an overlay modal over a dimmed backdrop; clicking the backdrop, Done or Esc closes it.
