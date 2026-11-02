@@ -2,7 +2,7 @@ import Foundation
 
 /// `ContainerRepository` backed by the Docker Engine REST API.
 public struct DockerEngineRepository: ContainerRepository, DockerInventory {
-    private let transport: HTTPTransport
+    let transport: HTTPTransport
 
     public init(transport: HTTPTransport) {
         self.transport = transport
@@ -85,7 +85,7 @@ public struct DockerEngineRepository: ContainerRepository, DockerInventory {
         return id
     }
 
-    private static func check(_ response: HTTPResponse) throws {
+    static func check(_ response: HTTPResponse) throws {
         // 304 = already started/stopped; the desired state holds.
         if (200..<300).contains(response.statusCode) || response.statusCode == 304 { return }
         let message = (try? JSONDecoder().decode(EngineErrorDTO.self, from: response.body))?.message

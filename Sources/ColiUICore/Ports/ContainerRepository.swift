@@ -14,6 +14,12 @@ public protocol DockerInventory: Sendable {
     func summary() async throws -> DockerSummary
 }
 
+public protocol DockerMaintenance: Sendable {
+    func diskUsage() async throws -> DiskUsage
+    /// Removes what `target` no longer uses and returns the bytes freed.
+    func prune(_ target: PruneTarget) async throws -> Int64
+}
+
 public protocol ContainerLogSource: Sendable {
     /// Streams log lines, starting with the last `tail` lines since `since`, until cancelled.
     func logs(id: String, since: Date?, tail: Int, tty: Bool) -> AsyncThrowingStream<LogLine, Error>

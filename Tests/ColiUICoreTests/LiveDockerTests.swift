@@ -20,4 +20,13 @@ struct LiveDockerTests {
         #expect(lines.allSatisfy { $0.timestamp != nil })
         print("live:", details.name, details.restartPolicy, lines.count, "lines; first:", lines.first?.message ?? "")
     }
+
+    /// Read-only: never prunes.
+    @Test func readsDiskUsage() async throws {
+        let usage = try await DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket)).diskUsage()
+        #expect(usage.totalBytes > 0)
+        print("live df:", PruneTarget.allCases.map {
+            "\($0.rawValue) \(ByteFormat.short(usage.category($0).totalBytes)) (\(ByteFormat.short(usage.category($0).reclaimableBytes)) reclaimable, \(usage.category($0).reclaimableItems.count) items)"
+        }.joined(separator: "; "))
+    }
 }
