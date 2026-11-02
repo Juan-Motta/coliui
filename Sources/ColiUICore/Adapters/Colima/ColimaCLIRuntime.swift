@@ -81,13 +81,17 @@ public struct ColimaCLIRuntime: ColimaRuntime {
                 }
                 return dto
             }
-        var instances: [ColimaInstance] = []
-        for dto in dtos {
-            // `list` doesn't report the VM driver; `status` does, but only for a running profile.
-            let vmType = ColimaStatus(rawValue: dto.status) == .running ? await vmType(profile: dto.name) : nil
-            instances.append(dto.toDomain(vmType: vmType))
+        // `list` doesn't report the VM driver; `status` does, but only for a running profile.
+        // Each `status` launches colima, so the running profiles are asked at the same time.
+        let vmTypes = await withTaskGroup(of: (Int, String?).self) { group in
+            for (index, dto) in dtos.enumerated() where ColimaStatus(rawValue: dto.status) == .running {
+                group.addTask { (index, await vmType(profile: dto.name)) }
+            }
+            var found: [Int: String] = [:]
+            for await (index, vmType) in group { found[index] = vmType }
+            return found
         }
-        return instances
+        return dtos.enumerated().map { index, dto in dto.toDomain(vmType: vmTypes[index]) }
     }
 
     public static func vmType(forDriver driver: String) -> String {
