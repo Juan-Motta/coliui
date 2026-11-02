@@ -33,10 +33,8 @@ public struct EnvironmentVariable: Sendable, Hashable {
         self.value = value
     }
 
-    public var isSecret: Bool {
-        let upper = key.uppercased()
-        return ["PASSWORD", "SECRET", "TOKEN", "KEY"].contains { upper.contains($0) }
-    }
+    /// The rule Inspect and Environment use (`SecretMask`).
+    public var isSecret: Bool { SecretMask.isSecret(name: key, value: value) }
 }
 
 public enum RestartPolicy: String, CaseIterable, Sendable {

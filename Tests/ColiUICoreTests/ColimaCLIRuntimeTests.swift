@@ -7,6 +7,8 @@ final class FakeRunner: CommandRunner, @unchecked Sendable {
     private var _invocations: [[String]] = []
     var result: CommandResult
     var statusResult = CommandResult(exitCode: 1, stdout: "", stderr: "")
+    /// Like a wedged VM: `list` never answers (until cancelled).
+    var listHangs = false
 
     init(result: CommandResult) { self.result = result }
 
@@ -14,11 +16,31 @@ final class FakeRunner: CommandRunner, @unchecked Sendable {
 
     func run(_ executable: String, _ arguments: [String]) async throws -> CommandResult {
         lock.withLock { _invocations.append([executable] + arguments) }
+        if listHangs, arguments.first == "list" { try await Task.sleep(for: .seconds(60)) }
         return arguments.first == "status" ? statusResult : result
     }
 }
 
 @Suite struct ColimaCLIRuntimeTests {
+    /// A stuck Lima VM makes `colima list` hang; the profiles screen must get an error instead of waiting forever.
+    @Test func readsGiveUpWhenColimaDoesNotAnswer() async {
+        let runner = FakeRunner(result: CommandResult(exitCode: 0, stdout: "", stderr: ""))
+        runner.listHangs = true
+        let runtime = ColimaCLIRuntime(runner: runner, executable: "/opt/homebrew/bin/colima", readTimeout: .milliseconds(100))
+        let start = ContinuousClock.now
+        await #expect(throws: ColimaError.timedOut("colima list")) { try await runtime.instances() }
+        #expect(ContinuousClock.now - start < .seconds(5))
+    }
+
+    @Test func cancellingARunTerminatesTheProcess() async throws {
+        let start = ContinuousClock.now
+        let task = Task { try await ProcessCommandRunner().run("/bin/sleep", ["30"]) }
+        try await Task.sleep(for: .milliseconds(300))
+        task.cancel()
+        _ = try? await task.value
+        #expect(ContinuousClock.now - start < .seconds(5))
+    }
+
     static let listOutput = """
     {"name":"default","status":"Running","arch":"aarch64","cpus":4,"memory":4294967296,"disk":107374182400,"runtime":"docker"}
     {"name":"work","status":"Stopped","arch":"x86_64","cpus":2,"memory":2147483648,"disk":64424509440,"runtime":"containerd"}

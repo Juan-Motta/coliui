@@ -21,8 +21,18 @@ public protocol CommandRunner: Sendable {
 public struct ProcessCommandRunner: CommandRunner {
     public init() {}
 
+    /// Cancelling the calling task terminates the process.
     public func run(_ executable: String, _ arguments: [String]) async throws -> CommandResult {
-        try await BlockingIO.run {
+        let running = RunningProcess()
+        return try await withTaskCancellationHandler {
+            try await BlockingIO.run { try Self.run(executable, arguments, running: running) }
+        } onCancel: {
+            running.terminate()
+        }
+    }
+
+    private static func run(_ executable: String, _ arguments: [String], running: RunningProcess) throws -> CommandResult {
+        do {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: executable)
             process.arguments = arguments
@@ -45,7 +55,7 @@ public struct ProcessCommandRunner: CommandRunner {
             process.standardOutput = stdoutHandle
             process.standardError = stderrHandle
 
-            try process.run()
+            try running.start(process)
             process.waitUntilExit()
             try stdoutHandle.close()
             try stderrHandle.close()
@@ -55,6 +65,28 @@ public struct ProcessCommandRunner: CommandRunner {
                 stdout: String(decoding: try Data(contentsOf: stdoutURL), as: UTF8.self),
                 stderr: String(decoding: try Data(contentsOf: stderrURL), as: UTF8.self)
             )
+        }
+    }
+}
+
+/// The process of one run, so cancellation (from another thread) can terminate it, even before it started.
+private final class RunningProcess: @unchecked Sendable {
+    private let lock = NSLock()
+    private var process: Process?
+    private var cancelled = false
+
+    func start(_ process: Process) throws {
+        try lock.withLock {
+            guard !cancelled else { throw CancellationError() }
+            try process.run()
+            self.process = process
+        }
+    }
+
+    func terminate() {
+        lock.withLock {
+            cancelled = true
+            if process?.isRunning == true { process?.terminate() }
         }
     }
 }

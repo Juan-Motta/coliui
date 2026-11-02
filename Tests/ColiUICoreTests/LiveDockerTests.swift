@@ -31,6 +31,14 @@ struct LiveDockerTests {
         print("live run:", id.prefix(12))
     }
 
+    /// Read-only: `colima list` and `colima status` through the real process runner, within the read timeout.
+    @Test func listsColimaProfiles() async throws {
+        let executable = try #require(ColimaCLIRuntime.locateExecutable())
+        let profiles = try await ColimaCLIRuntime(runner: ProcessCommandRunner(), executable: executable).instances()
+        #expect(!profiles.isEmpty)
+        print("live colima:", profiles.map { "\($0.name) \($0.status) \($0.vmType ?? "-")" })
+    }
+
     /// Read-only: parses the real ~/.colima/default/colima.yaml.
     @Test func readsTheDefaultProfileSettings() async throws {
         let runtime = ColimaCLIRuntime(runner: ProcessCommandRunner(), executable: "colima")

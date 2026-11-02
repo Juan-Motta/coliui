@@ -4,9 +4,12 @@ public enum ColimaError: Error, Equatable, LocalizedError {
     case notInstalled
     case commandFailed(String)
     case unexpectedOutput
+    /// A read that didn't answer in time, usually a stuck VM.
+    case timedOut(String)
 
     public var errorDescription: String? {
         switch self {
+        case .timedOut(let command): "`\(command)` didn't answer in time. The Colima VM may be stuck; try `colima stop` in a terminal."
         case .notInstalled: "Colima isn't installed. Install it with `brew install colima`."
         case .commandFailed(let message): message
         case .unexpectedOutput: "Colima returned output ColiUI couldn't read."
@@ -19,15 +22,19 @@ public struct ColimaCLIRuntime: ColimaRuntime {
     private let runner: CommandRunner
     private let executable: String
     private let readConfig: @Sendable (String) -> String?
+    /// How long `list` and `status` may take; starting, creating or deleting a VM has no limit.
+    private let readTimeout: Duration
 
     public init(
         runner: CommandRunner,
         executable: String,
-        readConfig: @escaping @Sendable (String) -> String? = ColimaCLIRuntime.readConfigFile
+        readConfig: @escaping @Sendable (String) -> String? = ColimaCLIRuntime.readConfigFile,
+        readTimeout: Duration = .seconds(30)
     ) {
         self.runner = runner
         self.executable = executable
         self.readConfig = readConfig
+        self.readTimeout = readTimeout
     }
 
     public static let readConfigFile: @Sendable (String) -> String? = { profile in
@@ -64,7 +71,7 @@ public struct ColimaCLIRuntime: ColimaRuntime {
     }
 
     public func instances() async throws -> [ColimaInstance] {
-        let output = try await execute(["list", "--json"])
+        let output = try await execute(["list", "--json"], timeout: readTimeout)
         // One JSON object per line.
         let dtos = try output
             .split(whereSeparator: \.isNewline)
@@ -91,7 +98,7 @@ public struct ColimaCLIRuntime: ColimaRuntime {
     }
 
     private func vmType(profile: String) async -> String? {
-        guard let output = try? await execute(["status", profile, "--json"]),
+        guard let output = try? await execute(["status", profile, "--json"], timeout: readTimeout),
               let dto = try? JSONDecoder().decode(StatusDTO.self, from: Data(output.utf8)) else { return nil }
         return Self.vmType(forDriver: dto.driver)
     }
@@ -108,13 +115,31 @@ public struct ColimaCLIRuntime: ColimaRuntime {
         _ = try await execute(["restart", profile])
     }
 
-    private func execute(_ arguments: [String]) async throws -> String {
-        let result = try await runner.run(executable, arguments)
+    private func execute(_ arguments: [String], timeout: Duration? = nil) async throws -> String {
+        let result = try await run(arguments, timeout: timeout)
         guard result.exitCode == 0 else {
             let lastLine = result.stderr.split(whereSeparator: \.isNewline).last.map(String.init)
             throw ColimaError.commandFailed(lastLine ?? "colima \(arguments.joined(separator: " ")) failed.")
         }
         return result.stdout
+    }
+
+    /// With a timeout, races the command against a sleep; the loser is cancelled, which terminates the process.
+    private func run(_ arguments: [String], timeout: Duration?) async throws -> CommandResult {
+        guard let timeout else { return try await runner.run(executable, arguments) }
+        let (runner, executable) = (runner, executable)
+        return try await withThrowingTaskGroup(of: CommandResult?.self) { group in
+            group.addTask { try await runner.run(executable, arguments) }
+            group.addTask {
+                try await Task.sleep(for: timeout)
+                return nil
+            }
+            defer { group.cancelAll() }
+            guard let result = try await group.next() ?? nil else {
+                throw ColimaError.timedOut("colima " + (arguments.first ?? ""))
+            }
+            return result
+        }
     }
 }
 

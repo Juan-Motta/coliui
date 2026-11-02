@@ -16,7 +16,7 @@ Branch: `fix/review-findings` · Delivery: work-unit commits, no push · Runner:
 - T3 — S1 · inline · stale results: profiles, Files, resource refreshes — done (LatestRequest; RED observed for profiles, Files ×2, containers; Images/Volumes/Networks share the containers pattern; 294 tests)
 - T4 — S1 · inline · digest references — done (RED observed, then GREEN)
 - T5 — S1 · inline · Files start on container start; shortcuts behind Settings — done (view-only; no unit test: SwiftUI focus, disabled and task identity; built and suite green)
-- T6 — S1 · inline · one secret rule; cancellable colima commands
+- T6 — S1 · inline · one secret rule; cancellable colima commands — done (RED observed for both; 297 tests; live colima list ok)
 - T7 — S2 · inline · performance items
 - T8 — S3 · inline · cleanup items
 

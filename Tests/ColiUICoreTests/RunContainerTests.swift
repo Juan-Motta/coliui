@@ -29,6 +29,22 @@ private let postgres = RunRequest(
         #expect(postgres.dockerRunCommand(maskSecrets: false).contains("-e POSTGRES_PASSWORD=example"))
     }
 
+    /// The Run sheet's command and the Inspect / Environment tabs use the same secret rule.
+    @Test func masksEverySecretTheOtherTabsMask() {
+        let request = RunRequest(image: "api", name: nil, ports: [], volumes: [], environment: [
+            EnvironmentVariable(key: "DB_PASS", value: "x"),
+            EnvironmentVariable(key: "GITHUB_AUTH", value: "y"),
+            EnvironmentVariable(key: "DATABASE_URL", value: "postgres://app:pw@db/shop"),
+            EnvironmentVariable(key: "REDIS_URL", value: "redis://cache:6379"),
+        ], restartPolicy: .no, autoRemove: false, pull: false)
+        let command = request.dockerRunCommand(maskSecrets: true)
+        #expect(command.contains("-e DB_PASS=••••••"))
+        #expect(command.contains("-e GITHUB_AUTH=••••••"))
+        #expect(command.contains("-e DATABASE_URL=••••••"))
+        #expect(command.contains("-e REDIS_URL=redis://cache:6379"))
+        #expect(EnvironmentVariable(key: "API_TOKEN", value: "").isSecret)
+    }
+
     @Test func minimalCommandHasOnlyTheImage() {
         let request = RunRequest(image: "nginx", name: nil, ports: [], volumes: [], environment: [],
                                  restartPolicy: .no, autoRemove: true, pull: false)
