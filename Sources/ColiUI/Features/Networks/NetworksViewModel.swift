@@ -62,11 +62,10 @@ final class NetworksViewModel {
         "\(networks.count) network\(networks.count == 1 ? "" : "s") · \(count(for: .used)) in use"
     }
 
+    @ObservationIgnored private var usage = ContainerUsageIndex { $0.networkNames }
+
     func connected(_ network: DockerNetwork) -> [String] {
-        containers()
-            .filter { $0.networkNames.contains(network.name) }
-            .map(\.name)
-            .sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+        usage.names(for: network.name, in: containers())
     }
 
     func canRemove(_ network: DockerNetwork) -> Bool {

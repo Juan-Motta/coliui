@@ -71,11 +71,15 @@ final class ImagesViewModel {
         return "\(count) image\(count == 1 ? "" : "s") · \(ByteFormat.short(sizes.values.reduce(0, +)))"
     }
 
+    /// Containers match by image ID; ones the engine reported without an ID match by reference.
+    @ObservationIgnored private var usage = ContainerUsageIndex { [$0.imageID ?? "ref:" + $0.image] }
+
     func usedBy(_ image: DockerImage) -> [String] {
-        containers()
-            .filter { $0.imageID.map { $0 == image.imageID } ?? ($0.image == image.reference) }
-            .map(\.name)
-            .sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+        let current = containers()
+        let byID = usage.names(for: image.imageID, in: current)
+        let byReference = usage.names(for: "ref:" + image.reference, in: current)
+        guard !byReference.isEmpty else { return byID }
+        return (byID + byReference).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
     }
 
     func canRemove(_ image: DockerImage) -> Bool {

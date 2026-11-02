@@ -60,11 +60,10 @@ final class VolumesViewModel {
         return "\(volumes.count) volume\(volumes.count == 1 ? "" : "s") · \(ByteFormat.short(size))"
     }
 
+    @ObservationIgnored private var usage = ContainerUsageIndex { $0.volumeNames }
+
     func usedBy(_ volume: DockerVolume) -> [String] {
-        containers()
-            .filter { $0.volumeNames.contains(volume.name) }
-            .map(\.name)
-            .sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+        usage.names(for: volume.name, in: containers())
     }
 
     func canRemove(_ volume: DockerVolume) -> Bool {
