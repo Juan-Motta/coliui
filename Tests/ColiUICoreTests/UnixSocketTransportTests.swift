@@ -39,6 +39,9 @@ private final class SlowServer: @unchecked Sendable {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         path = directory.appendingPathComponent("s.sock").path
         fd = socket(AF_UNIX, SOCK_STREAM, 0)
+        // The server replies even to clients that already left (the cancel tests). Accepted Unix sockets don't
+        // inherit SO_NOSIGPIPE and can't take it once the peer closed, so ignore SIGPIPE in the test process.
+        signal(SIGPIPE, SIG_IGN)
         var address = sockaddr_un()
         address.sun_family = sa_family_t(AF_UNIX)
         withUnsafeMutablePointer(to: &address.sun_path) { pointer in

@@ -23,3 +23,4 @@ Branch: `fix/review-findings` · Delivery: work-unit commits, no push · Runner:
 ## Log
 
 - L1 (2026-11-02, user, verbatim): "ok ahora quiero que hagas una revision del proyecto en busca de problemas de optimizacion, posibles errores, malas practicas, y busca codigo simple y limpio" → review delivered; user: "Todo por partes".
+- L2 (2026-11-02): the new socket tests sometimes killed the test process with SIGPIPE: their server replied to clients that had already left, and accepted Unix sockets neither inherit SO_NOSIGPIPE nor take it after the peer closed. The test servers now ignore SIGPIPE (the app sets SO_NOSIGPIPE before connecting, so it is not affected). Also found: the build-retry loop could run tests on a stale binary after a real compile error hidden by the TestingMacros flake; builds are now checked before testing.
