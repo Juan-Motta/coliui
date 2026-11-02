@@ -36,6 +36,8 @@ struct MainWindow: View {
                     }
                 case .cleanup:
                     CleanupView()
+                case .profiles:
+                    ProfilesView()
                 case let other:
                     PlaceholderScreen(section: other)
                 }

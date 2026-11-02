@@ -9,6 +9,7 @@ final class AppModel {
     let containers: ContainersViewModel
     let colima: ColimaViewModel
     let cleanup: CleanupViewModel
+    let profiles: ProfilesViewModel
     var section: SidebarSection? = .containers
     private(set) var summary: DockerSummary?
     /// The open container detail, if any (shown in place of the list).
@@ -30,6 +31,7 @@ final class AppModel {
         containers: ContainersViewModel,
         colima: ColimaViewModel,
         cleanup: CleanupViewModel,
+        profiles: ProfilesViewModel,
         repository: ContainerRepository? = nil,
         runner: ContainerRunner? = nil,
         logSource: ContainerLogSource? = nil,
@@ -39,6 +41,7 @@ final class AppModel {
         self.containers = containers
         self.colima = colima
         self.cleanup = cleanup
+        self.profiles = profiles
         self.repository = repository
         self.runner = runner
         self.logSource = logSource
@@ -87,6 +90,9 @@ final class AppModel {
         if section == .cleanup {
             Task { await cleanup.scan() }
         }
+        if section == .profiles {
+            Task { await profiles.load() }
+        }
     }
 
     static func live(profile: String = "default") -> AppModel {
@@ -103,6 +109,7 @@ final class AppModel {
             containers: ContainersViewModel(repository: repository),
             colima: ColimaViewModel(runtime: runtime, profile: profile),
             cleanup: CleanupViewModel(maintenance: repository),
+            profiles: ProfilesViewModel(runtime: runtime, activeProfile: profile),
             repository: repository,
             runner: repository,
             logSource: DockerLogStream(socketPath: socketPath),

@@ -44,6 +44,9 @@ enum Palette {
     static let greenPill = dynamic(rgb(0xE7, 0xF6, 0xEC), rgb(48, 209, 88, 0.16))
     static let orangePill = dynamic(rgb(0xFE, 0xF3, 0xE7), rgb(255, 159, 10, 0.16))
 
+    /// Selected row in a card list (profiles).
+    static let rowSelected = dynamic(rgb(0, 102, 204, 0.10), rgb(77, 163, 255, 0.18))
+
     /// Cleanup option cards when selected.
     static let optionSelected = dynamic(rgb(0xF6, 0xF9, 0xFE), rgb(77, 163, 255, 0.1))
     static let optionSelectedBorder = dynamic(rgb(0, 102, 204, 0.4), rgb(77, 163, 255, 0.45))

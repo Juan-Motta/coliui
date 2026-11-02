@@ -14,8 +14,8 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 
 ## Tasks
 
-- T1 — S3–S5 · inline · core settings + commands + tests — pending
-- T2 — S1–S5 · inline · view model + screen + tests — pending
+- T1 — S3–S5 · inline · core settings + commands + tests — done (8bb555f; live read of the real colima.yaml)
+- T2 — S1–S5 · inline · view model + screen + tests — done (119 tests; RED caught a reload clearing the apply error). Visual check pending; no real apply/create/delete run (they restart or remove VMs).
 
 ## Log
 
