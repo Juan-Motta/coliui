@@ -16,7 +16,7 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 
 - T1 — S1–S4, S6 list · inline · settings model, General tab, window shell, stats interval, start-on-open, Dock, theme, login item + tests — done (172 tests)
 - T2 — S5 · inline · notification rules (pure) + Notification Center delivery + tests — done (182 tests; RED not observed for the rules, written together with the code)
-- T3 — S6 · inline · container selection + shortcuts + tests — done (188 tests). Visual check pending.
+- T3 — S6 · inline · container selection + shortcuts + tests — done (188 tests). Visually accepted (L5).
 
 ## Log
 
@@ -24,3 +24,4 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 - L2 (2026-11-01, user): shortcuts that need a selected container → "Agregar selección (Recommended)".
 - L3 (2026-11-01, user, verbatim): "quiero ue settings sea mas como un modal en lugar de otra ventana" — Settings is now a sheet on the main window with a Done button (Esc); ⌘, and the sidebar row open it.
 - L4 (2026-11-01, user, verbatim): "si presiono fuera del modal se debe cerrar" — replaced the sheet with an overlay modal over a dimmed backdrop; clicking the backdrop, Done or Esc closes it.
+- L5 (2026-11-02, user, verbatim): "Se ve bien"
