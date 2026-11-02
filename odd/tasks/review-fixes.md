@@ -19,7 +19,7 @@ Branch: `fix/review-findings` · Delivery: work-unit commits, no push · Runner:
 - T6 — S1 · inline · one secret rule; cancellable colima commands — done (RED observed for both; 297 tests; live colima list ok)
 - T6b — S1 · inline · core edge cases: `~other` binds, ASCII-only IDs, chunk-size overflow (crashed the test process: RED), lone surrogate escape, huge folders via `find -exec stat {} +` — done (303 tests; live files ok on 11 containers)
 - T6c — S1 · inline · app minor bugs: list search ignored the Compose service, AlertRules never forgot removed containers, Files download could start twice and failed silently (RED observed for these three), terminal resizes now sent in order, "Last scanned" refreshes every 30 s, VoiceOver names for the sort and "More actions" menus — done (306 tests)
-- T7 — S2 · inline · performance items
+- T7 — S2 · inline · performance items — done: stats only while the list shows them (eb33c13); usage index for Images/Volumes/Networks (460d0b9); incremental log filter + cached regex (07a1173); lazy lists, per-row hover, one stats filter per chart (9b517e8); decoders without per-line copies, release 0.27 s → 0.14 s for 20 MB (e1dc7a0); parallel colima status (ffc9295); lists computed once per render (b34557b); archive/exec read in place. Skipped: the two regexes per log line (minor)
 - T8 — S3 · inline · cleanup items
 
 ## Log

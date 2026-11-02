@@ -76,14 +76,12 @@ extension DockerEngineRepository: ContainerFileBrowser {
 
     /// Splits Docker's multiplexed stream (8-byte header per frame: stream, 0, 0, 0, big-endian size).
     static func demultiplex(_ data: Data) -> (stdout: Data, stderr: Data) {
-        let bytes = [UInt8](data)
         var stdout = Data(), stderr = Data()
-        var index = 0
-        while index + 8 <= bytes.count {
-            let size = Int(bytes[index + 4]) << 24 | Int(bytes[index + 5]) << 16 | Int(bytes[index + 6]) << 8 | Int(bytes[index + 7])
-            let end = min(index + 8 + size, bytes.count)
-            let payload = Data(bytes[(index + 8)..<end])
-            if bytes[index] == 2 { stderr.append(payload) } else { stdout.append(payload) }
+        var index = data.startIndex
+        while data.endIndex - index >= 8 {
+            let size = Int(data[index + 4]) << 24 | Int(data[index + 5]) << 16 | Int(data[index + 6]) << 8 | Int(data[index + 7])
+            let end = min(index + 8 + size, data.endIndex)
+            if data[index] == 2 { stderr.append(data[(index + 8)..<end]) } else { stdout.append(data[(index + 8)..<end]) }
             index = end
         }
         return (stdout, stderr)
@@ -106,20 +104,20 @@ extension DockerEngineRepository: ContainerFileBrowser {
 /// The parts of a ustar archive the Files tab needs.
 enum TarArchive {
     /// The contents of the first regular file (type `0` or NUL), skipping folders and links.
+    /// Reads the archive in place: copying it to an array first doubled the memory of a large preview or download.
     static func firstFile(in data: Data) throws -> Data {
-        let bytes = [UInt8](data)
-        var offset = 0
-        while offset + 512 <= bytes.count {
-            let header = bytes[offset..<offset + 512]
+        var offset = data.startIndex
+        while data.endIndex - offset >= 512 {
+            let header = data[offset..<offset + 512]
             if header.allSatisfy({ $0 == 0 }) { break }
             let sizeField = String(decoding: header.dropFirst(124).prefix(12), as: UTF8.self)
                 .trimmingCharacters(in: CharacterSet(charactersIn: " \0"))
             guard let size = Int(sizeField.isEmpty ? "0" : sizeField, radix: 8) else { throw DockerError.malformedResponse }
-            let type = header[header.startIndex + 156]
+            let type = header[offset + 156]
             let start = offset + 512
-            guard start + size <= bytes.count else { throw DockerError.malformedResponse }
+            guard size <= data.endIndex - start else { throw DockerError.malformedResponse }
             if type == UInt8(ascii: "0") || type == 0 {
-                return Data(bytes[start..<start + size])
+                return data.subdata(in: start..<start + size)
             }
             offset = start + (size + 511) / 512 * 512
         }
