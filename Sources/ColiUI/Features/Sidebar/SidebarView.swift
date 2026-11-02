@@ -24,6 +24,7 @@ struct MainWindow: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
+        @Bindable var model = model
         HStack(spacing: 0) {
             SidebarPanel()
             Group {
@@ -53,6 +54,11 @@ struct MainWindow: View {
         .foregroundStyle(Palette.text)
         .background(Palette.window)
         .ignoresSafeArea()
+        .sheet(isPresented: $model.isSettingsPresented) {
+            SettingsView().environment(model)
+        }
+        .onChange(of: model.settings.showInDock) { model.applySystemSettings() }
+        .onChange(of: model.settings.theme) { model.applySystemSettings() }
     }
 }
 
@@ -73,9 +79,11 @@ struct SidebarPanel: View {
                 (.cleanup, model.cleanup.usage.map { _ in ByteFormat.short(model.cleanup.totalReclaimable) }),
                 (.profiles, model.colima.profileCount > 0 ? "\(model.colima.profileCount)" : nil),
             ])
-            SettingsLink {
-                SidebarRowLabel(icon: .settings, title: "Settings", trailing: "⌘,", isSelected: false)
+            Button { model.isSettingsPresented = true } label: {
+                SidebarRowLabel(icon: .settings, title: "Settings", trailing: "⌘,", isSelected: model.isSettingsPresented)
             }
+            // Also here: without a Dock icon the app has no menu bar to carry ⌘,.
+            .keyboardShortcut(",")
             .buttonStyle(.plain)
             .help("Open Settings (⌘,)")
             Spacer(minLength: 0)

@@ -18,6 +18,13 @@ struct ColiUIApp: App {
         .windowStyle(.hiddenTitleBar)
         .windowBackgroundDragBehavior(.enabled)
         .defaultSize(width: 1232, height: 752)
+        .commands {
+            // ⌘, opens the Settings sheet on the main window instead of a separate window.
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") { model.isSettingsPresented = true }
+                    .keyboardShortcut(",")
+            }
+        }
 
         MenuBarExtra {
             MenuBarView()
@@ -26,15 +33,6 @@ struct ColiUIApp: App {
             Image(nsImage: Glyph.menuBarImage(dimmed: !model.colima.isRunning))
         }
         .menuBarExtraStyle(.window)
-
-        Settings {
-            SettingsView()
-                .environment(model)
-                .onChange(of: model.settings.showInDock) { model.applySystemSettings() }
-                .onChange(of: model.settings.theme) { model.applySystemSettings() }
-        }
-        .windowStyle(.hiddenTitleBar)
-        .windowResizability(.contentSize)
     }
 }
 

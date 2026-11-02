@@ -19,6 +19,8 @@ final class AppModel {
     /// The socket this session talks to; Settings changes apply on the next launch.
     let socketPath: String
     var section: SidebarSection? = .containers
+    /// Settings opens as a sheet over the main window.
+    var isSettingsPresented = false
     private(set) var summary: DockerSummary?
     /// The open container detail, if any (shown in place of the list).
     private(set) var detail: ContainerDetailViewModel?

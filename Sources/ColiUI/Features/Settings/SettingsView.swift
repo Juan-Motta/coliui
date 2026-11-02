@@ -18,16 +18,25 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     }
 }
 
-/// Settings.dc.html: 680 pt window, centred glass tab capsule in the title row, grouped rows.
+/// Settings.dc.html as a sheet over the main window: centred glass tab capsule, Done on the trailing side, grouped rows.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         let settings = model.settings
         VStack(spacing: 0) {
-            SettingsTabs()
-                .padding(.vertical, 12)
-                .padding(.horizontal, 136) // keeps the capsule clear of the traffic lights (120 pt + gap)
+            ZStack {
+                SettingsTabs()
+                HStack {
+                    Spacer()
+                    Button("Done") { model.isSettingsPresented = false }
+                        .buttonStyle(PillButtonStyle())
+                        .keyboardShortcut(.cancelAction)
+                        .help("Close Settings (Esc)")
+                }
+            }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
             ScrollView(.vertical) {
                 Group {
                     switch settings.tab {
@@ -41,11 +50,9 @@ struct SettingsView: View {
                 .padding(.bottom, 28)
             }
         }
-        .frame(width: 680)
-        .frame(minHeight: 420, idealHeight: 652)
+        .frame(width: 680, height: 600)
         .foregroundStyle(Palette.text)
         .background(Palette.settingsBackground)
-        .ignoresSafeArea()
         .task { await model.profiles.load() }
     }
 }
