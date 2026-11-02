@@ -87,6 +87,18 @@ struct LiveDockerTests {
               "limit", stats.memoryLimit ?? -1, "net", stats.networkReceived, stats.networkSent, "blk", stats.blockRead, stats.blockWritten)
     }
 
+    /// Parses a real `docker inspect` in Docker's key order; reads only.
+    @Test func inspectsARunningContainer() async throws {
+        let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket))
+        let container = try #require(try await repository.listContainers().first { $0.isRunning })
+        let value = try await repository.inspect(id: container.id)
+        guard case .object(let members) = value else { Issue.record("not an object"); return }
+        #expect(members.first?.key == "Id")
+        #expect(members.contains { $0.key == "Config" })
+        #expect(try JSONValue.parse(Data(value.prettyPrinted().utf8)) == value)
+        print("live inspect:", container.name, members.count, "keys")
+    }
+
     /// Opens /bin/sh in a running container, echoes, exits. Changes nothing.
     @Test func runsAnInteractiveShell() async throws {
         let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket))

@@ -1,7 +1,7 @@
 import Foundation
 
 /// `ContainerRepository` backed by the Docker Engine REST API.
-public struct DockerEngineRepository: ContainerRepository, DockerInventory {
+public struct DockerEngineRepository: ContainerRepository, ContainerInspector, DockerInventory {
     let transport: HTTPTransport
 
     public init(transport: HTTPTransport) {
@@ -74,6 +74,28 @@ public struct DockerEngineRepository: ContainerRepository, DockerInventory {
     public func details(id: String) async throws -> ContainerDetails {
         let id = try Self.validated(id)
         return try await decode(InspectDTO.self, path: "/containers/\(id)/json").toDomain()
+    }
+
+    public func inspect(id: String) async throws -> JSONValue {
+        let id = try Self.validated(id)
+        let response = try await transport.send(method: "GET", path: "/containers/\(id)/json", body: nil)
+        try Self.check(response)
+        return Self.maskingEnvSecrets(try JSONValue.parse(response.body))
+    }
+
+    /// Masks the entries of the top-level `Config.Env`, the only place Docker puts the environment.
+    static func maskingEnvSecrets(_ value: JSONValue) -> JSONValue {
+        guard case .object(let members) = value else { return value }
+        return .object(members.map { member in
+            guard member.key == "Config", case .object(let config) = member.value else { return member }
+            return JSONMember(key: "Config", value: .object(config.map { entry in
+                guard entry.key == "Env", case .array(let items) = entry.value else { return entry }
+                return JSONMember(key: "Env", value: .array(items.map { item in
+                    if case .string(let text) = item { return .string(SecretMask.masked(text)) }
+                    return item
+                }))
+            }))
+        })
     }
 
     /// Container IDs and names only use `[A-Za-z0-9_.-]`; anything else could escape the path.

@@ -10,6 +10,11 @@ public protocol ContainerRepository: Sendable {
     func remove(id: String, force: Bool) async throws
 }
 
+/// `docker inspect` for one container, with secret-looking `Config.Env` values masked.
+public protocol ContainerInspector: Sendable {
+    func inspect(id: String) async throws -> JSONValue
+}
+
 public protocol DockerInventory: Sendable {
     func summary() async throws -> DockerSummary
 }
