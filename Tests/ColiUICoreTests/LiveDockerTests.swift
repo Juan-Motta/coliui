@@ -65,4 +65,15 @@ struct LiveDockerTests {
         let mounted = Set(try await repository.listContainers().flatMap(\.volumeNames))
         print("live volumes:", volumes.count, volumes.prefix(4).map { "\($0.name) \($0.composeProject ?? "-") \($0.size.map(ByteFormat.short) ?? "?") used=\(mounted.contains($0.name))" })
     }
+
+    /// Read-only: lists networks and which containers are connected.
+    @Test func listsNetworks() async throws {
+        let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket))
+        let networks = try await repository.networks()
+        let containers = try await repository.listContainers()
+        #expect(networks.contains { $0.isBuiltIn })
+        print("live networks:", networks.map { network in
+            "\(network.name) \(network.driver) \(network.subnet ?? "-") [\(containers.filter { $0.networkNames.contains(network.name) }.count)]"
+        })
+    }
 }

@@ -47,3 +47,10 @@ public protocol VolumeRepository: Sendable {
     /// Deletes the volume and its data; fails while a container uses it.
     func removeVolume(name: String) async throws
 }
+
+public protocol NetworkRepository: Sendable {
+    func networks() async throws -> [DockerNetwork]
+    func createNetwork(name: String, driver: String, internal: Bool) async throws
+    /// Fails for built-in networks and while containers are connected.
+    func removeNetwork(id: String) async throws
+}

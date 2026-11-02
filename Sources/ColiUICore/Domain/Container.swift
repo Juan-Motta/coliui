@@ -42,6 +42,8 @@ public struct Container: Identifiable, Sendable, Equatable {
     public let imageID: String?
     /// Names of the volumes mounted into the container.
     public let volumeNames: [String]
+    /// Names of the networks the container is connected to.
+    public let networkNames: [String]
 
     public init(
         id: String,
@@ -54,7 +56,8 @@ public struct Container: Identifiable, Sendable, Equatable {
         composeService: String? = nil,
         composeConfigFile: String? = nil,
         imageID: String? = nil,
-        volumeNames: [String] = []
+        volumeNames: [String] = [],
+        networkNames: [String] = []
     ) {
         self.id = id
         self.name = name
@@ -67,6 +70,7 @@ public struct Container: Identifiable, Sendable, Equatable {
         self.composeConfigFile = composeConfigFile
         self.imageID = imageID
         self.volumeNames = volumeNames
+        self.networkNames = networkNames
     }
 
     public var shortID: String { String(id.prefix(12)) }

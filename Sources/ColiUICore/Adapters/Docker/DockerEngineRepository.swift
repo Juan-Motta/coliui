@@ -211,6 +211,7 @@ private struct ContainerDTO: Decodable {
     let ports: [PortDTO]?
     let labels: [String: String]?
     let mounts: [MountDTO]?
+    let networkSettings: NetworkSettingsDTO?
 
     struct MountDTO: Decodable {
         let type: String?
@@ -218,9 +219,14 @@ private struct ContainerDTO: Decodable {
         enum CodingKeys: String, CodingKey { case type = "Type", name = "Name" }
     }
 
+    struct NetworkSettingsDTO: Decodable {
+        let networks: [String: IgnoredDTO]?
+        enum CodingKeys: String, CodingKey { case networks = "Networks" }
+    }
+
     enum CodingKeys: String, CodingKey {
         case id = "Id", names = "Names", image = "Image", imageID = "ImageID", state = "State"
-        case status = "Status", ports = "Ports", labels = "Labels", mounts = "Mounts"
+        case status = "Status", ports = "Ports", labels = "Labels", mounts = "Mounts", networkSettings = "NetworkSettings"
     }
 
     func toDomain() -> Container {
@@ -243,7 +249,8 @@ private struct ContainerDTO: Decodable {
             composeConfigFile: labels?["com.docker.compose.project.config_files"]?
                 .split(separator: ",").first.map(String.init),
             imageID: imageID,
-            volumeNames: (mounts ?? []).filter { $0.type == "volume" }.compactMap(\.name)
+            volumeNames: (mounts ?? []).filter { $0.type == "volume" }.compactMap(\.name),
+            networkNames: (networkSettings?.networks?.keys).map { $0.sorted() } ?? []
         )
     }
 }
