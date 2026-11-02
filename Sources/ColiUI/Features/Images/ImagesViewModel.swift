@@ -31,7 +31,7 @@ final class ImagesViewModel {
     /// Set to ask for confirmation before removing.
     var pendingRemoval: DockerImage?
     private(set) var removingIDs: Set<String> = []
-    private(set) var toast: String?
+    var toast: String? { toasts.message }
 
     private(set) var isPullBarOpen = false
     var pullReference = ""
@@ -45,8 +45,7 @@ final class ImagesViewModel {
     private let puller: ImagePuller
     /// The container list the app already polls; used to tell which images are in use.
     private let containers: @MainActor () -> [Container]
-    private let toastDuration: Duration
-    private var toastTask: Task<Void, Never>?
+    private let toasts: Toast
     private var pullTask: Task<Void, Never>?
 
     init(
@@ -58,7 +57,7 @@ final class ImagesViewModel {
         self.repository = repository
         self.puller = puller
         self.containers = containers
-        self.toastDuration = toastDuration
+        toasts = Toast(duration: toastDuration)
     }
 
     // MARK: Derived
@@ -189,14 +188,6 @@ final class ImagesViewModel {
     }
 
     func showToast(_ message: String) {
-        toast = message
-        toastTask?.cancel()
-        let duration = toastDuration
-        guard duration > .zero else { return }
-        toastTask = Task { [weak self] in
-            try? await Task.sleep(for: duration)
-            guard !Task.isCancelled else { return }
-            self?.toast = nil
-        }
+        toasts.show(message)
     }
 }

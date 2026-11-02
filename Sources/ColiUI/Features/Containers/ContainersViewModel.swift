@@ -66,18 +66,17 @@ final class ContainersViewModel {
     /// Set to ask for confirmation before removing.
     var pendingRemoval: Container?
     private(set) var collapsedGroups: Set<String> = []
-    private(set) var toast: String?
+    var toast: String? { toasts.message }
 
     /// Called with every fresh list (Settings › Notifications watches state changes).
     var onRefresh: (([Container]) -> Void)?
 
     private let repository: ContainerRepository
-    private let toastDuration: Duration
-    private var toastTask: Task<Void, Never>?
+    private let toasts: Toast
 
     init(repository: ContainerRepository, toastDuration: Duration = .seconds(2)) {
         self.repository = repository
-        self.toastDuration = toastDuration
+        toasts = Toast(duration: toastDuration)
     }
 
     /// Compose projects by name, then standalone containers. Search applies; the state filter
@@ -141,14 +140,7 @@ final class ContainersViewModel {
     }
 
     func showToast(_ message: String) {
-        toast = message
-        toastTask?.cancel()
-        let duration = toastDuration
-        toastTask = Task { [weak self] in
-            try? await Task.sleep(for: duration)
-            guard !Task.isCancelled else { return }
-            self?.toast = nil
-        }
+        toasts.show(message)
     }
 
     private func matchesSearch(_ container: Container) -> Bool {

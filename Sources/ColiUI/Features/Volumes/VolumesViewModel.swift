@@ -30,7 +30,7 @@ final class VolumesViewModel {
     /// Set to ask for confirmation before removing.
     var pendingRemoval: DockerVolume?
     private(set) var removingNames: Set<String> = []
-    private(set) var toast: String?
+    var toast: String? { toasts.message }
 
     private(set) var isCreateBarOpen = false
     var newName = ""
@@ -40,8 +40,7 @@ final class VolumesViewModel {
     private let repository: VolumeRepository
     /// The container list the app already polls; used to tell which volumes are mounted.
     private let containers: @MainActor () -> [Container]
-    private let toastDuration: Duration
-    private var toastTask: Task<Void, Never>?
+    private let toasts: Toast
 
     init(
         repository: VolumeRepository,
@@ -50,7 +49,7 @@ final class VolumesViewModel {
     ) {
         self.repository = repository
         self.containers = containers
-        self.toastDuration = toastDuration
+        toasts = Toast(duration: toastDuration)
     }
 
     // MARK: Derived
@@ -173,14 +172,6 @@ final class VolumesViewModel {
     }
 
     func showToast(_ message: String) {
-        toast = message
-        toastTask?.cancel()
-        let duration = toastDuration
-        guard duration > .zero else { return }
-        toastTask = Task { [weak self] in
-            try? await Task.sleep(for: duration)
-            guard !Task.isCancelled else { return }
-            self?.toast = nil
-        }
+        toasts.show(message)
     }
 }
