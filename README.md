@@ -15,6 +15,7 @@ swift run ColiUI          # run from source
 swift test                # run the test suite
 scripts/bundle.sh         # build build/ColiUI.app (release, ad-hoc signed)
 open build/ColiUI.app
+swift scripts/make-icon.swift   # regenerate Resources/AppIcon.icns from the Graphite design
 ```
 
 ## What works today
