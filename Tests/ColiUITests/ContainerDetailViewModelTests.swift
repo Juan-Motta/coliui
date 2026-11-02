@@ -10,6 +10,8 @@ final class FakeLogSource: ContainerLogSource, @unchecked Sendable {
     var lines: [LogLine]
     /// Like a followed stream: the history arrives, then the stream stays open.
     var keepsOpen = false
+    /// The open stream, so a test can send more lines later.
+    private(set) var live: AsyncThrowingStream<LogLine, Error>.Continuation?
 
     init(lines: [LogLine]) { self.lines = lines }
 
@@ -20,7 +22,7 @@ final class FakeLogSource: ContainerLogSource, @unchecked Sendable {
         let (lines, keepsOpen) = (lines, keepsOpen)
         return AsyncThrowingStream { continuation in
             lines.forEach { continuation.yield($0) }
-            if !keepsOpen { continuation.finish() }
+            if keepsOpen { self.live = continuation } else { continuation.finish() }
         }
     }
 }
@@ -174,6 +176,36 @@ private final class ChangeCounter {
 
         #expect(source.calls.map(\.since) == [now.addingTimeInterval(-900), now.addingTimeInterval(-3600), nil])
         #expect(model.lines.map(\.message) == ["a"])
+    }
+
+    /// The filtered lines are kept up to date incrementally; they must always equal a full refilter.
+    @Test func filteredLinesStayCorrectAsLinesArriveAndRollOff() async throws {
+        let (model, source) = makeModel((0..<10).map { line($0, $0.isMultiple(of: 2) ? "GET /a \($0)" : "POST /b \($0)") })
+        source.keepsOpen = true
+        await model.start()
+        func settle(_ count: Int) async throws {
+            for _ in 0..<200 where model.lines.last?.id != count - 1 { try await Task.sleep(for: .milliseconds(10)) }
+        }
+        func reference() -> [Int] { model.lines.filter { $0.message.localizedCaseInsensitiveContains("get") }.map(\.id) }
+        try await settle(10)
+        model.filterText = "get"
+        #expect(model.visibleLines.map(\.id) == reference())
+
+        for id in 10..<5_020 { source.live?.yield(line(id, id.isMultiple(of: 3) ? "GET /c \(id)" : "PUT /d \(id)")) }
+        try await settle(5_020)
+        #expect(model.lines.first?.id == 20)
+        #expect(model.visibleLines.map(\.id) == reference())
+
+        model.useRegex = true
+        model.filterText = "^put"
+        #expect(model.visibleLines.map(\.id) == model.lines.filter { $0.message.hasPrefix("PUT") }.map(\.id))
+
+        model.clear()
+        #expect(model.visibleLines.isEmpty)
+        source.live?.yield(line(5_020, "PUT /e"))
+        try await settle(5_021)
+        #expect(model.visibleLines.map(\.id) == [5_020])
+        model.stop()
     }
 
     @Test func keepsOnlyTheLast5000Lines() async {

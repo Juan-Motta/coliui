@@ -89,21 +89,60 @@ final class ContainerDetailViewModel {
         files = fileBrowser.map { FilesViewModel(containerID: containerID, browser: $0) }
     }
 
+    /// Compiled once per pattern; the view asks several times per render.
+    @ObservationIgnored private var compiled: (pattern: String, regex: Regex<AnyRegexOutput>?)?
+
     private var regex: Regex<AnyRegexOutput>? {
         guard useRegex, !filterText.isEmpty else { return nil }
-        return try? Regex(filterText).ignoresCase()
+        if let compiled, compiled.pattern == filterText { return compiled.regex }
+        let regex = try? Regex(filterText).ignoresCase()
+        compiled = (filterText, regex)
+        return regex
     }
 
     var isRegexValid: Bool { !useRegex || filterText.isEmpty || regex != nil }
 
+    /// What the filter matched so far: kept up to date as lines arrive (every 50 ms) instead of refiltering
+    /// the whole buffer each time. `stream` changes with each new stream or Clear, `lastID` is the newest
+    /// line already checked (line IDs only grow within a stream).
+    private struct FilterCache {
+        let query: String
+        let isRegex: Bool
+        let stream: Int
+        var lastID: Int
+        var matches: [LogLine]
+    }
+
+    @ObservationIgnored private var filterCache: FilterCache?
+    @ObservationIgnored private var stream = 0
+
     var visibleLines: [LogLine] {
         let query = filterText.trimmingCharacters(in: .whitespaces)
         guard !query.isEmpty else { return lines }
-        if useRegex {
-            guard let regex else { return [] }
-            return lines.filter { $0.message.contains(regex) }
+        let isRegex = useRegex
+        let regex = regex
+        if isRegex, regex == nil { return [] }
+        func matches(_ line: LogLine) -> Bool {
+            if let regex { return line.message.contains(regex) }
+            return line.message.localizedCaseInsensitiveContains(query)
         }
-        return lines.filter { $0.message.localizedCaseInsensitiveContains(query) }
+        guard let first = lines.first, let last = lines.last else { return [] }
+
+        if var cache = filterCache, cache.query == query, cache.isRegex == isRegex, cache.stream == stream, cache.lastID <= last.id {
+            let newLines = lines.reversed().prefix { $0.id > cache.lastID }.reversed()
+            cache.matches.append(contentsOf: newLines.filter(matches))
+            if let firstKept = cache.matches.firstIndex(where: { $0.id >= first.id }) {
+                cache.matches.removeFirst(firstKept)
+            } else {
+                cache.matches.removeAll()
+            }
+            cache.lastID = last.id
+            filterCache = cache
+            return cache.matches
+        }
+        let result = lines.filter(matches)
+        filterCache = FilterCache(query: query, isRegex: isRegex, stream: stream, lastID: last.id, matches: result)
+        return result
     }
 
     func start() async {
@@ -135,6 +174,7 @@ final class ContainerDetailViewModel {
     func clear() {
         lines = []
         pending = []
+        stream += 1
     }
 
     /// Visible lines as "2026-11-01T10:42:01Z INFO message".
@@ -157,6 +197,7 @@ final class ContainerDetailViewModel {
         streamTask?.cancel()
         lines = []
         pending = []
+        stream += 1
         streamError = nil
         let stream = logSource.logs(
             id: containerID,
