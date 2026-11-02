@@ -9,38 +9,40 @@ struct LiveStatsSection: View {
     var body: some View {
         @Bindable var stats = stats
         let points = stats.visiblePoints
-        ScrollView(.vertical) {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(spacing: 10) {
-                    RangeSegments(selection: $stats.range)
-                    HStack(spacing: 6) {
-                        Circle().fill(stats.isSampling ? Palette.greenDot : Palette.grayDot).frame(width: 7, height: 7)
-                        Text(stats.errorMessage ?? (stats.isPaused ? "Paused" : "Sampling every 2 s · paused when the window is hidden"))
-                            .lineLimit(1)
-                    }
-                    .font(.ui(12))
-                    .foregroundStyle(stats.errorMessage == nil ? Palette.secondary : Palette.danger)
-                    Spacer()
-                    Button(stats.isPaused ? "Resume" : "Pause") { stats.togglePause() }
-                        .buttonStyle(PillButtonStyle())
-                        .help(stats.isPaused ? "Resume sampling" : "Stop sampling; the charts keep what they have")
+        // The two rows share the height the window gives them; charts grow instead of leaving space below.
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 10) {
+                RangeSegments(selection: $stats.range)
+                HStack(spacing: 6) {
+                    Circle().fill(stats.isSampling ? Palette.greenDot : Palette.grayDot).frame(width: 7, height: 7)
+                    Text(stats.errorMessage ?? (stats.isPaused ? "Paused" : "Sampling every 2 s · paused when the window is hidden"))
+                        .lineLimit(1)
                 }
-
-                Grid(horizontalSpacing: 14, verticalSpacing: 14) {
-                    GridRow {
-                        ChartCard(stats: stats, title: "CPU", detail: stats.cpuDetail, value: stats.cpuValue,
-                                  series: [("CPU", \.cpu)], format: StatsValueFormat.percent)
-                        ChartCard(stats: stats, title: "Memory", detail: stats.memoryDetail, value: stats.memoryValue,
-                                  series: [("Memory", { Double($0.memory) })], format: StatsValueFormat.bytes)
-                    }
-                    GridRow {
-                        ChartCard(stats: stats, title: "Network I/O", detail: "rx / tx", value: stats.networkValue,
-                                  series: [("Received", \.received), ("Sent", \.sent)], format: StatsValueFormat.rate)
-                        ChartCard(stats: stats, title: "Block I/O", detail: "read / write", value: stats.blockValue,
-                                  series: [("Read", \.read), ("Write", \.written)], format: StatsValueFormat.rate)
-                    }
-                }
+                .font(.ui(12))
+                .foregroundStyle(stats.errorMessage == nil ? Palette.secondary : Palette.danger)
+                Spacer()
+                Button(stats.isPaused ? "Resume" : "Pause") { stats.togglePause() }
+                    .buttonStyle(PillButtonStyle())
+                    .help(stats.isPaused ? "Resume sampling" : "Stop sampling; the charts keep what they have")
             }
+
+            Grid(horizontalSpacing: 14, verticalSpacing: 14) {
+                GridRow {
+                    ChartCard(stats: stats, title: "CPU", detail: stats.cpuDetail, value: stats.cpuValue,
+                              series: [("CPU", \.cpu)], format: StatsValueFormat.percent)
+                    ChartCard(stats: stats, title: "Memory", detail: stats.memoryDetail, value: stats.memoryValue,
+                              series: [("Memory", { Double($0.memory) })], format: StatsValueFormat.bytes)
+                }
+                .frame(maxHeight: .infinity)
+                GridRow {
+                    ChartCard(stats: stats, title: "Network I/O", detail: "rx / tx", value: stats.networkValue,
+                              series: [("Received", \.received), ("Sent", \.sent)], format: StatsValueFormat.rate)
+                    ChartCard(stats: stats, title: "Block I/O", detail: "read / write", value: stats.blockValue,
+                              series: [("Read", \.read), ("Write", \.written)], format: StatsValueFormat.rate)
+                }
+                .frame(maxHeight: .infinity)
+            }
+            .frame(maxHeight: .infinity)
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didChangeOcclusionStateNotification)) { _ in
             stats.isWindowHidden = !NSApp.occlusionState.contains(.visible)
@@ -103,7 +105,7 @@ private struct ChartCard: View {
                 .minimumScaleFactor(0.7)
 
             StatsChart(stats: stats, series: series, format: format)
-                .frame(height: 120)
+                .frame(minHeight: 90, maxHeight: .infinity)
                 .accessibilityLabel("\(title) over the last \(stats.range.rawValue), currently \(value)")
 
             if series.count > 1 {
@@ -116,7 +118,7 @@ private struct ChartCard: View {
             }
         }
         .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Palette.card, in: .rect(cornerRadius: 14))
         .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Palette.cardBorder, lineWidth: 1))
     }
@@ -177,7 +179,8 @@ private struct StatsChart: View {
                 }
             }
         }
-        .chartXScale(domain: start...end)
+        // End padding keeps the newest time label from being cut off at the right edge.
+        .chartXScale(domain: start...end, range: .plotDimension(endPadding: 18))
         .chartYScale(domain: 0...top)
         .chartXAxis {
             AxisMarks(values: .automatic(desiredCount: 4)) { value in
