@@ -74,7 +74,7 @@ final class AppModel {
         watchForAlerts()
     }
 
-    func openDetail(_ container: Container) {
+    func openDetail(_ container: Container, tab: DetailTab = .logs) {
         guard let repository, let logSource else { return }
         detail?.stop()
         // A stopped container's last lines are usually older than 15 minutes.
@@ -82,8 +82,10 @@ final class AppModel {
             containerID: container.id,
             repository: repository,
             logSource: logSource,
-            range: container.isRunning ? .fifteenMinutes : .all
+            range: container.isRunning ? .fifteenMinutes : .all,
+            shellConnector: socketPath.isEmpty ? nil : DockerShell(socketPath: socketPath)
         )
+        detail.tab = tab
         self.detail = detail
         Task { await detail.start() }
     }

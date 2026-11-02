@@ -14,7 +14,7 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 ## Tasks
 
 - T1 — S4 · inline · core: exec create/start/resize over the socket + tests — done (live: /bin/sh echo in a running container)
-- T2 — S1–S3, S5 · inline · SwiftTerm dependency (app target only), terminal model + tab + tests
+- T2 — S1–S3, S5 · inline · SwiftTerm dependency (app target only), terminal model + tab + tests — done (217 tests). Visual check pending.
 
 ## Log
 

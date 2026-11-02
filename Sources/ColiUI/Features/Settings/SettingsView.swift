@@ -201,11 +201,10 @@ private struct NotificationSettings: View {
 
 // MARK: Shortcuts
 
-/// The keys the app actually binds; ⌘⇧T waits for the Terminal tab.
+/// The keys the app binds.
 struct ShortcutItem: Identifiable {
     let action: String
     let keys: String
-    var isAvailable = true
     var id: String { action }
 
     static let all = [
@@ -214,7 +213,7 @@ struct ShortcutItem: Identifiable {
         ShortcutItem(action: "Run container", keys: "⌘N"),
         ShortcutItem(action: "Start / stop selected", keys: "Space"),
         ShortcutItem(action: "View logs", keys: "⌘L"),
-        ShortcutItem(action: "Open shell", keys: "⌘⇧T", isAvailable: false),
+        ShortcutItem(action: "Open shell", keys: "⌘⇧T"),
         ShortcutItem(action: "Open port in browser", keys: "⌘O"),
         ShortcutItem(action: "Remove selected", keys: "⌘⌫"),
         ShortcutItem(action: "Settings", keys: "⌘,"),
@@ -235,8 +234,6 @@ private struct ShortcutSettings: View {
                         .padding(.vertical, 3)
                         .background(Palette.chip, in: .rect(cornerRadius: 7))
                 }
-                .opacity(item.isAvailable ? 1 : 0.45)
-                .help(item.isAvailable ? "" : "Available once the Terminal tab is built")
             }
         }
     }

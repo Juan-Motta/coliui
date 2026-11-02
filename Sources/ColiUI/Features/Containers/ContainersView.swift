@@ -120,6 +120,9 @@ private struct SelectionShortcuts: View {
                 .keyboardShortcut("o")
             Button("Remove Selected") { containers.requestRemoveSelected() }
                 .keyboardShortcut(.delete, modifiers: .command)
+            Button("Open Shell") { if let selected { model.openDetail(selected, tab: .terminal) } }
+                .keyboardShortcut("t", modifiers: [.command, .shift])
+                .disabled(selected?.isRunning != true)
         }
         .disabled(selected == nil)
         .opacity(0)

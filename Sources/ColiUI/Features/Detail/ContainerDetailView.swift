@@ -29,6 +29,8 @@ struct ContainerDetailView: View {
                 Group {
                     if detail.tab == .stats {
                         LiveStatsSection(stats: detail.liveStats)
+                    } else if detail.tab == .terminal, let terminal = detail.terminal {
+                        TerminalSection(terminal: terminal, container: container)
                     } else if detail.tab == .logs {
                         LogsSection(detail: detail, name: container?.name ?? detail.details?.name ?? "container")
                     } else {
@@ -42,8 +44,8 @@ struct ContainerDetailView: View {
                 }
                 .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
-                // LiveStats.dc.html gives the charts the full width.
-                if detail.tab != .stats {
+                // LiveStats.dc.html and Terminal.dc.html use the full width.
+                if detail.tab != .stats, detail.tab != .terminal {
                     InfoCards(details: detail.details, container: container)
                         .frame(minWidth: 260, idealWidth: 300, maxWidth: 320)
                 }

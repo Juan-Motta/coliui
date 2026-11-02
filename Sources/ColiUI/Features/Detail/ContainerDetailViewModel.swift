@@ -45,6 +45,8 @@ final class ContainerDetailViewModel {
     var showTimestamps = true
     /// The Stats tab; samples only while that tab is open.
     let liveStats: LiveStatsViewModel
+    /// The Terminal tab; nil when no shell connector is available.
+    let terminal: TerminalViewModel?
 
     private let repository: ContainerRepository
     private let logSource: ContainerLogSource
@@ -56,6 +58,7 @@ final class ContainerDetailViewModel {
         repository: ContainerRepository,
         logSource: ContainerLogSource,
         range: LogRange = .fifteenMinutes,
+        shellConnector: ShellConnector? = nil,
         now: @escaping () -> Date = Date.init
     ) {
         self.containerID = containerID
@@ -64,6 +67,7 @@ final class ContainerDetailViewModel {
         self.range = range
         self.now = now
         liveStats = LiveStatsViewModel(containerID: containerID, repository: repository)
+        terminal = shellConnector.map { TerminalViewModel(containerID: containerID, connector: $0) }
     }
 
     private var regex: Regex<AnyRegexOutput>? {
@@ -91,6 +95,7 @@ final class ContainerDetailViewModel {
     func stop() {
         streamTask?.cancel()
         streamTask = nil
+        terminal?.disconnect()
     }
 
     func select(range: LogRange) {
