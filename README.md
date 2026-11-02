@@ -26,7 +26,7 @@ swift scripts/make-icon.swift   # regenerate Resources/AppIcon.icns from the Pap
 - Container detail (click a name): live logs with filter, regex, follow, timestamps, time range, export and clear; overview, ports and mounts.
 - Menu bar extra with the VM status and quick start/stop per container.
 
-The list updates live from Docker events; CPU and memory refresh every 3 seconds (Colima every 15). Images, volumes, networks, cleanup, profiles and the other detail tabs are designed but not built yet.
+The list updates live from Docker events; CPU and memory refresh every 3 seconds (Colima every 15). Images, volumes, networks, profiles, settings and the other detail tabs are designed but not built yet.
 
 ```bash
 COLIUI_LIVE=1 swift test   # also runs the tests that talk to your real Colima socket

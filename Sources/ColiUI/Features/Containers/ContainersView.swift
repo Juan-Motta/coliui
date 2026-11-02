@@ -47,10 +47,10 @@ struct ContainersView: View {
         } message: { container in
             Text(container.isRunning ? "It's running and will be stopped first. This can't be undone." : "This can't be undone.")
         }
-        .alert("Run container", isPresented: $containers.showRunComingSoon) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Designed, not built yet.")
+        .sheet(isPresented: Binding(get: { model.runForm != nil }, set: { if !$0 { model.closeRunForm() } })) {
+            if let form = model.runForm {
+                RunContainerSheet(form: form).environment(model)
+            }
         }
         .overlay(alignment: .bottom) {
             if let error = containers.errorMessage, !containers.containers.isEmpty {
@@ -156,7 +156,7 @@ private struct Header: View {
             .glassSurface(Capsule())
             .help("Search by name or image")
 
-            Button { containers.showRunComingSoon = true } label: {
+            Button { model.openRunForm() } label: {
                 HStack(spacing: 6) {
                     LineIcon(kind: .plus).icon(.white, size: 14, svgStrokeWidth: 2.4)
                     Text("Run container")

@@ -13,8 +13,8 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 
 ## Tasks
 
-- T1 — S2, S3 · inline · core RunRequest + runner + tests — pending
-- T2 — S1, S4, S5 · inline · view model + sheet + tests — pending
+- T1 — S2, S3 · inline · core RunRequest + runner + tests — done (36c7df4)
+- T2 — S1, S4, S5 · inline · view model + sheet + tests — done (102 tests green; live run of hello-world --rm created, started and self-removed). Visual check pending.
 
 ## Log
 

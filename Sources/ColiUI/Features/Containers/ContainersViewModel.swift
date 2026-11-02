@@ -59,7 +59,6 @@ final class ContainersViewModel {
     var searchText = ""
     var viewMode: ContainerViewMode = .compose
     var hoveredID: Container.ID?
-    var showRunComingSoon = false
     /// Set to ask for confirmation before removing.
     var pendingRemoval: Container?
     private(set) var collapsedGroups: Set<String> = []

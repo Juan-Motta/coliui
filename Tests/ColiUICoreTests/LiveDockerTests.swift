@@ -21,6 +21,16 @@ struct LiveDockerTests {
         print("live:", details.name, details.restartPolicy, lines.count, "lines; first:", lines.first?.message ?? "")
     }
 
+    /// Runs the local hello-world image with --rm: it prints, exits and removes itself.
+    @Test func runsHelloWorldAndCleansUp() async throws {
+        let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket))
+        let request = RunRequest(image: "hello-world", name: "coliui-live-run", ports: [], volumes: [], environment: [],
+                                 restartPolicy: .no, autoRemove: true, pull: false)
+        let id = try await repository.run(request)
+        #expect(!id.isEmpty)
+        print("live run:", id.prefix(12))
+    }
+
     /// Read-only: never prunes.
     @Test func readsDiskUsage() async throws {
         let usage = try await DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket)).diskUsage()

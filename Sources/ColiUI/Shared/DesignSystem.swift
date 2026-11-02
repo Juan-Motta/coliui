@@ -343,7 +343,7 @@ struct LineIcon: Shape {
         case containers, images, volumes, networks, cleanup, profiles, settings
         case refresh, sort, search, plus, trash
         case chevronLeft, chevronRight, terminal, download
-        case folder, copy, external, check, warning
+        case folder, copy, external, check, warning, minus
     }
 
     let kind: Kind
@@ -420,6 +420,8 @@ struct LineIcon: Shape {
             line(p(7, 17), p(17, 7)); line(p(9, 7), p(17, 7), p(17, 15))
         case .check:
             line(p(5, 12), p(10, 17), p(19, 7))
+        case .minus:
+            line(p(6, 12), p(18, 12))
         case .warning:
             line(p(12, 3), p(22, 21), p(2, 21), p(12, 3))
             line(p(12, 10), p(12, 15))

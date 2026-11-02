@@ -13,8 +13,11 @@ final class AppModel {
     private(set) var summary: DockerSummary?
     /// The open container detail, if any (shown in place of the list).
     private(set) var detail: ContainerDetailViewModel?
+    /// The "Run a new container" sheet, while open.
+    private(set) var runForm: RunContainerViewModel?
 
     private let repository: ContainerRepository?
+    private let runner: ContainerRunner?
     private let logSource: ContainerLogSource?
     private let inventory: DockerInventory?
     private let events: (@Sendable () -> AsyncThrowingStream<Void, Error>)?
@@ -28,6 +31,7 @@ final class AppModel {
         colima: ColimaViewModel,
         cleanup: CleanupViewModel,
         repository: ContainerRepository? = nil,
+        runner: ContainerRunner? = nil,
         logSource: ContainerLogSource? = nil,
         inventory: DockerInventory? = nil,
         events: (@Sendable () -> AsyncThrowingStream<Void, Error>)? = nil
@@ -36,6 +40,7 @@ final class AppModel {
         self.colima = colima
         self.cleanup = cleanup
         self.repository = repository
+        self.runner = runner
         self.logSource = logSource
         self.inventory = inventory
         self.events = events
@@ -53,6 +58,22 @@ final class AppModel {
         )
         self.detail = detail
         Task { await detail.start() }
+    }
+
+    func openRunForm() {
+        guard let runner, runForm == nil else { return }
+        runForm = RunContainerViewModel(runner: runner)
+    }
+
+    func closeRunForm() {
+        runForm = nil
+    }
+
+    func submitRunForm() async {
+        guard let form = runForm, let started = await form.run() else { return }
+        runForm = nil
+        await containers.refresh()
+        containers.showToast("Started \(started)")
     }
 
     func closeDetail() {
@@ -83,6 +104,7 @@ final class AppModel {
             colima: ColimaViewModel(runtime: runtime, profile: profile),
             cleanup: CleanupViewModel(maintenance: repository),
             repository: repository,
+            runner: repository,
             logSource: DockerLogStream(socketPath: socketPath),
             inventory: repository,
             events: { DockerEvents.containerEvents(socketPath: socketPath) }
