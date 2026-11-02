@@ -6,8 +6,9 @@ import SwiftUI
 struct ComposeGroupsView: View {
     @Environment(AppModel.self) private var model
 
+    let groups: [ComposeGroup]
+
     var body: some View {
-        let groups = model.containers.composeGroups
         GeometryReader { geometry in
             ScrollView(.vertical) {
                 VStack(spacing: 14) {

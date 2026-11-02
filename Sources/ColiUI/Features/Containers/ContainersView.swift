@@ -27,10 +27,10 @@ struct ContainersView: View {
                             .foregroundStyle(Palette.secondary)
                     }
                     content
-                } else if containers.composeGroups.isEmpty {
-                    content
                 } else {
-                    ComposeGroupsView()
+                    // Computed once per render and handed down (grouping sorts twice).
+                    let groups = containers.composeGroups
+                    if groups.isEmpty { content } else { ComposeGroupsView(groups: groups) }
                 }
             }
             .padding(.top, 4)
@@ -80,6 +80,7 @@ struct ContainersView: View {
     @ViewBuilder
     private var content: some View {
         let containers = model.containers
+        let visible = containers.visibleContainers
         if !containers.hasLoaded {
             ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if containers.containers.isEmpty, let error = containers.errorMessage {
@@ -93,7 +94,7 @@ struct ContainersView: View {
                     .disabled(model.colima.isBusy)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if containers.visibleContainers.isEmpty {
+        } else if visible.isEmpty {
             ContentUnavailableView(
                 containers.containers.isEmpty ? "No containers" : "No matches",
                 systemImage: "shippingbox",
@@ -101,7 +102,7 @@ struct ContainersView: View {
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            ContainersCard()
+            ContainersCard(visible: visible)
         }
     }
 }
@@ -245,6 +246,7 @@ private struct Columns {
 
 private struct ContainersCard: View {
     @Environment(AppModel.self) private var model
+    let visible: [Container]
 
     var body: some View {
         let containers = model.containers
@@ -255,7 +257,7 @@ private struct ContainersCard: View {
             ScrollView(.vertical) {
                 LazyVStack(spacing: 0) {
                     HeaderRow(columns: columns)
-                    ForEach(containers.visibleContainers) { container in
+                    ForEach(visible) { container in
                         ContainerRow(container: container, stats: containers.stats[container.id], columns: columns)
                     }
                 }
