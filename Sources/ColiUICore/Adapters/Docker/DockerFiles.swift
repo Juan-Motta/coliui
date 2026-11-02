@@ -52,12 +52,8 @@ extension DockerEngineRepository: ContainerFileBrowser {
     /// Runs a command without a TTY and collects its output and exit code.
     func runCommand(containerID: String, command: [String]) async throws -> (stdout: String, stderr: String, exitCode: Int) {
         let payload: [String: Any] = ["AttachStdout": true, "AttachStderr": true, "Tty": false, "Cmd": command]
-        let create = try await transport.send(
-            method: "POST", path: "/containers/\(containerID)/exec",
-            body: try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
-        )
-        try Self.check(create)
-        guard let exec = try? JSONDecoder().decode(ExecIDDTO.self, from: create.body) else { throw DockerError.malformedResponse }
+        let body = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
+        let exec = try await decode(ExecIDDTO.self, method: "POST", path: "/containers/\(containerID)/exec", body: body)
         let execID = try Self.validated(exec.id)
 
         let start = try await transport.send(method: "POST", path: "/exec/\(execID)/start", body: Data(#"{"Detach":false,"Tty":false}"#.utf8))

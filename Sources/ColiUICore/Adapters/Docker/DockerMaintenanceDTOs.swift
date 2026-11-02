@@ -2,12 +2,7 @@ import Foundation
 
 extension DockerEngineRepository: DockerMaintenance {
     public func diskUsage() async throws -> DiskUsage {
-        let response = try await transport.send(method: "GET", path: "/system/df", body: nil)
-        try Self.check(response)
-        guard let dto = try? JSONDecoder().decode(SystemDFDTO.self, from: response.body) else {
-            throw DockerError.malformedResponse
-        }
-        return dto.toDomain()
+        try await decode(SystemDFDTO.self, path: "/system/df").toDomain()
     }
 
     public func prune(_ target: PruneTarget) async throws -> Int64 {

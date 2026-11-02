@@ -3,12 +3,7 @@ import Foundation
 extension DockerEngineRepository: VolumeRepository {
     /// `/volumes` has no sizes; `docker system df` measures them, limited to volumes.
     public func volumes() async throws -> [DockerVolume] {
-        let response = try await transport.send(method: "GET", path: "/system/df?type=volume", body: nil)
-        try Self.check(response)
-        guard let dto = try? JSONDecoder().decode(VolumeListDTO.self, from: response.body) else {
-            throw DockerError.malformedResponse
-        }
-        return (dto.volumes ?? []).map { $0.toDomain() }
+        (try await decode(VolumeListDTO.self, path: "/system/df?type=volume").volumes ?? []).map { $0.toDomain() }
     }
 
     public func createVolume(name: String) async throws {

@@ -33,12 +33,7 @@ extension DockerEngineRepository: ContainerRunner {
             path += "?name=" + (name.addingPercentEncoding(withAllowedCharacters: allowed) ?? name)
         }
         let body = try JSONSerialization.data(withJSONObject: Self.createBody(request), options: [.sortedKeys])
-        let response = try await transport.send(method: "POST", path: path, body: body)
-        try Self.check(response)
-        guard let created = try? JSONDecoder().decode(CreatedDTO.self, from: response.body) else {
-            throw DockerError.malformedResponse
-        }
-        return created.id
+        return try await decode(CreatedDTO.self, method: "POST", path: path, body: body).id
     }
 
     static func createBody(_ request: RunRequest) -> [String: Any] {

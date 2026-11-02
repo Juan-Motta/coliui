@@ -12,12 +12,7 @@ extension DockerEngineRepository {
         let user = user.trimmingCharacters(in: .whitespaces)
         if !user.isEmpty { payload["User"] = user }
         let body = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
-        let response = try await transport.send(method: "POST", path: "/containers/\(id)/exec", body: body)
-        try Self.check(response)
-        guard let created = try? JSONDecoder().decode(ExecCreatedDTO.self, from: response.body) else {
-            throw DockerError.malformedResponse
-        }
-        return created.id
+        return try await decode(ExecCreatedDTO.self, method: "POST", path: "/containers/\(id)/exec", body: body).id
     }
 
     func resizeExec(id: String, columns: Int, rows: Int) async throws {

@@ -9,24 +9,13 @@ public struct DockerEngineRepository: ContainerRepository, ContainerInspector, C
     }
 
     public func listContainers() async throws -> [Container] {
-        let response = try await transport.send(method: "GET", path: "/containers/json?all=1", body: nil)
-        try Self.check(response)
-        do {
-            return try JSONDecoder().decode([ContainerDTO].self, from: response.body).map { $0.toDomain() }
-        } catch {
-            throw DockerError.malformedResponse
-        }
+        try await decode([ContainerDTO].self, path: "/containers/json?all=1").map { $0.toDomain() }
     }
 
     /// `stream=false` makes the engine take two samples (~1 s apart) so CPU deltas are meaningful.
     public func stats(id: String) async throws -> ContainerStats {
         let id = try Self.validated(id)
-        let response = try await transport.send(method: "GET", path: "/containers/\(id)/stats?stream=false", body: nil)
-        try Self.check(response)
-        guard let dto = try? JSONDecoder().decode(StatsDTO.self, from: response.body) else {
-            throw DockerError.malformedResponse
-        }
-        return dto.toDomain()
+        return try await decode(StatsDTO.self, path: "/containers/\(id)/stats?stream=false").toDomain()
     }
 
     public func summary() async throws -> DockerSummary {
@@ -40,8 +29,9 @@ public struct DockerEngineRepository: ContainerRepository, ContainerInspector, C
         try await decode([IgnoredDTO].self, path: path).count
     }
 
-    private func decode<T: Decodable>(_ type: T.Type, path: String) async throws -> T {
-        let response = try await transport.send(method: "GET", path: path, body: nil)
+    /// Sends, checks the status, and decodes the JSON answer; anything unreadable is `malformedResponse`.
+    func decode<T: Decodable>(_ type: T.Type, method: String = "GET", path: String, body: Data? = nil) async throws -> T {
+        let response = try await transport.send(method: method, path: path, body: body)
         try Self.check(response)
         guard let value = try? JSONDecoder().decode(type, from: response.body) else { throw DockerError.malformedResponse }
         return value

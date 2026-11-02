@@ -3,12 +3,7 @@ import Foundation
 
 extension DockerEngineRepository: ImageRepository {
     public func images() async throws -> [DockerImage] {
-        let response = try await transport.send(method: "GET", path: "/images/json", body: nil)
-        try Self.check(response)
-        guard let dtos = try? JSONDecoder().decode([ImageDTO].self, from: response.body) else {
-            throw DockerError.malformedResponse
-        }
-        return dtos.flatMap { $0.toDomain() }
+        try await decode([ImageDTO].self, path: "/images/json").flatMap { $0.toDomain() }
     }
 
     public func removeImage(_ reference: String) async throws {

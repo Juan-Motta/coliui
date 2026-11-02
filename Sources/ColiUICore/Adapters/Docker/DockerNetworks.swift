@@ -2,12 +2,7 @@ import Foundation
 
 extension DockerEngineRepository: NetworkRepository {
     public func networks() async throws -> [DockerNetwork] {
-        let response = try await transport.send(method: "GET", path: "/networks", body: nil)
-        try Self.check(response)
-        guard let dtos = try? JSONDecoder().decode([NetworkDTO].self, from: response.body) else {
-            throw DockerError.malformedResponse
-        }
-        return dtos.map { $0.toDomain() }
+        try await decode([NetworkDTO].self, path: "/networks").map { $0.toDomain() }
     }
 
     public func createNetwork(name: String, driver: String, internal: Bool) async throws {
