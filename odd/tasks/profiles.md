@@ -15,9 +15,10 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 ## Tasks
 
 - T1 — S3–S5 · inline · core settings + commands + tests — done (8bb555f; live read of the real colima.yaml)
-- T2 — S1–S5 · inline · view model + screen + tests — done (119 tests; RED caught a reload clearing the apply error). Visual check pending; no real apply/create/delete run (they restart or remove VMs).
+- T2 — S1–S5 · inline · view model + screen + tests — done (119 tests; RED caught a reload clearing the apply error). Visually accepted (L3); no real apply/create/delete run (they restart or remove VMs).
 
 ## Log
 
 - L1 (2026-11-01, user, verbatim): "Perfiles de Colima"
 - L2: colima 0.10.3 flags: -c/--cpus, -m/--memory (GiB float), -d/--disk (GiB), -t/--vm-type (qemu, vz, krunkit), --mount-type (sshfs, 9p, virtiofs), --vz-rosetta, -r/--runtime (docker, incus, containerd); `colima delete --force`. Config at ~/.colima/<profile>/colima.yaml with top-level `cpu`, `memory`, `disk`, `vmType`, `rosetta`, `mountType`, `runtime`.
+- L3 (2026-11-01, user, verbatim): "Se ve bien"
