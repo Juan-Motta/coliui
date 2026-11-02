@@ -34,8 +34,11 @@ struct ProfilesView: View {
                 HStack(alignment: .top, spacing: 16) {
                     ProfileList()
                         .frame(minWidth: 0, maxWidth: .infinity)
-                    ProfileEditor()
-                        .frame(width: 360)
+                    // New profiles are made in their own modal; the editor is for an existing VM.
+                    if profiles.selected != nil {
+                        ProfileEditor()
+                            .frame(width: 360)
+                    }
                 }
                 .padding(.top, 4)
                 .padding(.horizontal, 16)
@@ -81,7 +84,7 @@ private struct ProfileList: View {
                     .padding(20)
             }
             ForEach(profiles.profiles) { instance in
-                ProfileRow(instance: instance, isSelected: instance.name == profiles.selectedName && !profiles.isCreating)
+                ProfileRow(instance: instance, isSelected: instance.name == profiles.selectedName)
             }
         }
         .padding(6)
@@ -137,55 +140,135 @@ private struct ProfileEditor: View {
 
     var body: some View {
         @Bindable var profiles = model.profiles
-        let creating = profiles.isCreating
-        let rosettaAvailable = profiles.draft.vmType == "vz"
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(creating ? "New profile" : "Edit “\(profiles.selectedName ?? "")”").font(.ui(15, .semibold))
-                Text(creating ? "Creates and starts a new VM" : "Applying restarts the VM")
+                Text("Edit “\(profiles.selectedName ?? "")”").font(.ui(15, .semibold))
+                Text("Applying restarts the VM")
                     .font(.ui(12))
                     .foregroundStyle(Palette.secondary)
             }
 
-            if creating {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Name").font(.ui(12)).foregroundStyle(Palette.tertiary)
-                    TextField("work", text: $profiles.newName)
-                        .textFieldStyle(.plain)
-                        .font(.mono(12))
-                        .padding(.horizontal, 10)
-                        .frame(height: 30)
-                        .background(Palette.field, in: .rect(cornerRadius: 10))
-                    if !profiles.newName.isEmpty, let error = profiles.nameError {
-                        Text(error).font(.ui(11)).foregroundStyle(Palette.danger)
-                    }
-                }
+            ProfileSettingsFields(settings: $profiles.draft, minimumDisk: profiles.minimumDisk, isNew: false)
+
+            if let error = profiles.errorMessage {
+                Text(error).font(.ui(12)).foregroundStyle(Palette.danger)
             }
 
+            HStack(spacing: 8) {
+                Button("Delete…") { profiles.confirmingDelete = true }
+                    .buttonStyle(PillButtonStyle(foreground: Palette.danger))
+                    .help("Delete this profile's VM")
+                Spacer()
+                if let operation = profiles.operation {
+                    ProgressView().controlSize(.small)
+                    Text(operation.title).font(.ui(12)).foregroundStyle(Palette.secondary)
+                }
+                Button("Revert") { profiles.revert() }
+                    .buttonStyle(PillButtonStyle())
+                    .disabled(!profiles.isDirty)
+                Button("Apply & restart") {
+                    Task {
+                        await profiles.requestApply()
+                        await model.colima.refresh()
+                    }
+                }
+                .buttonStyle(TintButtonStyle())
+                .disabled(!profiles.isDirty)
+            }
+            .padding(.top, 12)
+            .overlay(alignment: .top) { Palette.rowDivider.frame(height: 1) }
+        }
+        .disabled(profiles.isBusy)
+        .padding(20)
+        .cardSurface()
+    }
+}
+
+/// NewProfileModal.dc.html: a name and the VM's settings; the editor keeps the selected profile behind it.
+struct NewProfileModal: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var profiles = model.profiles
+        ModalPanel(title: "New profile", lede: "Creates and starts a new Colima VM", width: 520) {
+            // The form scrolls only when the window is too short for it.
+            ViewThatFits(in: .vertical) {
+                form(profiles)
+                ScrollView(.vertical) { form(profiles) }
+            }
+            if let error = profiles.errorMessage {
+                Text(error).font(.ui(12)).foregroundStyle(Palette.danger)
+            }
+        } actions: {
+            if let operation = profiles.operation {
+                ProgressView().controlSize(.small)
+                Text(operation.title).font(.ui(12)).foregroundStyle(Palette.secondary)
+            }
+            Button("Cancel") { profiles.cancelNewProfile() }
+                .buttonStyle(PillButtonStyle())
+                .keyboardShortcut(.cancelAction)
+            Button("Create and start") {
+                Task {
+                    await profiles.create()
+                    await model.colima.refresh()
+                }
+            }
+            .buttonStyle(TintButtonStyle())
+            .disabled(profiles.isBusy || profiles.nameError != nil)
+        }
+    }
+
+    private func form(_ profiles: ProfilesViewModel) -> some View {
+        @Bindable var profiles = profiles
+        return VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 5) {
+                ModalTextField(label: "Name", placeholder: "work", text: $profiles.newName)
+                if !profiles.newName.isEmpty, let error = profiles.nameError {
+                    Text(error).font(.ui(11)).foregroundStyle(Palette.danger)
+                } else {
+                    Text("Lowercase letters, digits and “-”").font(.ui(11)).foregroundStyle(Palette.secondary)
+                }
+            }
+            ProfileSettingsFields(settings: $profiles.newDraft, minimumDisk: 20, isNew: true)
+        }
+        .disabled(profiles.isBusy)
+    }
+}
+
+/// CPUs, memory, disk, VM type, mount, Rosetta and runtime: the editor (a VM that exists) and the
+/// New profile modal (`isNew`, where the VM type and runtime can still be chosen) share them.
+struct ProfileSettingsFields: View {
+    @Binding var settings: ColimaProfileSettings
+    let minimumDisk: Int
+    let isNew: Bool
+
+    var body: some View {
+        let rosettaAvailable = settings.vmType == "vz"
+        VStack(alignment: .leading, spacing: 18) {
             HStack {
                 Text("CPUs").font(.ui(13))
                 Spacer()
                 HStack(spacing: 8) {
-                    stepButton("−", label: "Fewer CPUs") { profiles.draft.cpus = max(1, profiles.draft.cpus - 1) }
-                        .disabled(profiles.draft.cpus <= 1)
-                    Text(verbatim: "\(profiles.draft.cpus)").font(.ui(14, .semibold)).frame(width: 28)
+                    stepButton("−", label: "Fewer CPUs") { settings.cpus = max(1, settings.cpus - 1) }
+                        .disabled(settings.cpus <= 1)
+                    Text(verbatim: "\(settings.cpus)").font(.ui(14, .semibold)).frame(width: 28)
                     stepButton("+", label: "More CPUs") {
-                        profiles.draft.cpus = min(ProcessInfo.processInfo.activeProcessorCount, profiles.draft.cpus + 1)
+                        settings.cpus = min(ProcessInfo.processInfo.activeProcessorCount, settings.cpus + 1)
                     }
-                    .disabled(profiles.draft.cpus >= ProcessInfo.processInfo.activeProcessorCount)
+                    .disabled(settings.cpus >= ProcessInfo.processInfo.activeProcessorCount)
                 }
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                valueRow("Memory", value: "\(Int(profiles.draft.memoryGiB)) GiB")
-                Slider(value: $profiles.draft.memoryGiB, in: 1...32, step: 1).tint(Palette.accent)
+                valueRow("Memory", value: "\(Int(settings.memoryGiB)) GiB")
+                Slider(value: $settings.memoryGiB, in: 1...32, step: 1).tint(Palette.accent)
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                valueRow("Disk", value: "\(profiles.draft.diskGiB) GiB")
+                valueRow("Disk", value: "\(settings.diskGiB) GiB")
                 Slider(
-                    value: Binding(get: { Double(profiles.draft.diskGiB) }, set: { profiles.draft.diskGiB = Int($0) }),
-                    in: Double(profiles.minimumDisk)...Double(max(500, profiles.minimumDisk)),
+                    value: Binding(get: { Double(settings.diskGiB) }, set: { settings.diskGiB = Int($0) }),
+                    in: Double(minimumDisk)...Double(max(500, minimumDisk)),
                     step: 10
                 )
                 .tint(Palette.accent)
@@ -195,17 +278,17 @@ private struct ProfileEditor: View {
             HStack {
                 Text("VM type").font(.ui(13))
                 Spacer()
-                CompactSegmented(options: ["vz", "qemu"], selection: $profiles.draft.vmType)
-                    .disabled(!creating)
-                    .help(creating ? "vz is faster on Apple silicon; qemu emulates other architectures" : "Fixed once the VM exists")
+                CompactSegmented(options: ["vz", "qemu"], selection: $settings.vmType)
+                    .disabled(!isNew)
+                    .help(isNew ? "vz is faster on Apple silicon; qemu emulates other architectures" : "Fixed once the VM exists")
             }
 
-            pickerRow("Mount type", selection: $profiles.draft.mountType, options: ["virtiofs", "sshfs", "9p"])
+            pickerRow("Mount type", selection: $settings.mountType, options: ["virtiofs", "sshfs", "9p"])
 
             HStack {
                 Text("Rosetta (x86 emulation)").font(.ui(13))
                 Spacer()
-                Toggle("Rosetta", isOn: $profiles.draft.rosetta)
+                Toggle("Rosetta", isOn: $settings.rosetta)
                     .toggleStyle(.switch)
                     .labelsHidden()
                     .tint(Palette.greenDot)
@@ -213,47 +296,10 @@ private struct ProfileEditor: View {
                     .help(rosettaAvailable ? "Run amd64 images faster" : "Rosetta needs the vz VM type")
             }
 
-            pickerRow("Runtime", selection: $profiles.draft.runtime, options: ["docker", "containerd", "incus"])
-                .disabled(!creating)
-                .help(creating ? "" : "Fixed once the VM exists")
-
-            if let error = profiles.errorMessage {
-                Text(error).font(.ui(12)).foregroundStyle(Palette.danger)
-            }
-
-            HStack(spacing: 8) {
-                if !creating {
-                    Button("Delete…") { profiles.confirmingDelete = true }
-                        .buttonStyle(PillButtonStyle(foreground: Palette.danger))
-                        .help("Delete this profile's VM")
-                }
-                Spacer()
-                if let operation = profiles.operation {
-                    ProgressView().controlSize(.small)
-                    Text(operation.title).font(.ui(12)).foregroundStyle(Palette.secondary)
-                }
-                Button("Revert") { profiles.revert() }
-                    .buttonStyle(PillButtonStyle())
-                    .disabled(!profiles.isDirty)
-                Button(creating ? "Create & start" : "Apply & restart") {
-                    Task {
-                        if creating {
-                            await profiles.create()
-                        } else {
-                            await profiles.requestApply()
-                        }
-                        await model.colima.refresh()
-                    }
-                }
-                .buttonStyle(TintButtonStyle())
-                .disabled(!profiles.isDirty || (creating && profiles.nameError != nil))
-            }
-            .padding(.top, 12)
-            .overlay(alignment: .top) { Palette.rowDivider.frame(height: 1) }
+            pickerRow("Runtime", selection: $settings.runtime, options: ["docker", "containerd", "incus"])
+                .disabled(!isNew)
+                .help(isNew ? "" : "Fixed once the VM exists")
         }
-        .disabled(profiles.isBusy)
-        .padding(20)
-        .cardSurface()
     }
 
     private func stepButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {

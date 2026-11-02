@@ -32,7 +32,7 @@ final class VolumesViewModel {
     private(set) var removingNames: Set<String> = []
     var toast: String? { toasts.message }
 
-    private(set) var isCreateBarOpen = false
+    private(set) var isCreateOpen = false
     var newName = ""
     private(set) var isCreating = false
     private(set) var createError: String?
@@ -141,13 +141,13 @@ final class VolumesViewModel {
         showToast("Removed \(volume.name)")
     }
 
-    func openCreateBar() {
-        isCreateBarOpen = true
+    func openCreate() {
+        isCreateOpen = true
         createError = nil
     }
 
-    func closeCreateBar() {
-        isCreateBarOpen = false
+    func closeCreate() {
+        isCreateOpen = false
         createError = nil
     }
 
@@ -162,7 +162,7 @@ final class VolumesViewModel {
             createError = error.localizedDescription
             return
         }
-        isCreateBarOpen = false
+        isCreateOpen = false
         createError = nil
         newName = ""
         showToast("Created \(name)")

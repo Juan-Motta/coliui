@@ -122,7 +122,7 @@ private func container(_ state: ContainerState, _ status: String, id: String = "
         let model = ImagesViewModel(repository: FakeImageRepository(images: []), puller: puller, containers: { [] }, toastDuration: .zero)
         var finished: [String] = []
         model.onPullFinished = { reference, _ in finished.append(reference) }
-        model.openPullBar()
+        model.openPull()
         model.pullReference = "nginx"
         await model.pull()
         #expect(finished == ["nginx"])

@@ -11,9 +11,6 @@ struct ImagesView: View {
         VStack(alignment: .leading, spacing: 0) {
             ImagesHeader()
             VStack(alignment: .leading, spacing: 14) {
-                if images.isPullBarOpen {
-                    PullBar()
-                }
                 HStack {
                     CapsuleSegmented(
                         options: ImageFilter.allCases.map {
@@ -41,7 +38,6 @@ struct ImagesView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .animation(.easeOut(duration: 0.2), value: images.isPullBarOpen)
         .confirmationDialog(
             "Remove “\(pendingRemoval.map(Self.title) ?? "")”?",
             isPresented: Binding(get: { pendingRemoval != nil }, set: { if !$0 { images.pendingRemoval = nil } }),
@@ -50,11 +46,6 @@ struct ImagesView: View {
             Button("Remove", role: .destructive) { Task { await images.remove(image) } }
         } message: { image in
             Text(image.isDangling ? "This can't be undone." : "Pull it again to get it back; images you built locally are gone for good.")
-        }
-        .sheet(isPresented: Binding(get: { model.runForm != nil }, set: { if !$0 { model.closeRunForm() } })) {
-            if let form = model.runForm {
-                RunContainerSheet(form: form).environment(model)
-            }
         }
         .overlay(alignment: .bottom) {
             if let error = images.errorMessage, !images.images.isEmpty {
@@ -129,7 +120,7 @@ private struct ImagesHeader: View {
             .glassSurface(Capsule())
             .help("Search by repository, tag or ID")
 
-            Button { images.openPullBar() } label: {
+            Button { images.openPull() } label: {
                 HStack(spacing: 6) {
                     LineIcon(kind: .download).icon(.white, size: 14, svgStrokeWidth: 2.2)
                     Text("Pull image")
@@ -146,42 +137,34 @@ private struct ImagesHeader: View {
 }
 
 /// Glass bar: "Image" field, progress, Cancel, Pull.
-private struct PullBar: View {
+/// PullImageModal.dc.html: the reference, then the download's progress. Closing it leaves the pull running.
+struct PullImageModal: View {
     @Environment(AppModel.self) private var model
-    @FocusState private var focused: Bool
 
     var body: some View {
         @Bindable var images = model.images
-        HStack(spacing: 10) {
-            Text("Image").font(.ui(13, .medium))
-            TextField("nginx:latest", text: $images.pullReference)
-                .textFieldStyle(.plain)
-                .font(.mono(12))
-                .padding(.horizontal, 10)
-                .frame(minWidth: 220, maxWidth: .infinity)
-                .frame(height: 30)
-                .background(Palette.field, in: .rect(cornerRadius: 10))
-                .focused($focused)
-                .disabled(images.isPulling)
-                .onSubmit { Task { await images.pull() } }
-
-            if let progress = images.pullProgress {
-                HStack(spacing: 8) {
-                    ProgressTrack(fraction: progress.fraction)
-                    Text(verbatim: progress.title)
-                        .font(.ui(12))
-                        .foregroundStyle(Palette.tertiary)
-                        .monospacedDigit()
-                }
-                .frame(minWidth: 180, alignment: .leading)
-            } else if let error = images.pullError {
-                Text(error)
-                    .font(.ui(12))
-                    .foregroundStyle(Palette.danger)
-                    .lineLimit(2)
-                    .frame(maxWidth: 260, alignment: .leading)
+        ModalPanel(title: "Pull an image", lede: "From Docker Hub, or any registry as host/name:tag", width: 520) {
+            ModalTextField(label: "Image", placeholder: "nginx:latest", text: $images.pullReference) {
+                Task { await images.pull() }
             }
-
+            .disabled(images.isPulling)
+            if let progress = images.pullProgress {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(verbatim: progress.title)
+                        .font(.ui(12, .semibold))
+                        .monospacedDigit()
+                    ProgressBar(fraction: progress.fraction)
+                    Text("You can close this; the pull keeps going.")
+                        .font(.ui(11))
+                        .foregroundStyle(Palette.secondary)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .background(Palette.field, in: .rect(cornerRadius: 14))
+            } else if let error = images.pullError {
+                Text(error).font(.ui(11)).foregroundStyle(Palette.danger)
+            }
+        } actions: {
             Button("Cancel") { images.cancelPull() }
                 .buttonStyle(PillButtonStyle())
                 .keyboardShortcut(.cancelAction)
@@ -190,15 +173,11 @@ private struct PullBar: View {
                 .buttonStyle(TintButtonStyle())
                 .disabled(images.isPulling || images.pullReference.trimmingCharacters(in: .whitespaces).isEmpty)
         }
-        .padding(.leading, 16)
-        .padding([.trailing, .vertical], 8)
-        .glassSurface(RoundedRectangle(cornerRadius: 22))
-        .onAppear { focused = true }
     }
 }
 
-/// 120×6 track, `#0066CC` fill; indeterminate before sizes are known.
-private struct ProgressTrack: View {
+/// 6 pt track with the `#0066CC` fill; indeterminate before sizes are known.
+private struct ProgressBar: View {
     let fraction: Double?
 
     var body: some View {
@@ -206,12 +185,14 @@ private struct ProgressTrack: View {
             Capsule()
                 .fill(Palette.progressTrack)
                 .overlay(alignment: .leading) {
-                    Capsule().fill(Palette.accent).frame(width: 120 * min(max(fraction, 0), 1))
+                    GeometryReader { proxy in
+                        Capsule().fill(Palette.accent).frame(width: proxy.size.width * min(max(fraction, 0), 1))
+                    }
                 }
-                .frame(width: 120, height: 6)
+                .frame(height: 6)
                 .animation(.linear(duration: 0.2), value: fraction)
         } else {
-            ProgressView().controlSize(.small).frame(width: 120, alignment: .leading)
+            ProgressView().progressViewStyle(.linear)
         }
     }
 }

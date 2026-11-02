@@ -12,9 +12,6 @@ struct NetworksView: View {
         VStack(alignment: .leading, spacing: 0) {
             NetworksHeader()
             VStack(alignment: .leading, spacing: 14) {
-                if networks.isCreateBarOpen {
-                    CreateNetworkBar()
-                }
                 HStack {
                     CapsuleSegmented(
                         options: NetworkFilter.allCases.map {
@@ -42,7 +39,6 @@ struct NetworksView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .animation(.easeOut(duration: 0.2), value: networks.isCreateBarOpen)
         .confirmationDialog(
             "Remove “\(pendingRemoval?.name ?? "")”?",
             isPresented: Binding(get: { pendingRemoval != nil }, set: { if !$0 { networks.pendingRemoval = nil } }),
@@ -121,7 +117,7 @@ private struct NetworksHeader: View {
             .glassSurface(Capsule())
             .help("Search by name, driver, subnet or Compose project")
 
-            Button { networks.openCreateBar() } label: {
+            Button { networks.openCreate() } label: {
                 HStack(spacing: 6) {
                     LineIcon(kind: .plus).icon(.white, size: 14, svgStrokeWidth: 2.4)
                     Text("New network")
@@ -138,62 +134,43 @@ private struct NetworksHeader: View {
 }
 
 /// Glass bar: "Name" field, "Driver" picker, "Internal (no internet)", Cancel, Create.
-private struct CreateNetworkBar: View {
+/// NewNetworkModal.dc.html: name, driver, Internal, Cancel / Create.
+struct NewNetworkModal: View {
     @Environment(AppModel.self) private var model
-    @FocusState private var focused: Bool
 
     var body: some View {
         @Bindable var networks = model.networks
         let showNameError = !networks.newName.isEmpty && networks.nameError != nil
-        HStack(spacing: 10) {
-            Text("Name").font(.ui(13, .medium))
-            TextField("backend", text: $networks.newName)
-                .textFieldStyle(.plain)
-                .font(.mono(12))
-                .padding(.horizontal, 10)
-                .frame(minWidth: 200, maxWidth: .infinity)
-                .frame(height: 30)
-                .background(Palette.field, in: .rect(cornerRadius: 10))
-                .focused($focused)
-                .onSubmit { Task { await networks.create() } }
-
-            Text("Driver").font(.ui(13, .medium))
-            Picker("Driver", selection: $networks.newDriver) {
-                ForEach(NetworksViewModel.drivers, id: \.self) { Text($0).tag($0) }
+        ModalPanel(title: "New network", lede: "Containers on the same network reach each other by name") {
+            ModalTextField(label: "Name", placeholder: "backend", text: $networks.newName) {
+                Task { await networks.create() }
             }
-            .labelsHidden()
-            .fixedSize()
-            .help("bridge for containers on this Mac; macvlan gives containers their own address on your LAN")
-
+            HStack {
+                Text("Driver").font(.ui(12)).foregroundStyle(Palette.tertiary)
+                Spacer()
+                CapsuleSegmented(
+                    options: NetworksViewModel.drivers.map { SegmentOption(value: $0, title: $0) },
+                    selection: $networks.newDriver, style: .field
+                )
+                .help("bridge for containers on this Mac; macvlan gives containers their own address on your LAN")
+            }
             Toggle("Internal (no internet)", isOn: $networks.newInternal)
                 .toggleStyle(.checkbox)
-                .font(.ui(12))
-                .foregroundStyle(Palette.tertiary)
+                .font(.ui(13))
                 .help("Containers on it can reach each other but not the internet")
-
             if let error = networks.createError ?? (showNameError ? networks.nameError : nil) {
-                Text(error)
-                    .font(.ui(12))
-                    .foregroundStyle(Palette.danger)
-                    .lineLimit(2)
-                    .frame(maxWidth: 220, alignment: .leading)
-            } else if networks.isCreating {
-                ProgressView().controlSize(.small)
+                Text(error).font(.ui(11)).foregroundStyle(Palette.danger)
             }
-
-            Button("Cancel") { networks.closeCreateBar() }
+        } actions: {
+            if networks.isCreating { ProgressView().controlSize(.small) }
+            Button("Cancel") { networks.closeCreate() }
                 .buttonStyle(PillButtonStyle())
                 .keyboardShortcut(.cancelAction)
-                .help("Close")
             Button("Create") { Task { await networks.create() } }
                 .buttonStyle(TintButtonStyle())
                 .disabled(networks.isCreating || networks.nameError != nil)
         }
         .disabled(networks.isCreating)
-        .padding(.leading, 16)
-        .padding([.trailing, .vertical], 8)
-        .glassSurface(RoundedRectangle(cornerRadius: 22))
-        .onAppear { focused = true }
     }
 }
 

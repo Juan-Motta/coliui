@@ -107,12 +107,12 @@ private func makeModel(
 
     @Test func createsAndClosesTheBar() async {
         let (model, repository) = makeModel()
-        model.openCreateBar()
+        model.openCreate()
         model.newName = " minio-data "
         await model.create()
 
         #expect(repository.created == ["minio-data"])
-        #expect(!model.isCreateBarOpen)
+        #expect(!model.isCreateOpen)
         #expect(model.newName == "")
         #expect(model.toast == "Created minio-data")
         #expect(repository.loads == 1)
@@ -122,7 +122,7 @@ private func makeModel(
     func rejectsInvalidOrTakenNames(name: String) async {
         let (model, repository) = makeModel()
         await model.refresh()
-        model.openCreateBar()
+        model.openCreate()
         model.newName = name
         #expect(model.nameError != nil)
         await model.create()
@@ -132,14 +132,14 @@ private func makeModel(
     @Test func createErrorsStayInTheBar() async {
         let (model, repository) = makeModel()
         repository.error = DockerError.requestFailed(status: 500, message: "driver failed")
-        model.openCreateBar()
+        model.openCreate()
         model.newName = "minio-data"
         await model.create()
-        #expect(model.isCreateBarOpen)
+        #expect(model.isCreateOpen)
         #expect(model.createError == "driver failed")
 
-        model.closeCreateBar()
-        #expect(!model.isCreateBarOpen)
+        model.closeCreate()
+        #expect(!model.isCreateOpen)
         #expect(model.createError == nil)
     }
 }

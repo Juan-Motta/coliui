@@ -48,11 +48,14 @@ struct MainWindow: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        // While the Settings modal is up, the screen behind it takes no clicks or shortcuts (⌘⌫, ⌘N, Esc…).
-        .disabled(model.isSettingsPresented)
+        // While a modal is up, the screen behind it takes no clicks or shortcuts (⌘⌫, ⌘N, Esc…).
+        .disabled(model.isSettingsPresented || model.presentedModal != nil)
         .foregroundStyle(Palette.text)
         .background(Palette.window)
         .ignoresSafeArea()
+        // Create modals (Run, Pull, New volume / network / profile); a click outside closes them.
+        .overlay { ModalHost() }
+        .animation(.easeOut(duration: 0.18), value: model.presentedModal != nil)
         // A custom modal rather than a sheet: a click outside it closes it.
         .overlay {
             if model.isSettingsPresented {

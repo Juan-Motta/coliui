@@ -33,7 +33,7 @@ final class ImagesViewModel {
     private(set) var removingIDs: Set<String> = []
     var toast: String? { toasts.message }
 
-    private(set) var isPullBarOpen = false
+    private(set) var isPullOpen = false
     var pullReference = ""
     private(set) var pullProgress: PullProgress?
     private(set) var pullError: String?
@@ -147,8 +147,8 @@ final class ImagesViewModel {
         showToast("Removed \(image.isDangling ? image.shortID : image.reference)")
     }
 
-    func openPullBar() {
-        isPullBarOpen = true
+    func openPull() {
+        isPullOpen = true
         pullError = nil
     }
 
@@ -163,7 +163,7 @@ final class ImagesViewModel {
                 for try await progress in puller.pull(reference) { pullProgress = progress }
                 guard !Task.isCancelled else { return }
                 onPullFinished?(reference, ContinuousClock.now - started)
-                isPullBarOpen = false
+                isPullOpen = false
                 pullReference = ""
                 showToast("Pulled \(reference)")
                 await refresh()
@@ -177,12 +177,18 @@ final class ImagesViewModel {
         pullProgress = nil
     }
 
-    /// Stops a running pull; otherwise closes the bar.
+    /// A click outside the modal: it closes, and a running pull keeps going (a notification says when it's done).
+    func closePull() {
+        isPullOpen = false
+        if pullTask == nil { pullError = nil }
+    }
+
+    /// Stops a running pull; otherwise closes the modal.
     func cancelPull() {
         if let pullTask {
             pullTask.cancel()
         } else {
-            isPullBarOpen = false
+            isPullOpen = false
             pullError = nil
         }
     }

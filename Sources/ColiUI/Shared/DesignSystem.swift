@@ -7,6 +7,9 @@ enum Palette {
     static let sidebar = dynamic(rgb(240, 240, 244, 0.72), rgb(48, 48, 52, 0.72))
     static let glass = dynamic(rgb(255, 255, 255, 0.6), rgb(44, 44, 48, 0.6))
     static let glassBorder = dynamic(rgb(255, 255, 255, 0.8), rgb(255, 255, 255, 0.12))
+    /// Modals (RunContainer.dc.html): the dialog card and the wash over the window behind it.
+    static let modalSurface = dynamic(rgb(252, 252, 254, 0.94), rgb(44, 44, 48, 0.94))
+    static let modalBackdrop = dynamic(rgb(240, 240, 244, 0.55), rgb(0, 0, 0, 0.35))
     static let glassHighlight = dynamic(rgb(255, 255, 255, 0.7), rgb(255, 255, 255, 0.08))
     static let glassShadow = dynamic(rgb(0, 0, 0, 0.08), rgb(0, 0, 0, 0.3))
 
@@ -417,7 +420,7 @@ struct LineIcon: Shape {
         case refresh, sort, search, plus, trash
         case chevronLeft, chevronRight, terminal, download
         case folder, copy, external, check, warning, minus
-        case bell, keyboard, eye, lock, arrowUp, link
+        case bell, keyboard, eye, lock, arrowUp, link, info
     }
 
     let kind: Kind
@@ -527,6 +530,9 @@ struct LineIcon: Shape {
             path.addLine(to: p(8, 8))
             path.addArc(center: p(12, 8), radius: 4, startAngle: .degrees(180), endAngle: .degrees(360), clockwise: false)
             path.addLine(to: p(16, 11))
+        case .info:
+            path.addEllipse(in: CGRect(x: 3, y: 3, width: 18, height: 18))
+            line(p(12, 11), p(12, 17)); line(p(12, 7.5), p(12, 8))
         case .arrowUp:
             line(p(12, 19), p(12, 6)); line(p(6, 11), p(12, 5), p(18, 11))
         case .link:

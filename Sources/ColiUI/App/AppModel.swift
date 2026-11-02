@@ -9,6 +9,8 @@ import Observation
 final class AppModel {
     let containers: ContainersViewModel
     let colima: ColimaViewModel
+    /// Settings › About; nil in tests that don't need it.
+    let about: AboutViewModel?
     let cleanup: CleanupViewModel
     let profiles: ProfilesViewModel
     let images: ImagesViewModel
@@ -48,6 +50,7 @@ final class AppModel {
         volumes: VolumesViewModel,
         networks: NetworksViewModel,
         settings: AppSettings,
+        about: AboutViewModel? = nil,
         notifier: Notifying = SystemNotifier(),
         socketPath: String = "",
         repository: ContainerRepository? = nil,
@@ -64,6 +67,7 @@ final class AppModel {
         self.volumes = volumes
         self.networks = networks
         self.settings = settings
+        self.about = about
         self.notifier = notifier
         self.socketPath = socketPath
         self.repository = repository
@@ -106,6 +110,40 @@ final class AppModel {
 
     func closeRunForm() {
         runForm = nil
+    }
+
+    /// The create modal on screen, if any (Settings has its own).
+    enum PresentedModal {
+        case run(RunContainerViewModel), pullImage, newVolume, newNetwork, newProfile
+
+        /// Run container and New profile are long forms and sit near the top; the rest lower down.
+        var isTall: Bool {
+            switch self {
+            case .run, .newProfile: true
+            case .pullImage, .newVolume, .newNetwork: false
+            }
+        }
+    }
+
+    var presentedModal: PresentedModal? {
+        if let runForm { return .run(runForm) }
+        if images.isPullOpen { return .pullImage }
+        if volumes.isCreateOpen { return .newVolume }
+        if networks.isCreateOpen { return .newNetwork }
+        if profiles.isCreating { return .newProfile }
+        return nil
+    }
+
+    /// A click outside the modal. Closing Pull image leaves a running pull going.
+    func dismissModal() {
+        switch presentedModal {
+        case .run: closeRunForm()
+        case .pullImage: images.closePull()
+        case .newVolume: volumes.closeCreate()
+        case .newNetwork: networks.closeCreate()
+        case .newProfile: profiles.cancelNewProfile()
+        case nil: break
+        }
     }
 
     func submitRunForm() async {
@@ -165,6 +203,7 @@ final class AppModel {
             volumes: VolumesViewModel(repository: repository, containers: { containers.containers }),
             networks: NetworksViewModel(repository: repository, containers: { containers.containers }),
             settings: settings,
+            about: AboutViewModel(colima: runtime as? ColimaVersionSource, engine: repository, socketPath: socketPath),
             socketPath: socketPath,
             repository: repository,
             runner: repository,

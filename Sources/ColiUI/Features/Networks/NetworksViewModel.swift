@@ -33,7 +33,7 @@ final class NetworksViewModel {
     private(set) var removingIDs: Set<String> = []
     var toast: String? { toasts.message }
 
-    private(set) var isCreateBarOpen = false
+    private(set) var isCreateOpen = false
     var newName = ""
     var newDriver = "bridge"
     var newInternal = false
@@ -142,13 +142,13 @@ final class NetworksViewModel {
         showToast("Removed \(network.name)")
     }
 
-    func openCreateBar() {
-        isCreateBarOpen = true
+    func openCreate() {
+        isCreateOpen = true
         createError = nil
     }
 
-    func closeCreateBar() {
-        isCreateBarOpen = false
+    func closeCreate() {
+        isCreateOpen = false
         createError = nil
     }
 
@@ -163,7 +163,7 @@ final class NetworksViewModel {
             createError = error.localizedDescription
             return
         }
-        isCreateBarOpen = false
+        isCreateOpen = false
         createError = nil
         newName = ""
         newDriver = "bridge"

@@ -133,12 +133,12 @@ private func makeModel(
         let puller = FakeImagePuller()
         puller.steps = [PullProgress(phase: .downloading, fraction: 0.62), PullProgress(phase: .done, fraction: 1)]
         let (model, repository) = makeModel(puller: puller)
-        model.openPullBar()
+        model.openPull()
         model.pullReference = "  python:3.13-slim "
         await model.pull()
 
         #expect(puller.pulled == ["python:3.13-slim"])
-        #expect(!model.isPullBarOpen)
+        #expect(!model.isPullOpen)
         #expect(!model.isPulling)
         #expect(model.pullReference == "")
         #expect(model.toast == "Pulled python:3.13-slim")
@@ -149,11 +149,11 @@ private func makeModel(
         let puller = FakeImagePuller()
         puller.error = DockerError.requestFailed(status: 200, message: "manifest unknown")
         let (model, _) = makeModel(puller: puller)
-        model.openPullBar()
+        model.openPull()
         model.pullReference = "nope:404"
         await model.pull()
 
-        #expect(model.isPullBarOpen)
+        #expect(model.isPullOpen)
         #expect(model.pullError == "manifest unknown")
         #expect(model.pullProgress == nil)
     }
@@ -161,9 +161,30 @@ private func makeModel(
     @Test func emptyReferenceDoesNotPull() async {
         let puller = FakeImagePuller()
         let (model, _) = makeModel(puller: puller)
-        model.openPullBar()
+        model.openPull()
         await model.pull()
         #expect(puller.pulled.isEmpty)
+    }
+
+    /// Clicking outside the Pull modal hides it; the download goes on.
+    @Test func closingThePullModalKeepsPulling() async throws {
+        let puller = FakeImagePuller()
+        puller.steps = [PullProgress(phase: .downloading, fraction: 0.1)]
+        puller.hangs = true
+        let (model, _) = makeModel(puller: puller)
+        model.openPull()
+        model.pullReference = "python:3.13-slim"
+        let pull = Task { await model.pull() }
+        while model.pullProgress?.fraction != 0.1 { await Task.yield() }
+
+        model.closePull()
+        #expect(!model.isPullOpen)
+        #expect(model.isPulling)
+
+        model.openPull()
+        #expect(model.pullProgress?.fraction == 0.1)
+        model.cancelPull()
+        await pull.value
     }
 
     @Test func cancelStopsARunningPullThenClosesTheBar() async throws {
@@ -171,7 +192,7 @@ private func makeModel(
         puller.steps = [PullProgress(phase: .downloading, fraction: 0.1)]
         puller.hangs = true
         let (model, repository) = makeModel(puller: puller)
-        model.openPullBar()
+        model.openPull()
         model.pullReference = "python:3.13-slim"
         let pull = Task { await model.pull() }
         while model.pullProgress?.fraction != 0.1 { await Task.yield() }
@@ -180,11 +201,11 @@ private func makeModel(
         await pull.value
         #expect(!model.isPulling)
         #expect(model.pullProgress == nil)
-        #expect(model.isPullBarOpen)
+        #expect(model.isPullOpen)
         #expect(model.toast == nil)
         #expect(repository.loads == 0)
 
         model.cancelPull()
-        #expect(!model.isPullBarOpen)
+        #expect(!model.isPullOpen)
     }
 }

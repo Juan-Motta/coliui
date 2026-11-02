@@ -61,11 +61,6 @@ struct ContainersView: View {
         } message: { container in
             Text(container.isRunning ? "It's running and will be stopped first. This can't be undone." : "This can't be undone.")
         }
-        .sheet(isPresented: Binding(get: { model.runForm != nil }, set: { if !$0 { model.closeRunForm() } })) {
-            if let form = model.runForm {
-                RunContainerSheet(form: form).environment(model)
-            }
-        }
         .overlay(alignment: .bottom) {
             if let error = containers.errorMessage, !containers.containers.isEmpty {
                 ErrorBanner(message: error) { containers.errorMessage = nil }

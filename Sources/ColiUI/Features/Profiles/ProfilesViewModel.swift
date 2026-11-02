@@ -23,6 +23,8 @@ final class ProfilesViewModel {
     private(set) var original: ColimaProfileSettings?
     private(set) var operation: ProfileOperation?
     var draft = ColimaProfileSettings.newProfile
+    /// The New profile modal's settings; the editor keeps showing the selected profile behind it.
+    var newDraft = ColimaProfileSettings.newProfile
     var newName = ""
     var confirmingApply = false
     var confirmingDelete = false
@@ -40,9 +42,9 @@ final class ProfilesViewModel {
     var runningCount: Int { profiles.filter(\.isRunning).count }
     var selected: ColimaInstance? { profiles.first { $0.name == selectedName } }
     var isBusy: Bool { operation != nil }
-    var isDirty: Bool { isCreating || draft != original }
+    var isDirty: Bool { draft != original }
     /// Colima disks can grow but never shrink.
-    var minimumDisk: Int { isCreating ? 20 : (original?.diskGiB ?? 20) }
+    var minimumDisk: Int { original?.diskGiB ?? 20 }
 
     var nameError: String? {
         let name = newName.trimmingCharacters(in: .whitespaces)
@@ -64,7 +66,6 @@ final class ProfilesViewModel {
             errorMessage = error.localizedDescription
             return
         }
-        guard !isCreating else { return }
         let target = profiles.first { $0.name == selectedName }?.name ?? profiles.first?.name
         if let target { await show(target) } else { selectedName = nil }
     }
@@ -77,31 +78,28 @@ final class ProfilesViewModel {
 
     /// Reloads keep the last error visible (an apply that failed still reloads the list).
     private func show(_ name: String) async {
-        isCreating = false
         selectedName = name
         let instance = profiles.first { $0.name == name }
         let settings = (try? await runtime.settings(profile: name)) ?? instance.map(Self.fallbackSettings)
         // Another profile was picked while `colima` answered; its settings must not land on that one.
-        guard selectedName == name, !isCreating else { return }
+        guard selectedName == name else { return }
         original = settings
         draft = settings ?? .newProfile
     }
 
     func startNewProfile() {
         isCreating = true
-        selectedName = nil
-        original = nil
-        draft = .newProfile
+        newDraft = .newProfile
         newName = ""
         errorMessage = nil
     }
 
+    func cancelNewProfile() {
+        isCreating = false
+    }
+
     func revert() {
-        if isCreating {
-            draft = .newProfile
-        } else if let original {
-            draft = original
-        }
+        if let original { draft = original }
     }
 
     /// Restarting a running VM stops its containers, so ask first.
@@ -125,7 +123,7 @@ final class ProfilesViewModel {
         guard nameError == nil else { return }
         let name = newName.trimmingCharacters(in: .whitespaces)
         let succeeded = await perform(.creating) {
-            try await runtime.create(profile: name, settings: draft)
+            try await runtime.create(profile: name, settings: newDraft)
         }
         guard succeeded else { return }
         isCreating = false

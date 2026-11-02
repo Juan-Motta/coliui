@@ -6,6 +6,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     case general = "General"
     case notifications = "Notifications"
     case shortcuts = "Shortcuts"
+    case about = "About"
 
     var id: Self { self }
 
@@ -14,6 +15,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .general: .settings
         case .notifications: .bell
         case .shortcuts: .keyboard
+        case .about: .info
         }
     }
 }
@@ -43,6 +45,7 @@ struct SettingsView: View {
                     case .general: GeneralSettings()
                     case .notifications: NotificationSettings()
                     case .shortcuts: ShortcutSettings()
+                    case .about: AboutSettings()
                     }
                 }
                 .padding(.top, 8)
@@ -259,6 +262,61 @@ private struct SettingsSection<Content: View>: View {
                 .padding(.horizontal, 6)
             SettingsGroup { content }
         }
+    }
+}
+
+/// Settings.dc.html › About: icon, name, version and tagline; "This Mac"; Copy diagnostics and the project links.
+private struct AboutSettings: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        let about = model.about
+        VStack(alignment: .center, spacing: 18) {
+            VStack(spacing: 6) {
+                Image(nsImage: NSApp.applicationIconImage)
+                    .resizable()
+                    .frame(width: 72, height: 72)
+                    .accessibilityHidden(true)
+                Text("ColiUI").font(.ui(20, .semibold))
+                Text("Version \(about?.appVersion ?? AboutViewModel.bundleVersion)").font(.ui(12)).foregroundStyle(Palette.secondary)
+                Text("A native Mac app for Colima and Docker").font(.ui(13)).foregroundStyle(Palette.tertiary)
+            }
+            .padding(.top, 8)
+
+            SettingsSection("This Mac") {
+                ForEach(about?.rows ?? [], id: \.title) { row in
+                    SettingsRow {
+                        Text(row.title)
+                        Spacer()
+                        Text(verbatim: row.value)
+                            .font(.mono(12))
+                            .foregroundStyle(Palette.tertiary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .textSelection(.enabled)
+                    }
+                }
+            }
+
+            HStack(spacing: 8) {
+                Button(about?.justCopied == true ? "Copied" : "Copy diagnostics") {
+                    Clipboard.copy(about?.diagnostics ?? "")
+                    about?.markCopied()
+                }
+                .buttonStyle(PillButtonStyle())
+                .disabled(about?.rows.isEmpty ?? true)
+                Link(destination: AboutViewModel.repository) { Text("GitHub repository ↗") }
+                    .buttonStyle(PillButtonStyle())
+                Link(destination: AboutViewModel.newIssue) { Text("Report an issue ↗") }
+                    .buttonStyle(PillButtonStyle())
+            }
+
+            Text("Copy diagnostics puts these versions on the clipboard, ready to paste into an issue.")
+                .font(.ui(11))
+                .foregroundStyle(Palette.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .task { await about?.load(profile: model.colima.profile, vmType: model.colima.instance?.vmType) }
     }
 }
 

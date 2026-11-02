@@ -99,14 +99,14 @@ private func makeModel(networks: [DockerNetwork] = [shop, legacy, bridge, host])
 
     @Test func createsWithDriverAndInternal() async {
         let (model, repository) = makeModel()
-        model.openCreateBar()
+        model.openCreate()
         model.newName = " backend "
         model.newDriver = "macvlan"
         model.newInternal = true
         await model.create()
 
         #expect(repository.created == [.init(name: "backend", driver: "macvlan", internal: true)])
-        #expect(!model.isCreateBarOpen)
+        #expect(!model.isCreateOpen)
         #expect(model.newName == "")
         #expect(model.newDriver == "bridge")
         #expect(!model.newInternal)
@@ -117,7 +117,7 @@ private func makeModel(networks: [DockerNetwork] = [shop, legacy, bridge, host])
     func rejectsInvalidOrTakenNames(name: String) async {
         let (model, repository) = makeModel()
         await model.refresh()
-        model.openCreateBar()
+        model.openCreate()
         model.newName = name
         #expect(model.nameError != nil)
         await model.create()
@@ -127,10 +127,10 @@ private func makeModel(networks: [DockerNetwork] = [shop, legacy, bridge, host])
     @Test func createErrorsStayInTheBar() async {
         let (model, repository) = makeModel()
         repository.error = DockerError.requestFailed(status: 400, message: "invalid subnet")
-        model.openCreateBar()
+        model.openCreate()
         model.newName = "backend"
         await model.create()
-        #expect(model.isCreateBarOpen)
+        #expect(model.isCreateOpen)
         #expect(model.createError == "invalid subnet")
     }
 }

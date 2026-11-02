@@ -65,7 +65,36 @@ private func makeModel() -> (ProfilesViewModel, FakeColimaRuntime) {
         await model.load()
         #expect(model.minimumDisk == 60)
         model.startNewProfile()
-        #expect(model.minimumDisk == 20)
+        #expect(model.minimumDisk == 60)
+        #expect(model.newDraft.diskGiB >= ColimaProfileSettings.newProfile.diskGiB)
+    }
+
+    /// The New profile modal has its own settings; the editor keeps the selected profile behind it.
+    @Test func aNewProfileLeavesTheSelectedOneAlone() async {
+        let (model, _) = makeModel()
+        await model.load()
+        model.draft.cpus = 6
+        model.startNewProfile()
+        model.newDraft.cpus = 2
+
+        #expect(model.isCreating)
+        #expect(model.selectedName == "default")
+        #expect(model.draft.cpus == 6)
+
+        model.cancelNewProfile()
+        #expect(!model.isCreating)
+        #expect(model.draft.cpus == 6)
+    }
+
+    /// The profiles list refreshes on its own; that must not close the New profile modal.
+    @Test func refreshingKeepsTheNewProfileOpen() async {
+        let (model, _) = makeModel()
+        await model.load()
+        model.startNewProfile()
+        model.newName = "work2"
+        await model.load()
+        #expect(model.isCreating)
+        #expect(model.newName == "work2")
     }
 
     @Test func applyingARunningProfileAsksFirst() async {
@@ -113,7 +142,7 @@ private func makeModel() -> (ProfilesViewModel, FakeColimaRuntime) {
         await model.load()
         model.startNewProfile()
         model.newName = "x86-legacy"
-        model.draft.vmType = "qemu"
+        model.newDraft.vmType = "qemu"
         await model.create()
         #expect(runtime.commands == ["create x86-legacy qemu"])
         #expect(!model.isCreating)

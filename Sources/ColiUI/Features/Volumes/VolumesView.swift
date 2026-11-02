@@ -12,9 +12,6 @@ struct VolumesView: View {
         VStack(alignment: .leading, spacing: 0) {
             VolumesHeader()
             VStack(alignment: .leading, spacing: 14) {
-                if volumes.isCreateBarOpen {
-                    CreateVolumeBar()
-                }
                 HStack {
                     CapsuleSegmented(
                         options: VolumeFilter.allCases.map {
@@ -45,7 +42,6 @@ struct VolumesView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .animation(.easeOut(duration: 0.2), value: volumes.isCreateBarOpen)
         .confirmationDialog(
             "Remove “\(pendingRemoval?.name ?? "")”?",
             isPresented: Binding(get: { pendingRemoval != nil }, set: { if !$0 { volumes.pendingRemoval = nil } }),
@@ -124,7 +120,7 @@ private struct VolumesHeader: View {
             .glassSurface(Capsule())
             .help("Search by name or Compose project")
 
-            Button { volumes.openCreateBar() } label: {
+            Button { volumes.openCreate() } label: {
                 HStack(spacing: 6) {
                     LineIcon(kind: .plus).icon(.white, size: 14, svgStrokeWidth: 2.4)
                     Text("New volume")
@@ -141,50 +137,35 @@ private struct VolumesHeader: View {
 }
 
 /// Glass bar: "Name" field, "Driver: local", Cancel, Create.
-private struct CreateVolumeBar: View {
+/// NewVolumeModal.dc.html: name, the local driver, Cancel / Create.
+struct NewVolumeModal: View {
     @Environment(AppModel.self) private var model
-    @FocusState private var focused: Bool
 
     var body: some View {
         @Bindable var volumes = model.volumes
         let showNameError = !volumes.newName.isEmpty && volumes.nameError != nil
-        HStack(spacing: 10) {
-            Text("Name").font(.ui(13, .medium))
-            TextField("minio-data", text: $volumes.newName)
-                .textFieldStyle(.plain)
-                .font(.mono(12))
-                .padding(.horizontal, 10)
-                .frame(minWidth: 220, maxWidth: .infinity)
-                .frame(height: 30)
-                .background(Palette.field, in: .rect(cornerRadius: 10))
-                .focused($focused)
-                .disabled(volumes.isCreating)
-                .onSubmit { Task { await volumes.create() } }
-
-            if let error = volumes.createError ?? (showNameError ? volumes.nameError : nil) {
-                Text(error)
-                    .font(.ui(12))
-                    .foregroundStyle(Palette.danger)
-                    .lineLimit(2)
-                    .frame(maxWidth: 260, alignment: .leading)
-            } else if volumes.isCreating {
-                ProgressView().controlSize(.small)
-            } else {
-                Text("Driver: local").font(.ui(12)).foregroundStyle(Palette.secondary)
+        ModalPanel(title: "New volume", lede: "A named volume that containers can mount") {
+            ModalTextField(label: "Name", placeholder: "minio-data", text: $volumes.newName) {
+                Task { await volumes.create() }
             }
-
-            Button("Cancel") { volumes.closeCreateBar() }
+            .disabled(volumes.isCreating)
+            HStack {
+                Text("Driver").font(.ui(12)).foregroundStyle(Palette.tertiary)
+                Spacer()
+                Text("local").font(.mono(12)).foregroundStyle(Palette.secondary)
+            }
+            if let error = volumes.createError ?? (showNameError ? volumes.nameError : nil) {
+                Text(error).font(.ui(11)).foregroundStyle(Palette.danger)
+            }
+        } actions: {
+            if volumes.isCreating { ProgressView().controlSize(.small) }
+            Button("Cancel") { volumes.closeCreate() }
                 .buttonStyle(PillButtonStyle())
                 .keyboardShortcut(.cancelAction)
-                .help("Close")
             Button("Create") { Task { await volumes.create() } }
                 .buttonStyle(TintButtonStyle())
                 .disabled(volumes.isCreating || volumes.nameError != nil)
         }
-        .padding(.leading, 16)
-        .padding([.trailing, .vertical], 8)
-        .glassSurface(RoundedRectangle(cornerRadius: 22))
-        .onAppear { focused = true }
     }
 }
 
