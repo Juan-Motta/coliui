@@ -267,9 +267,34 @@ final class AppModel {
         }
     }
 
-    /// Settings › Show icon in Dock and Theme.
+    /// Whether the main window is on screen; it brings the Dock icon with it.
+    private(set) var isMainWindowOpen = false
+
+    func mainWindowOpened() {
+        isMainWindowOpen = true
+        applySystemSettings()
+    }
+
+    /// Closing the window keeps the app in the menu bar; only Quit ends it.
+    func mainWindowClosed() {
+        isMainWindowOpen = false
+        applySystemSettings()
+    }
+
+    /// The Dock icon shows while the window is open; Settings › Show icon in Dock keeps it when it's closed.
+    nonisolated static func showsDockIcon(showInDock: Bool, isMainWindowOpen: Bool) -> Bool {
+        showInDock || isMainWindowOpen
+    }
+
+    /// Dock icon (Settings › Show icon in Dock plus the window) and Theme.
     func applySystemSettings() {
-        NSApp.setActivationPolicy(settings.showInDock ? .regular : .accessory)
+        let policy: NSApplication.ActivationPolicy =
+            Self.showsDockIcon(showInDock: settings.showInDock, isMainWindowOpen: isMainWindowOpen) ? .regular : .accessory
+        if NSApp.activationPolicy() != policy {
+            NSApp.setActivationPolicy(policy)
+            // Becoming a regular app doesn't bring the window forward by itself.
+            if policy == .regular { NSApp.activate() }
+        }
         NSApp.appearance = switch settings.theme {
         case .system: nil
         case .light: NSAppearance(named: .aqua)

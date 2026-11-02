@@ -25,3 +25,4 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 - L3 (2026-11-01, user, verbatim): "quiero ue settings sea mas como un modal en lugar de otra ventana" — Settings is now a sheet on the main window with a Done button (Esc); ⌘, and the sidebar row open it.
 - L4 (2026-11-01, user, verbatim): "si presiono fuera del modal se debe cerrar" — replaced the sheet with an overlay modal over a dimmed backdrop; clicking the backdrop, Done or Esc closes it.
 - L5 (2026-11-02, user, verbatim): "Se ve bien"
+- L14 (2026-11-02, user, verbatim): "cuando abro la ventana no se ve icono en el dock ... si yo abro la ventana deberia verse el icono en el dock, si la cierro solo deberia quedar el icono de arriba a menos de que la cierra explicitamente con quit" — the Dock icon now follows the main window (regular while open, accessory when closed); Settings › Show icon in Dock keeps it when closed.

@@ -73,6 +73,8 @@ struct MainWindow: View {
         }
         .animation(.easeOut(duration: 0.18), value: model.isSettingsPresented)
         .onChange(of: model.settings.showInDock) { model.applySystemSettings() }
+        .onAppear { model.mainWindowOpened() }
+        .onDisappear { model.mainWindowClosed() }
         .onChange(of: model.settings.theme) { model.applySystemSettings() }
     }
 }
