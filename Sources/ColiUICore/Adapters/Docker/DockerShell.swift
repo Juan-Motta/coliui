@@ -98,6 +98,9 @@ public struct DockerShell: ShellConnector {
 }
 
 /// One live shell. Output arrives on `output`; closing shuts the socket, which ends the stream.
+/// Writes can block forever (the socket has no timeout and a program may never read stdin), so they
+/// never hold `lock`: `close()` must always be able to shut the socket down, which also fails the write.
+/// Only the reader closes the descriptor, after the write queue drains, so no write can hit a reused fd.
 final class DockerShellSession: ShellSession, @unchecked Sendable {
     let output: AsyncThrowingStream<Data, Error>
     private let fd: Int32
@@ -114,7 +117,7 @@ final class DockerShellSession: ShellSession, @unchecked Sendable {
         let (stream, continuation) = AsyncThrowingStream<Data, Error>.makeStream()
         output = stream
         if !leftover.isEmpty { continuation.yield(leftover) }
-        let lock = lock
+        let (lock, writer) = (lock, writer)
         Task.detached(priority: .userInitiated) { [weak self] in
             var chunk = [UInt8](repeating: 0, count: 32 * 1024)
             var failure: Error?
@@ -129,6 +132,9 @@ final class DockerShellSession: ShellSession, @unchecked Sendable {
                     break
                 }
             }
+            // Make sure no write is in flight (after shutdown they fail fast), then retire the fd.
+            shutdown(fd, SHUT_RDWR)
+            writer.sync {}
             lock.withLock {
                 self?.finished = true
                 Darwin.close(fd)
@@ -139,10 +145,8 @@ final class DockerShellSession: ShellSession, @unchecked Sendable {
 
     func send(_ data: Data) {
         writer.async { [fd, lock] in
-            lock.withLock {
-                guard !self.finished else { return }
-                try? UnixSocketTransport.writeAll(data, to: fd)
-            }
+            guard !lock.withLock({ self.finished }) else { return }
+            try? UnixSocketTransport.writeAll(data, to: fd)
         }
     }
 

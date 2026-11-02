@@ -20,3 +20,4 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 
 - L1 (2026-11-02, user, verbatim): "Terminal"
 - L2 (2026-11-02, user): emulator choice → "Usar SwiftTerm (Recommended)" (first external dependency, app target only).
+- L3 (2026-11-02): independent verifier found a blocker — DockerShellSession.send held the lock across a write that can block forever, so Disconnect froze the app when a program stops reading stdin. RED observed (suite hung, then a 3 s regression test failed); fixed by writing without the lock and draining the write queue before the reader closes the fd. Security quoting and the dependency pin passed review.

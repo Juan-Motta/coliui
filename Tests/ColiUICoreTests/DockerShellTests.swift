@@ -71,3 +71,41 @@ private func response(_ status: Int, _ body: String = "") -> HTTPResponse {
         }
     }
 }
+
+@Suite struct DockerShellSessionTests {
+    /// A shell running something that never reads stdin: writes block once the buffers fill,
+    /// and closing must still return (it used to wait for the blocked write's lock).
+    @Test func closeReturnsWhileAWriteIsBlocked() async throws {
+        var fds: [Int32] = [0, 0]
+        #expect(socketpair(AF_UNIX, SOCK_STREAM, 0, &fds) == 0)
+        defer { Darwin.close(fds[1]) }
+        var small: Int32 = 4096
+        setsockopt(fds[0], SOL_SOCKET, SO_SNDBUF, &small, socklen_t(MemoryLayout<Int32>.size))
+        var noSigPipe: Int32 = 1
+        setsockopt(fds[0], SOL_SOCKET, SO_NOSIGPIPE, &noSigPipe, socklen_t(MemoryLayout<Int32>.size))
+
+        let session = DockerShellSession(
+            fd: fds[0], leftover: Data(), execID: "ex",
+            repository: DockerEngineRepository(transport: FakeTransport(response: response(200)))
+        )
+        session.send(Data(repeating: 0x61, count: 4 << 20)) // far more than the socket buffers hold
+        try await Task.sleep(for: .milliseconds(200))
+
+        // A thread, so a blocked close() fails the test instead of hanging the suite.
+        let returned = Flag()
+        Thread.detachNewThread { session.close(); returned.set() }
+        let deadline = ContinuousClock.now + .seconds(3)
+        while !returned.value, ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(20)) }
+        #expect(returned.value, "close() blocked behind a write that can never finish")
+        guard returned.value else { return }
+
+        for try await _ in session.output {}
+    }
+}
+
+private final class Flag: @unchecked Sendable {
+    private let lock = NSLock()
+    private var isSet = false
+    var value: Bool { lock.withLock { isSet } }
+    func set() { lock.withLock { isSet = true } }
+}
