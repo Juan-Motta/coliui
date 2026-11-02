@@ -13,7 +13,7 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 ## Tasks
 
 - T1 — S2, S4 · inline · core: extended stats (CPU count, memory limit, network and block I/O totals, sample time) + tests — done
-- T2 — S1–S4 · inline · stats history model + Stats tab + tests
+- T2 — S1–S4 · inline · stats history model + Stats tab + tests — done (198 tests; live read of a running container). Visual check pending.
 
 ## Log
 

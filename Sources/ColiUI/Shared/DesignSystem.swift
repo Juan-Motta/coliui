@@ -43,6 +43,8 @@ enum Palette {
     /// Settings.dc.html: window ground and switch tint.
     static let settingsBackground = dynamic(rgb(0xF5, 0xF5, 0xF7), rgb(0x1C, 0x1C, 0x1E))
     static let switchOn = dynamic(rgb(0x30, 0xA1, 0x4E), rgb(0x30, 0xD1, 0x58))
+    /// Live stats gridlines (`#F0F0F3`).
+    static let chartGrid = dynamic(rgb(0xF0, 0xF0, 0xF3), rgb(255, 255, 255, 0.08))
     static let progressTrack = dynamic(rgb(0, 0, 0, 0.08), rgb(255, 255, 255, 0.12))
     static let toggleOn = dynamic(rgb(0, 102, 204, 0.14), rgb(77, 163, 255, 0.24))
     static let toggleOnText = dynamic(rgb(0x0B, 0x4F, 0x8A), rgb(0x7B, 0xBB, 0xFF))

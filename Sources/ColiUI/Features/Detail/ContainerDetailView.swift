@@ -27,7 +27,9 @@ struct ContainerDetailView: View {
 
             HStack(alignment: .top, spacing: 16) {
                 Group {
-                    if detail.tab == .logs {
+                    if detail.tab == .stats {
+                        LiveStatsSection(stats: detail.liveStats)
+                    } else if detail.tab == .logs {
                         LogsSection(detail: detail, name: container?.name ?? detail.details?.name ?? "container")
                     } else {
                         Text("Designed, not built yet.")
@@ -40,12 +42,18 @@ struct ContainerDetailView: View {
                 }
                 .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
-                InfoCards(details: detail.details, container: container)
-                    .frame(minWidth: 260, idealWidth: 300, maxWidth: 320)
+                // LiveStats.dc.html gives the charts the full width.
+                if detail.tab != .stats {
+                    InfoCards(details: detail.details, container: container)
+                        .frame(minWidth: 260, idealWidth: 300, maxWidth: 320)
+                }
             }
             .padding(.top, 14)
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
+        }
+        .task(id: detail.tab) {
+            if detail.tab == .stats { await detail.liveStats.run() }
         }
         .confirmationDialog(
             "Remove “\(pendingRemoval?.name ?? "")”?",

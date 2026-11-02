@@ -76,4 +76,14 @@ struct LiveDockerTests {
             "\(network.name) \(network.driver) \(network.subnet ?? "-") [\(containers.filter { $0.networkNames.contains(network.name) }.count)]"
         })
     }
+
+    /// Read-only: extended stats of a running container.
+    @Test func readsExtendedStats() async throws {
+        let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socket))
+        let container = try #require(try await repository.listContainers().first { $0.isRunning })
+        let stats = try await repository.stats(id: container.id)
+        #expect(stats.sampledAt != nil)
+        print("live stats:", container.name, stats.cpuDisplay, stats.memoryDisplay, "cpus", stats.onlineCPUs,
+              "limit", stats.memoryLimit ?? -1, "net", stats.networkReceived, stats.networkSent, "blk", stats.blockRead, stats.blockWritten)
+    }
 }

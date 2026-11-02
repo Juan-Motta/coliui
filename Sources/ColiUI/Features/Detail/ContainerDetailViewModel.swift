@@ -43,6 +43,8 @@ final class ContainerDetailViewModel {
     var useRegex = false
     var follow = true
     var showTimestamps = true
+    /// The Stats tab; samples only while that tab is open.
+    let liveStats: LiveStatsViewModel
 
     private let repository: ContainerRepository
     private let logSource: ContainerLogSource
@@ -61,6 +63,7 @@ final class ContainerDetailViewModel {
         self.logSource = logSource
         self.range = range
         self.now = now
+        liveStats = LiveStatsViewModel(containerID: containerID, repository: repository)
     }
 
     private var regex: Regex<AnyRegexOutput>? {
