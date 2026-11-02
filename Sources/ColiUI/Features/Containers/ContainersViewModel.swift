@@ -64,6 +64,9 @@ final class ContainersViewModel {
     private(set) var collapsedGroups: Set<String> = []
     private(set) var toast: String?
 
+    /// Called with every fresh list (Settings › Notifications watches state changes).
+    var onRefresh: (([Container]) -> Void)?
+
     private let repository: ContainerRepository
     private let toastDuration: Duration
     private var toastTask: Task<Void, Never>?
@@ -184,6 +187,7 @@ final class ContainersViewModel {
             containers = try await repository.listContainers()
                 .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
             errorMessage = nil
+            onRefresh?(containers)
         } catch {
             // A stale list would suggest containers are still there while Docker is down.
             containers = []

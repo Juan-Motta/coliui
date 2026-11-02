@@ -16,6 +16,9 @@ final class CleanupViewModel {
     var confirmingCleanup = false
     var errorMessage: String?
 
+    /// Called after every successful scan (Settings › Notifications › VM disk almost full).
+    var onScan: ((DiskUsage) -> Void)?
+
     private let maintenance: DockerMaintenance
     private let now: () -> Date
 
@@ -47,6 +50,7 @@ final class CleanupViewModel {
             usage = try await maintenance.diskUsage()
             lastScan = now()
             errorMessage = nil
+            if let usage { onScan?(usage) }
         } catch {
             errorMessage = error.localizedDescription
         }

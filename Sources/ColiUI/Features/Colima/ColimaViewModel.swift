@@ -22,6 +22,11 @@ final class ColimaViewModel {
     private(set) var pendingAction: ColimaAction?
     var errorMessage: String?
     let profile: String
+    /// True after the user stops the VM, so that stop isn't reported as unexpected.
+    private(set) var stoppedByUser = false
+    /// Called after every successful refresh, and when a start fails (Settings › Notifications).
+    var onRefresh: ((ColimaViewModel) -> Void)?
+    var onStartFailed: ((String) -> Void)?
 
     private let runtime: ColimaRuntime
 
@@ -41,6 +46,8 @@ final class ColimaViewModel {
             errorMessage = instance == nil
                 ? "Colima profile “\(profile)” not found. Start it with `colima start`."
                 : nil
+            if isRunning { stoppedByUser = false }
+            onRefresh?(self)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -64,8 +71,10 @@ final class ColimaViewModel {
             }
         } catch {
             errorMessage = error.localizedDescription
+            if action == .start { onStartFailed?(error.localizedDescription) }
             return
         }
+        if action == .stop { stoppedByUser = true }
         await refresh()
     }
 }

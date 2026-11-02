@@ -37,6 +37,8 @@ final class ImagesViewModel {
     private(set) var pullProgress: PullProgress?
     private(set) var pullError: String?
     var isPulling: Bool { pullTask != nil }
+    /// Called with the reference and how long a successful pull took (Settings › Notifications).
+    var onPullFinished: ((String, Duration) -> Void)?
 
     private let repository: ImageRepository
     private let puller: ImagePuller
@@ -147,10 +149,12 @@ final class ImagesViewModel {
         guard !reference.isEmpty, pullTask == nil else { return }
         pullError = nil
         pullProgress = PullProgress(phase: .waiting, fraction: nil)
+        let started = ContinuousClock.now
         let task = Task { [puller] in
             do {
                 for try await progress in puller.pull(reference) { pullProgress = progress }
                 guard !Task.isCancelled else { return }
+                onPullFinished?(reference, ContinuousClock.now - started)
                 isPullBarOpen = false
                 pullReference = ""
                 showToast("Pulled \(reference)")

@@ -33,6 +33,7 @@ final class AppModel {
     private var pollTask: Task<Void, Never>?
     private var eventsTask: Task<Void, Never>?
     private var statsTask: Task<Void, Never>?
+    private var alertRules = AlertRules()
 
     static let shared = AppModel.live()
 
@@ -68,6 +69,7 @@ final class AppModel {
         self.logSource = logSource
         self.inventory = inventory
         self.events = events
+        watchForAlerts()
     }
 
     func openDetail(_ container: Container) {
@@ -197,10 +199,49 @@ final class AppModel {
                     if section == .volumes { await volumes.refresh() }
                     if section == .networks { await networks.refresh() }
                 }
+                // Re-measure the disk every ~5 minutes while its alert is on (`docker system df` takes about a second).
+                if tick > 0, tick % 100 == 0, settings.isEnabled(.diskAlmostFull) {
+                    await cleanup.scan()
+                }
                 await containers.refresh()
                 tick += 1
                 try? await Task.sleep(for: .seconds(3))
             }
+        }
+    }
+
+    /// Settings › Notifications: feeds what the view models observe into the alert rules.
+    private func watchForAlerts() {
+        containers.onRefresh = { [weak self] list in
+            guard let self else { return }
+            deliver(alertRules.containersChanged(list, now: Date()))
+        }
+        colima.onRefresh = { [weak self] colima in
+            guard let self, colima.instance != nil else { return }
+            deliver(alertRules.colimaChanged(isRunning: colima.isRunning, userStopped: colima.stoppedByUser, profile: colima.profile))
+        }
+        colima.onStartFailed = { [weak self] message in
+            guard let self else { return }
+            deliver([AlertRules.colimaStartFailed(profile: colima.profile, message: message)])
+        }
+        cleanup.onScan = { [weak self] usage in
+            guard let self, let capacity = colima.instance?.diskBytes else { return }
+            deliver(alertRules.diskMeasured(used: usage.totalBytes, capacity: capacity, profile: colima.profile))
+        }
+        images.onPullFinished = { [weak self] reference, duration in
+            guard let self, let alert = AlertRules.pullFinished(reference: reference, duration: duration) else { return }
+            deliver([alert])
+        }
+        notifier.onOpen = { [weak self] identifier in
+            guard let self else { return }
+            NSApp.activate()
+            if identifier == AlertRules.diskIdentifier { select(.cleanup) }
+        }
+    }
+
+    private func deliver(_ alerts: [Alert]) {
+        for alert in alerts where settings.isEnabled(alert.kind) {
+            notifier.post(title: alert.title, body: alert.body, identifier: alert.identifier)
         }
     }
 

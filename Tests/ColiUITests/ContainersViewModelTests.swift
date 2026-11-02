@@ -158,7 +158,10 @@ final class FakeColimaRuntime: ColimaRuntime, @unchecked Sendable {
         return instancesResult
     }
 
-    func start(profile: String) async throws { lock.withLock { _commands.append("start \(profile)") } }
+    func start(profile: String) async throws {
+        lock.withLock { _commands.append("start \(profile)") }
+        if let commandError { throw commandError }
+    }
     func stop(profile: String) async throws { lock.withLock { _commands.append("stop \(profile)") } }
     func restart(profile: String) async throws { lock.withLock { _commands.append("restart \(profile)") } }
 
