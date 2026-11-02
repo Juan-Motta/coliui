@@ -42,6 +42,8 @@ struct MainWindow: View {
                     ImagesView()
                 case .volumes:
                     VolumesView()
+                case .networks:
+                    NetworksView()
                 case let other:
                     PlaceholderScreen(section: other)
                 }

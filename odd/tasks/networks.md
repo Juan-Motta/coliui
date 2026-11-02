@@ -13,8 +13,8 @@ Branch: `feat/mvp-core` · Delivery: work-unit commits, no push · Runner: `swif
 
 ## Tasks
 
-- T1 — S1–S5 · inline · core: network list, create, remove, container networks + tests
-- T2 — S1–S5 · inline · view model + screen + tests
+- T1 — S1–S5 · inline · core: network list, create, remove, container networks + tests — done (6776272; live read-only list)
+- T2 — S1–S5 · inline · view model + screen + tests — done (163 tests). Visual check pending; no real create/remove run.
 
 ## Log
 

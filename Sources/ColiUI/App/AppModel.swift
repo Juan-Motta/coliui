@@ -12,6 +12,7 @@ final class AppModel {
     let profiles: ProfilesViewModel
     let images: ImagesViewModel
     let volumes: VolumesViewModel
+    let networks: NetworksViewModel
     var section: SidebarSection? = .containers
     private(set) var summary: DockerSummary?
     /// The open container detail, if any (shown in place of the list).
@@ -36,6 +37,7 @@ final class AppModel {
         profiles: ProfilesViewModel,
         images: ImagesViewModel,
         volumes: VolumesViewModel,
+        networks: NetworksViewModel,
         repository: ContainerRepository? = nil,
         runner: ContainerRunner? = nil,
         logSource: ContainerLogSource? = nil,
@@ -48,6 +50,7 @@ final class AppModel {
         self.profiles = profiles
         self.images = images
         self.volumes = volumes
+        self.networks = networks
         self.repository = repository
         self.runner = runner
         self.logSource = logSource
@@ -115,6 +118,9 @@ final class AppModel {
         if section == .volumes {
             Task { await volumes.refresh() }
         }
+        if section == .networks {
+            Task { await networks.refresh() }
+        }
     }
 
     static func live(profile: String = "default") -> AppModel {
@@ -139,6 +145,7 @@ final class AppModel {
                 containers: { containers.containers }
             ),
             volumes: VolumesViewModel(repository: repository, containers: { containers.containers }),
+            networks: NetworksViewModel(repository: repository, containers: { containers.containers }),
             repository: repository,
             runner: repository,
             logSource: DockerLogStream(socketPath: socketPath),
@@ -175,6 +182,7 @@ final class AppModel {
                     summary = try? await inventory?.summary()
                     if section == .images { await images.refresh() }
                     if section == .volumes { await volumes.refresh() }
+                    if section == .networks { await networks.refresh() }
                 }
                 await containers.refresh()
                 tick += 1
