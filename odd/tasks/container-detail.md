@@ -26,3 +26,4 @@ Route evidence: T2 depends on T1's ports, no parallel writers.
 - L3: `swift test --filter` fails with the CLT (TestingMacros plugin not loaded); the full suite works. Live integration test gated by `COLIUI_LIVE=1`. Log lines wrap instead of scrolling horizontally (readability over the mockup's nowrap).
 - L4 (user): "ok se ve bien" — detail with live logs, ports and row navigation visually accepted.
 - L5 (2026-11-02, user, verbatim): "cuando abro logs y hay varios en la ventana empieza a mostrar el mas antiguo y empiza a mostrar hacia abajo todos hasta que llega al final, me gustaria que inicie diurectamente en el mas reciente" — cause: one `lines` update per streamed line; fix: lines are flushed every 50 ms (and at stream end), so the history lands in a few updates. RED observed (many updates for 300 lines), then GREEN.
+- L6 (2026-11-02, user, verbatim): "Sí, funciona"
