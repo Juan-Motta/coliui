@@ -8,6 +8,8 @@ final class FakeLogSource: ContainerLogSource, @unchecked Sendable {
     private let lock = NSLock()
     private var _calls: [Call] = []
     var lines: [LogLine]
+    /// Like a followed stream: the history arrives, then the stream stays open.
+    var keepsOpen = false
 
     init(lines: [LogLine]) { self.lines = lines }
 
@@ -15,10 +17,10 @@ final class FakeLogSource: ContainerLogSource, @unchecked Sendable {
 
     func logs(id: String, since: Date?, tail: Int, tty: Bool) -> AsyncThrowingStream<LogLine, Error> {
         lock.withLock { _calls.append(Call(id: id, since: since, tail: tail, tty: tty)) }
-        let lines = lines
+        let (lines, keepsOpen) = (lines, keepsOpen)
         return AsyncThrowingStream { continuation in
             lines.forEach { continuation.yield($0) }
-            continuation.finish()
+            if !keepsOpen { continuation.finish() }
         }
     }
 }
@@ -41,8 +43,38 @@ private func makeModel(_ lines: [LogLine]) -> (ContainerDetailViewModel, FakeLog
     return (model, source)
 }
 
+/// Counts how many separate times `lines` changes, re-arming observation after each change.
+@MainActor
+private final class ChangeCounter {
+    private(set) var count = 0
+
+    func watch(_ model: ContainerDetailViewModel) {
+        withObservationTracking { _ = model.lines } onChange: { [weak self] in
+            Task { @MainActor in
+                self?.count += 1
+                self?.watch(model)
+            }
+        }
+    }
+}
+
 @MainActor
 @Suite struct ContainerDetailViewModelTests {
+    /// Opening Logs used to add the history one line at a time, so the panel visibly scrolled
+    /// through all of it; the history now lands in a few batches and the panel opens at the newest line.
+    @Test func historyArrivesInBatches() async throws {
+        let (model, source) = makeModel((0..<300).map { line($0, "line \($0)") })
+        source.keepsOpen = true
+        let counter = ChangeCounter()
+        counter.watch(model)
+        await model.start()
+        for _ in 0..<40 where model.lines.count < 300 { try await Task.sleep(for: .milliseconds(10)) }
+
+        #expect(model.lines.count == 300)
+        #expect(counter.count <= 3)
+        model.stop()
+    }
+
     @Test func startLoadsDetailsAndStreamsTheLast15Minutes() async {
         let (model, source) = makeModel([line(0, "Starting server", level: .info), line(1, "GET /health 200")])
         await model.start()

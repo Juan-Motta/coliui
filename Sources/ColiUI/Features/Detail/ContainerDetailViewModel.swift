@@ -56,6 +56,11 @@ final class ContainerDetailViewModel {
     private let logSource: ContainerLogSource
     private let now: () -> Date
     private var streamTask: Task<Void, Never>?
+    /// Lines waiting for the next flush; a whole history arrives in a few updates instead of one per line,
+    /// so the panel opens at the newest line instead of visibly scrolling through the backlog.
+    private var pending: [LogLine] = []
+    private var flushScheduled = false
+    static let flushInterval: Duration = .milliseconds(50)
 
     init(
         containerID: String,
@@ -114,6 +119,7 @@ final class ContainerDetailViewModel {
 
     func clear() {
         lines = []
+        pending = []
     }
 
     /// Visible lines as "2026-11-01T10:42:01Z INFO message".
@@ -135,6 +141,7 @@ final class ContainerDetailViewModel {
     private func startLogs() {
         streamTask?.cancel()
         lines = []
+        pending = []
         streamError = nil
         let stream = logSource.logs(
             id: containerID,
@@ -147,15 +154,30 @@ final class ContainerDetailViewModel {
                 for try await line in stream {
                     self?.append(line)
                 }
+                self?.flush()
             } catch {
                 guard !Task.isCancelled else { return }
+                self?.flush()
                 self?.streamError = error.localizedDescription
             }
         }
     }
 
     private func append(_ line: LogLine) {
-        lines.append(line)
+        pending.append(line)
+        guard !flushScheduled else { return }
+        flushScheduled = true
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: Self.flushInterval)
+            self?.flush()
+        }
+    }
+
+    private func flush() {
+        flushScheduled = false
+        guard !pending.isEmpty else { return }
+        lines.append(contentsOf: pending)
+        pending = []
         if lines.count > Self.maxLines {
             lines.removeFirst(lines.count - Self.maxLines)
         }
