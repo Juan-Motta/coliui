@@ -9,9 +9,49 @@ struct RunContainerSheet: View {
     let form: RunContainerViewModel
 
     var body: some View {
+        VStack(spacing: 0) {
+            // The sheet hugs its content; the form scrolls only when the window is too short.
+            ViewThatFits(in: .vertical) {
+                fields
+                ScrollView(.vertical) { fields }
+            }
+            footer
+        }
+        .frame(width: 640)
+    }
+
+    private var footer: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if let message = form.showValidation ? (form.validationError ?? form.errorMessage) : form.errorMessage {
+                Text(message).font(.ui(12)).foregroundStyle(Palette.danger)
+            }
+            HStack(spacing: 8) {
+                Spacer()
+                Button("Cancel") { model.closeRunForm() }
+                    .buttonStyle(PillButtonStyle())
+                    .keyboardShortcut(.cancelAction)
+                Button {
+                    Task { await model.submitRunForm() }
+                } label: {
+                    HStack(spacing: 6) {
+                        if form.isRunning { ProgressView().controlSize(.mini).tint(.white) }
+                        Text(form.isRunning ? (form.pull ? "Pulling…" : "Starting…") : "Run")
+                    }
+                    .padding(.horizontal, 4)
+                }
+                .buttonStyle(TintButtonStyle())
+                .keyboardShortcut(.defaultAction)
+                .disabled(form.isRunning)
+            }
+        }
+        .padding(.horizontal, 26)
+        .padding(.top, 8)
+        .padding(.bottom, 24)
+    }
+
+    private var fields: some View {
         @Bindable var form = form
-        ScrollView(.vertical) {
-            VStack(alignment: .leading, spacing: 16) {
+        return VStack(alignment: .leading, spacing: 16) {
                 Text("Run a new container").font(.ui(17, .semibold))
 
                 HStack(alignment: .top, spacing: 12) {
@@ -113,35 +153,10 @@ struct RunContainerSheet: View {
                         .padding(.vertical, 12)
                         .background(Palette.logBackground, in: .rect(cornerRadius: 14))
                 }
-
-                if let message = form.showValidation ? (form.validationError ?? form.errorMessage) : form.errorMessage {
-                    Text(message).font(.ui(12)).foregroundStyle(Palette.danger)
-                }
-
-                HStack(spacing: 8) {
-                    Spacer()
-                    Button("Cancel") { model.closeRunForm() }
-                        .buttonStyle(PillButtonStyle())
-                        .keyboardShortcut(.cancelAction)
-                    Button {
-                        Task { await model.submitRunForm() }
-                    } label: {
-                        HStack(spacing: 6) {
-                            if form.isRunning { ProgressView().controlSize(.mini).tint(.white) }
-                            Text(form.isRunning ? (form.pull ? "Pulling…" : "Starting…") : "Run")
-                        }
-                        .padding(.horizontal, 4)
-                    }
-                    .buttonStyle(TintButtonStyle())
-                    .keyboardShortcut(.defaultAction)
-                    .disabled(form.isRunning)
-                }
             }
             .padding(.horizontal, 26)
-            .padding(.vertical, 24)
-        }
-        .frame(width: 640)
-        .frame(minHeight: 560, idealHeight: 760)
+            .padding(.top, 24)
+            .padding(.bottom, 8)
     }
 
     private func labeled<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
