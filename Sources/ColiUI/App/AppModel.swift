@@ -253,19 +253,32 @@ final class AppModel {
     }
 
     /// Settings › Refresh stats every: each stats round takes about a second, so the interval runs between rounds.
+    /// Rounds run only while the containers list (the only screen with CPU / memory columns) is on screen.
     private func startStats() {
         guard statsTask == nil else { return }
         statsTask = Task {
             while !Task.isCancelled {
-                if let interval = settings.statsInterval.duration {
+                let interval = settings.statsInterval.duration
+                if interval == nil { containers.clearStats() }
+                let sampling = Self.samplesStats(enabled: interval != nil, isMainWindowOpen: isMainWindowOpen,
+                                                 showsStatsColumns: showsStatsColumns)
+                if sampling, let interval {
                     await containers.refreshStats()
                     try? await Task.sleep(for: interval)
                 } else {
-                    containers.clearStats()
                     try? await Task.sleep(for: .seconds(1))
                 }
             }
         }
+    }
+
+    /// The containers list in its list layout, with no detail open.
+    private var showsStatsColumns: Bool {
+        (section ?? .containers) == .containers && detail == nil && containers.viewMode == .list
+    }
+
+    nonisolated static func samplesStats(enabled: Bool, isMainWindowOpen: Bool, showsStatsColumns: Bool) -> Bool {
+        enabled && isMainWindowOpen && showsStatsColumns
     }
 
     /// Whether the main window is on screen; it brings the Dock icon with it.
