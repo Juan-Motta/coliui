@@ -183,21 +183,48 @@ private struct StatsDTO: Decodable {
     }
     struct Memory: Decodable {
         let usage: Int64?
+        let limit: Int64?
         let stats: [String: Int64]?
     }
+    struct Network: Decodable {
+        let rx_bytes: Int64
+        let tx_bytes: Int64
+    }
+    struct BlockIO: Decodable {
+        struct Entry: Decodable { let op: String; let value: Int64 }
+        let io_service_bytes_recursive: [Entry]?
+    }
+    let read: String?
     let cpu_stats: CPU
     let precpu_stats: CPU
     let memory_stats: Memory
+    let networks: [String: Network]?
+    let blkio_stats: BlockIO?
 
     /// Same formulas as `docker stats` on Linux (cgroup v2 reports page cache as `inactive_file`).
     func toDomain() -> ContainerStats {
         let cpuDelta = Double(cpu_stats.cpu_usage.total_usage - precpu_stats.cpu_usage.total_usage)
         let systemDelta = Double((cpu_stats.system_cpu_usage ?? 0) - (precpu_stats.system_cpu_usage ?? 0))
-        let cpus = Double(cpu_stats.online_cpus ?? 1)
-        let cpu = cpuDelta > 0 && systemDelta > 0 ? cpuDelta / systemDelta * cpus * 100 : 0
+        let cpus = cpu_stats.online_cpus ?? 1
+        let cpu = cpuDelta > 0 && systemDelta > 0 ? cpuDelta / systemDelta * Double(cpus) * 100 : 0
         let cache = memory_stats.stats?["inactive_file"] ?? memory_stats.stats?["total_inactive_file"] ?? 0
         let memory = max((memory_stats.usage ?? 0) - cache, 0)
-        return ContainerStats(cpuPercent: cpu, memoryBytes: memory)
+        let io = blkio_stats?.io_service_bytes_recursive ?? []
+        func blockTotal(_ op: String) -> Int64 {
+            io.filter { $0.op.lowercased() == op }.reduce(0) { $0 + $1.value }
+        }
+        let networks = (networks ?? [:]).values
+        return ContainerStats(
+            cpuPercent: cpu,
+            memoryBytes: memory,
+            onlineCPUs: cpus,
+            memoryLimit: memory_stats.limit.flatMap { $0 > 0 ? $0 : nil },
+            networkReceived: networks.reduce(0) { $0 + $1.rx_bytes },
+            networkSent: networks.reduce(0) { $0 + $1.tx_bytes },
+            blockRead: blockTotal("read"),
+            blockWritten: blockTotal("write"),
+            sampledAt: read.flatMap(LogLineParser.parseTimestamp)
+        )
     }
 }
 

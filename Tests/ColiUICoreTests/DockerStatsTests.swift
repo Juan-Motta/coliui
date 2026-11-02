@@ -22,6 +22,38 @@ import Testing
         #expect(stats.memoryDisplay == "86 MiB")
     }
 
+    @Test func readsLimitsAndIOTotals() async throws {
+        let json = """
+        {"read":"2026-11-02T10:00:02.123456789Z",
+         "cpu_stats":{"cpu_usage":{"total_usage":2},"system_cpu_usage":4,"online_cpus":4},
+         "precpu_stats":{"cpu_usage":{"total_usage":1},"system_cpu_usage":2},
+         "memory_stats":{"usage":2048,"limit":1073741824},
+         "networks":{"eth0":{"rx_bytes":1000,"tx_bytes":400},"eth1":{"rx_bytes":24,"tx_bytes":6}},
+         "blkio_stats":{"io_service_bytes_recursive":[
+           {"major":254,"minor":0,"op":"read","value":5000},{"major":254,"minor":0,"op":"write","value":700},
+           {"major":254,"minor":16,"op":"Read","value":100},{"major":254,"minor":0,"op":"discard","value":9}]}}
+        """
+        let transport = FakeTransport(response: HTTPResponse(statusCode: 200, headers: [:], body: Data(json.utf8)))
+        let stats = try await DockerEngineRepository(transport: transport).stats(id: "abc")
+        #expect(stats.onlineCPUs == 4)
+        #expect(stats.memoryLimit == 1_073_741_824)
+        #expect(stats.networkReceived == 1024)
+        #expect(stats.networkSent == 406)
+        #expect(stats.blockRead == 5100)
+        #expect(stats.blockWritten == 700)
+        let expected = ISO8601DateFormatter().date(from: "2026-11-02T10:00:02Z")!.addingTimeInterval(0.123)
+        #expect(abs((stats.sampledAt ?? .distantPast).timeIntervalSince(expected)) < 0.001)
+    }
+
+    @Test func missingIOSectionsReadAsZero() async throws {
+        let transport = FakeTransport(response: HTTPResponse(statusCode: 200, headers: [:], body: Data(Self.statsJSON.utf8)))
+        let stats = try await DockerEngineRepository(transport: transport).stats(id: "abc")
+        #expect(stats.networkReceived == 0)
+        #expect(stats.blockRead == 0)
+        #expect(stats.memoryLimit == nil)
+        #expect(stats.sampledAt == nil)
+    }
+
     @Test func idleContainerReportsZeroCPU() async throws {
         let json = """
         {"cpu_stats":{"cpu_usage":{"total_usage":5},"system_cpu_usage":10,"online_cpus":2},
