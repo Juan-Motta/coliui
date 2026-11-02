@@ -1,7 +1,7 @@
 import Foundation
 
 /// `ContainerRepository` backed by the Docker Engine REST API.
-public struct DockerEngineRepository: ContainerRepository, ContainerInspector, ContainerEnvironmentSource, DockerInventory {
+public struct DockerEngineRepository: ContainerRepository, ContainerInspector, ContainerEnvironmentSource, EngineVersionSource, DockerInventory {
     let transport: HTTPTransport
 
     public init(transport: HTTPTransport) {
@@ -16,6 +16,11 @@ public struct DockerEngineRepository: ContainerRepository, ContainerInspector, C
     public func stats(id: String) async throws -> ContainerStats {
         let id = try Self.validated(id)
         return try await decode(StatsDTO.self, path: "/containers/\(id)/stats?stream=false").toDomain()
+    }
+
+    public func engineVersion() async throws -> EngineVersion {
+        let dto = try await decode(VersionDTO.self, path: "/version")
+        return EngineVersion(version: dto.version, apiVersion: dto.apiVersion)
     }
 
     public func summary() async throws -> DockerSummary {
@@ -204,6 +209,12 @@ private struct EnvironmentDTO: Decodable {
     let image: String?
     let config: ConfigDTO?
     enum CodingKeys: String, CodingKey { case image = "Image", config = "Config" }
+}
+
+private struct VersionDTO: Decodable {
+    let version: String
+    let apiVersion: String
+    enum CodingKeys: String, CodingKey { case version = "Version", apiVersion = "ApiVersion" }
 }
 
 private struct VolumesDTO: Decodable {

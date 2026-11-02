@@ -18,7 +18,7 @@ public enum ColimaError: Error, Equatable, LocalizedError {
 }
 
 /// `ColimaRuntime` that drives the `colima` CLI (Colima has no API).
-public struct ColimaCLIRuntime: ColimaRuntime {
+public struct ColimaCLIRuntime: ColimaRuntime, ColimaVersionSource {
     private let runner: CommandRunner
     private let executable: String
     private let readConfig: @Sendable (String) -> String?
@@ -105,6 +105,15 @@ public struct ColimaCLIRuntime: ColimaRuntime {
         guard let output = try? await execute(["status", profile, "--json"], timeout: readTimeout),
               let dto = try? JSONDecoder().decode(StatusDTO.self, from: Data(output.utf8)) else { return nil }
         return Self.vmType(forDriver: dto.driver)
+    }
+
+    /// `colima version` prints "colima version 0.10.3" first.
+    public func version() async throws -> String {
+        let output = try await execute(["version"], timeout: readTimeout)
+        guard let line = output.split(whereSeparator: \.isNewline).first, line.hasPrefix("colima version ") else {
+            throw ColimaError.unexpectedOutput
+        }
+        return String(line.dropFirst("colima version ".count))
     }
 
     public func start(profile: String) async throws {

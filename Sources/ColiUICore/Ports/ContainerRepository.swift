@@ -30,6 +30,16 @@ public protocol ContainerFileBrowser: Sendable {
     func archive(id: String, path: String) async throws -> Data
 }
 
+/// The Docker Engine's version (Settings › About).
+public protocol EngineVersionSource: Sendable {
+    func engineVersion() async throws -> EngineVersion
+}
+
+/// The installed Colima's version (Settings › About).
+public protocol ColimaVersionSource: Sendable {
+    func version() async throws -> String
+}
+
 public protocol DockerInventory: Sendable {
     func summary() async throws -> DockerSummary
 }
