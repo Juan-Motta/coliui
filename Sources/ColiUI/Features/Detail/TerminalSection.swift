@@ -91,7 +91,7 @@ struct TerminalSection: View {
     }
 }
 
-/// `.pill`: 30 pt capsule on the field tint, 12 pt label, 6 pt gap.
+/// `.pill` holding a label and a control: `pillSurface()` with the label in front.
 private struct ToolbarPill<Content: View>: View {
     let label: String
     @ViewBuilder let content: Content
@@ -101,10 +101,7 @@ private struct ToolbarPill<Content: View>: View {
             Text(label)
             content
         }
-        .font(.ui(12))
-        .padding(.horizontal, 12)
-        .frame(height: 30)
-        .background(Palette.field, in: .capsule)
+        .pillSurface()
     }
 }
 
