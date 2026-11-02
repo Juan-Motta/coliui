@@ -189,15 +189,12 @@ public struct DockerLogStream: ContainerLogSource {
     public func logs(id: String, since: Date?, tail: Int, tty: Bool) -> AsyncThrowingStream<LogLine, Error> {
         let socketPath = socketPath
         return AsyncThrowingStream { continuation in
+            let socket = StreamingSocket()
+            continuation.onTermination = { _ in socket.cancel() }
             BlockingIO.start {
                 do {
                     let id = try DockerEngineRepository.validated(id)
-                    let fd = try UnixSocketTransport.connect(socketPath: socketPath, timeoutSeconds: 0)
-                    defer { close(fd) }
-                    continuation.onTermination = { _ in shutdown(fd, SHUT_RDWR) }
                     let path = DockerLogs.path(id: id, since: since, tail: tail, follow: true)
-                    try UnixSocketTransport.writeAll(HTTPMessage.request(method: "GET", path: path, body: nil), to: fd)
-
                     var http = ChunkedBodyDecoder()
                     var decoder = DockerLogDecoder(multiplexed: !tty)
                     var nextID = 0
@@ -210,20 +207,12 @@ public struct DockerLogStream: ContainerLogSource {
                         nextID += 1
                     }
 
-                    var chunk = [UInt8](repeating: 0, count: 32 * 1024)
-                    while true {
-                        let count = read(fd, &chunk, chunk.count)
-                        if count > 0 {
-                            let body = http.feed(Data(chunk[0..<count]))
-                            if let status = http.statusCode, status >= 400 {
-                                throw DockerError.requestFailed(status: status, message: "Couldn't read logs (HTTP \(status)).")
-                            }
-                            decoder.feed(body).forEach(emit)
-                        } else if count == 0 {
-                            break
-                        } else if errno != EINTR {
-                            throw DockerError.connectionFailed(String(cString: strerror(errno)))
+                    try socket.run(socketPath: socketPath, request: HTTPMessage.request(method: "GET", path: path, body: nil)) { data in
+                        let body = http.feed(data)
+                        if let status = http.statusCode, status >= 400 {
+                            throw DockerError.requestFailed(status: status, message: "Couldn't read logs (HTTP \(status)).")
                         }
+                        decoder.feed(body).forEach(emit)
                     }
                     decoder.flush().forEach(emit)
                     continuation.finish()

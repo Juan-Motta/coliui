@@ -34,26 +34,14 @@ public enum DockerEvents {
     /// Bursts collapse to the newest value so a consumer refreshes at most once per batch.
     public static func containerEvents(socketPath: String) -> AsyncThrowingStream<Void, Error> {
         AsyncThrowingStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
+            let socket = StreamingSocket()
+            continuation.onTermination = { _ in socket.cancel() }
             BlockingIO.start {
                 do {
-                    let fd = try UnixSocketTransport.connect(socketPath: socketPath, timeoutSeconds: 0)
-                    defer { close(fd) }
-                    continuation.onTermination = { _ in shutdown(fd, SHUT_RDWR) }
-                    try UnixSocketTransport.writeAll(
-                        HTTPMessage.request(method: "GET", path: containerEventsPath, body: nil),
-                        to: fd
-                    )
                     var decoder = DockerEventDecoder()
-                    var chunk = [UInt8](repeating: 0, count: 16 * 1024)
-                    while true {
-                        let count = read(fd, &chunk, chunk.count)
-                        if count > 0 {
-                            for _ in 0..<decoder.feed(Data(chunk[0..<count])) { continuation.yield(()) }
-                        } else if count == 0 {
-                            break
-                        } else if errno != EINTR {
-                            throw DockerError.connectionFailed(String(cString: strerror(errno)))
-                        }
+                    let request = HTTPMessage.request(method: "GET", path: containerEventsPath, body: nil)
+                    try socket.run(socketPath: socketPath, request: request) { data in
+                        for _ in 0..<decoder.feed(data) { continuation.yield(()) }
                     }
                     continuation.finish()
                 } catch {

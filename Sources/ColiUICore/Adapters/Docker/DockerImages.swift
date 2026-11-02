@@ -70,32 +70,21 @@ public struct DockerImagePuller: ImagePuller {
     public func pull(_ reference: String) -> AsyncThrowingStream<PullProgress, Error> {
         let socketPath = socketPath
         return AsyncThrowingStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
+            let socket = StreamingSocket()
+            continuation.onTermination = { _ in socket.cancel() }
             BlockingIO.start {
                 do {
-                    let fd = try UnixSocketTransport.connect(socketPath: socketPath, timeoutSeconds: 0)
-                    defer { close(fd) }
-                    continuation.onTermination = { _ in shutdown(fd, SHUT_RDWR) }
                     let request = HTTPMessage.request(method: "POST", path: DockerImagePull.path(for: reference), body: nil)
-                    try UnixSocketTransport.writeAll(request, to: fd)
-
                     var http = ChunkedBodyDecoder()
                     var tracker = PullProgressTracker()
                     var pending = Data()
-                    var chunk = [UInt8](repeating: 0, count: 16 * 1024)
-                    while true {
-                        let count = read(fd, &chunk, chunk.count)
-                        if count > 0 {
-                            pending.append(http.feed(Data(chunk[0..<count])))
-                            if let status = http.statusCode, status >= 400 { continue }
-                            while let newline = pending.firstIndex(of: UInt8(ascii: "\n")) {
-                                let line = String(decoding: pending[pending.startIndex..<newline], as: UTF8.self)
-                                pending = pending.subdata(in: pending.index(after: newline)..<pending.endIndex)
-                                continuation.yield(try tracker.feed(line))
-                            }
-                        } else if count == 0 {
-                            break
-                        } else if errno != EINTR {
-                            throw DockerError.connectionFailed(String(cString: strerror(errno)))
+                    try socket.run(socketPath: socketPath, request: request) { data in
+                        pending.append(http.feed(data))
+                        if let status = http.statusCode, status >= 400 { return }
+                        while let newline = pending.firstIndex(of: UInt8(ascii: "\n")) {
+                            let line = String(decoding: pending[pending.startIndex..<newline], as: UTF8.self)
+                            pending = pending.subdata(in: pending.index(after: newline)..<pending.endIndex)
+                            continuation.yield(try tracker.feed(line))
                         }
                     }
                     if let status = http.statusCode, status >= 400 {
