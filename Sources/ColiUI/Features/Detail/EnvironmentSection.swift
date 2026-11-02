@@ -21,7 +21,12 @@ struct EnvironmentSection: View {
                 .frame(height: 34)
                 .background(Palette.field, in: .capsule)
 
-                ScopeSegments(environment: environment)
+                CapsuleSegmented(
+                    options: EnvironmentViewModel.Scope.allCases.map {
+                        SegmentOption(value: $0, title: "\($0.rawValue) (\(environment.count(of: $0)))")
+                    },
+                    selection: $environment.scope, style: .field
+                )
 
                 Button { environment.revealAll.toggle() } label: {
                     HStack(spacing: 6) {
@@ -183,35 +188,3 @@ private struct SourceChip: View {
             .background(isContainer ? Palette.toggleOn : Palette.chip, in: .capsule)
     }
 }
-
-/// All / Container / Image with counts: `.seg` buttons in a plain field capsule.
-private struct ScopeSegments: View {
-    let environment: EnvironmentViewModel
-
-    var body: some View {
-        HStack(spacing: 2) {
-            ForEach(EnvironmentViewModel.Scope.allCases) { scope in
-                let isOn = scope == environment.scope
-                Button { environment.scope = scope } label: {
-                    Hoverable { hovered in
-                        Text("\(scope.rawValue) (\(environment.count(of: scope)))")
-                            .font(.ui(12, isOn ? .semibold : .regular))
-                            .foregroundStyle(isOn || hovered ? Palette.segmentOnText : Palette.segmentOffText)
-                            .padding(.horizontal, 12)
-                            .frame(height: 28)
-                            .background {
-                                if isOn { Capsule().fill(Palette.segmentOn).shadow(color: .black.opacity(0.14), radius: 2, y: 1) }
-                            }
-                            .contentShape(.capsule)
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(isOn ? .isSelected : [])
-            }
-        }
-        .padding(.horizontal, 3)
-        .frame(height: 34)
-        .background(Palette.field, in: .capsule)
-    }
-}
-

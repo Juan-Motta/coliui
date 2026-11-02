@@ -11,7 +11,10 @@ struct LiveStatsSection: View {
         // The two rows share the height the window gives them; charts grow instead of leaving space below.
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
-                RangeSegments(selection: $stats.range)
+                CapsuleSegmented(
+                    options: StatsRange.allCases.map { SegmentOption(value: $0, title: $0.rawValue) },
+                    selection: $stats.range, style: .field
+                )
                 HStack(spacing: 6) {
                     Circle().fill(stats.isSampling ? Palette.greenDot : Palette.grayDot).frame(width: 7, height: 7)
                     Text(stats.errorMessage ?? (stats.isPaused ? "Paused" : "Sampling every 2 s · paused when the window is hidden"))
@@ -46,36 +49,6 @@ struct LiveStatsSection: View {
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didChangeOcclusionStateNotification)) { _ in
             stats.isWindowHidden = !NSApp.occlusionState.contains(.visible)
         }
-    }
-}
-
-/// Plain field capsule (not glass) holding `.seg` buttons.
-private struct RangeSegments: View {
-    @Binding var selection: StatsRange
-
-    var body: some View {
-        HStack(spacing: 2) {
-            ForEach(StatsRange.allCases) { range in
-                let isOn = range == selection
-                Button { selection = range } label: {
-                    Hoverable { hovered in
-                        Text(range.rawValue)
-                            .font(.ui(12, isOn ? .semibold : .regular))
-                            .foregroundStyle(isOn || hovered ? Palette.segmentOnText : Palette.segmentOffText)
-                            .padding(.horizontal, 12)
-                            .frame(height: 28)
-                            .background {
-                                if isOn { Capsule().fill(Palette.segmentOn).shadow(color: .black.opacity(0.14), radius: 2, y: 1) }
-                            }
-                            .contentShape(.capsule)
-                    }
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(.horizontal, 3)
-        .frame(height: 34)
-        .background(Palette.field, in: .capsule)
     }
 }
 

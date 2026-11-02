@@ -20,7 +20,10 @@ struct InspectSection: View {
                 .frame(height: 34)
                 .background(Palette.field, in: .capsule)
 
-                ModeSegments(selection: $inspect.mode)
+                CapsuleSegmented(
+                    options: InspectViewModel.Mode.allCases.map { SegmentOption(value: $0, title: $0.rawValue) },
+                    selection: $inspect.mode, style: .field
+                )
 
                 Button("Expand all") { inspect.expandAll() }
                     .buttonStyle(PillButtonStyle())
@@ -172,36 +175,5 @@ private struct Disclosure: Shape {
         path.addLine(to: CGPoint(x: 8 * scale, y: 19 * scale))
         path.closeSubpath()
         return path.offsetBy(dx: rect.minX, dy: rect.minY)
-    }
-}
-
-/// Tree / Raw: `.seg` buttons in a plain field capsule (not glass).
-private struct ModeSegments: View {
-    @Binding var selection: InspectViewModel.Mode
-
-    var body: some View {
-        HStack(spacing: 2) {
-            ForEach(InspectViewModel.Mode.allCases) { mode in
-                let isOn = mode == selection
-                Button { selection = mode } label: {
-                    Hoverable { hovered in
-                        Text(mode.rawValue)
-                            .font(.ui(12, isOn ? .semibold : .regular))
-                            .foregroundStyle(isOn || hovered ? Palette.segmentOnText : Palette.segmentOffText)
-                            .padding(.horizontal, 12)
-                            .frame(height: 28)
-                            .background {
-                                if isOn { Capsule().fill(Palette.segmentOn).shadow(color: .black.opacity(0.14), radius: 2, y: 1) }
-                            }
-                            .contentShape(.capsule)
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(isOn ? .isSelected : [])
-            }
-        }
-        .padding(.horizontal, 3)
-        .frame(height: 34)
-        .background(Palette.field, in: .capsule)
     }
 }

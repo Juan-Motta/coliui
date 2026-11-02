@@ -211,36 +211,50 @@ struct SegmentOption<Value: Hashable>: Identifiable {
     var id: Value { value }
 }
 
-/// `.seg` / `.on` segments inside a glass capsule.
+/// `.seg` / `.on` segments inside a glass capsule, or a plain field capsule (`.field`) inside toolbars.
 struct CapsuleSegmented<Value: Hashable>: View {
+    enum Style { case glass, field }
+
     let options: [SegmentOption<Value>]
     @Binding var selection: Value
+    var style: Style = .glass
 
     var body: some View {
-        GlassCapsule {
-            ForEach(options) { option in
-                let isOn = option.value == selection
-                Button { selection = option.value } label: {
-                    Hoverable { hovered in
-                        Text(option.title)
-                            .font(.ui(12, isOn ? .semibold : .regular))
-                            .foregroundStyle(isOn ? Palette.segmentOnText : Palette.segmentOffText)
-                            .padding(.horizontal, 12)
-                            .frame(height: 28)
-                            .background {
-                                if isOn {
-                                    Capsule().fill(Palette.segmentOn).shadow(color: .black.opacity(0.14), radius: 2, y: 1)
-                                } else if hovered {
-                                    Capsule().fill(Palette.hoverSubtle)
-                                }
+        switch style {
+        case .glass:
+            GlassCapsule { segments }
+        case .field:
+            HStack(spacing: 2) { segments }
+                .padding(.horizontal, 3)
+                .frame(height: 34)
+                .background(Palette.field, in: .capsule)
+        }
+    }
+
+    private var segments: some View {
+        ForEach(options) { option in
+            let isOn = option.value == selection
+            Button { selection = option.value } label: {
+                Hoverable { hovered in
+                    Text(option.title)
+                        .font(.ui(12, isOn ? .semibold : .regular))
+                        // Glass segments get a hover wash; field segments brighten their text instead.
+                        .foregroundStyle(isOn || (hovered && style == .field) ? Palette.segmentOnText : Palette.segmentOffText)
+                        .padding(.horizontal, 12)
+                        .frame(height: 28)
+                        .background {
+                            if isOn {
+                                Capsule().fill(Palette.segmentOn).shadow(color: .black.opacity(0.14), radius: 2, y: 1)
+                            } else if hovered, style == .glass {
+                                Capsule().fill(Palette.hoverSubtle)
                             }
-                            .contentShape(.capsule)
-                    }
+                        }
+                        .contentShape(.capsule)
                 }
-                .buttonStyle(.plain)
-                .help(option.help)
-                .accessibilityAddTraits(isOn ? .isSelected : [])
             }
+            .buttonStyle(.plain)
+            .help(option.help)
+            .accessibilityAddTraits(isOn ? .isSelected : [])
         }
     }
 }
