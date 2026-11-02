@@ -6,15 +6,28 @@ final class FakeTransport: HTTPTransport, @unchecked Sendable {
     struct Call: Equatable { let method: String; let path: String }
     private let lock = NSLock()
     private var _calls: [Call] = []
+    private var _bodies: [Data?] = []
     var response: HTTPResponse
+    /// Responses for specific paths, consumed in order; falls back to `response`.
+    var scripted: [String: [HTTPResponse]] = [:]
 
     init(response: HTTPResponse) { self.response = response }
 
     var calls: [Call] { lock.withLock { _calls } }
+    var bodies: [Data?] { lock.withLock { _bodies } }
 
     func send(method: String, path: String, body: Data?) async throws -> HTTPResponse {
-        lock.withLock { _calls.append(Call(method: method, path: path)) }
-        return response
+        lock.withLock {
+            _calls.append(Call(method: method, path: path))
+            _bodies.append(body)
+            let key = path.components(separatedBy: "?").first ?? path
+            if var queue = scripted[key], !queue.isEmpty {
+                let next = queue.removeFirst()
+                scripted[key] = queue
+                return next
+            }
+            return response
+        }
     }
 }
 

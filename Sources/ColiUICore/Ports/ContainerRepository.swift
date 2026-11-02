@@ -14,6 +14,11 @@ public protocol DockerInventory: Sendable {
     func summary() async throws -> DockerSummary
 }
 
+public protocol ContainerRunner: Sendable {
+    /// Pulls if asked (or if the image is missing), creates and starts the container; returns its ID.
+    func run(_ request: RunRequest) async throws -> String
+}
+
 public protocol DockerMaintenance: Sendable {
     func diskUsage() async throws -> DiskUsage
     /// Removes what `target` no longer uses and returns the bytes freed.
