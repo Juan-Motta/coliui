@@ -19,7 +19,7 @@ extension DockerEngineRepository: ImageRepository {
 
     /// References only use `[A-Za-z0-9_.-:/@]`; anything else could escape the path or add query parameters.
     static func validatedImageReference(_ reference: String) throws -> String {
-        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_.-:/@"))
+        let allowed = DockerEngineRepository.asciiAlphanumerics.union(CharacterSet(charactersIn: "_.-:/@"))
         guard !reference.isEmpty, !reference.hasPrefix("."), !reference.hasPrefix("/"), !reference.contains(".."),
               reference.unicodeScalars.allSatisfy(allowed.contains) else {
             throw DockerError.invalidContainerID

@@ -46,7 +46,9 @@ public struct ContainerFile: Sendable, Equatable, Identifiable {
             if kind == .symlink, let arrow = fields[6].range(of: " -> ") {
                 target = fields[6][arrow.upperBound...].trimmingCharacters(in: CharacterSet(charactersIn: "'\"‘’`"))
             }
-            return ContainerFile(name: fields[5], kind: kind, size: size, modified: Date(timeIntervalSince1970: seconds),
+            // `find` prints `./name`.
+            let name = fields[5].hasPrefix("./") ? String(fields[5].dropFirst(2)) : fields[5]
+            return ContainerFile(name: name, kind: kind, size: size, modified: Date(timeIntervalSince1970: seconds),
                                  mode: fields[0], owner: fields[3], linkTarget: target)
         }
         .sorted { lhs, rhs in

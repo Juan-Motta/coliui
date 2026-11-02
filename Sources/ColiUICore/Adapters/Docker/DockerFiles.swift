@@ -3,14 +3,14 @@ import Foundation
 /// `ContainerFileBrowser` over the Engine API: folders are listed by running `stat` through a
 /// non-interactive exec; files and folders are read through `/containers/{id}/archive` (a tar).
 extension DockerEngineRepository: ContainerFileBrowser {
-    /// `$1` is the folder. `stat` must exist; the globs cover dot files (`.[!.]*`, `..?*`) and the rest,
-    /// and the ones that match nothing just fail to stat (stderr is dropped).
+    /// `$1` is the folder. `find -exec … {} +` hands `stat` the entries in batches, so huge folders don't
+    /// overflow the command line (a `*` glob did); entries that vanish or can't be read are skipped.
     static let listScript: String = {
         let format = ["%A", "%s", "%Y", "%U:%G", "%F", "%n", "%N"].joined(separator: "\t")
         return """
-        command -v stat >/dev/null 2>&1 || exit 127
+        command -v stat >/dev/null 2>&1 && command -v find >/dev/null 2>&1 || exit 127
         cd -- "$1" || exit 3
-        stat -c '\(format)' -- .[!.]* ..?* * 2>/dev/null
+        find . -mindepth 1 -maxdepth 1 -exec stat -c '\(format)' -- {} + 2>/dev/null
         exit 0
         """
     }()

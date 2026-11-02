@@ -109,9 +109,12 @@ public struct DockerEngineRepository: ContainerRepository, ContainerInspector, C
         })
     }
 
+    /// `CharacterSet.alphanumerics` also admits letters and digits of other scripts (é, ٣).
+    static let asciiAlphanumerics = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
     /// Container IDs and names only use `[A-Za-z0-9_.-]`; anything else could escape the path.
     static func validated(_ id: String) throws -> String {
-        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_.-"))
+        let allowed = asciiAlphanumerics.union(CharacterSet(charactersIn: "_.-"))
         guard !id.isEmpty, !id.hasPrefix("."), id.unicodeScalars.allSatisfy(allowed.contains) else {
             throw DockerError.invalidContainerID
         }

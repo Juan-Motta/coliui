@@ -136,11 +136,14 @@ private struct JSONParser {
         let high = try hex4()
         if (0xD800..<0xDC00).contains(high), bytes.count - index >= 6,
            bytes[index] == UInt8(ascii: "\\"), bytes[index + 1] == UInt8(ascii: "u") {
+            let resume = index
             index += 2
             let low = try hex4()
             if (0xDC00..<0xE000).contains(low) {
                 return Unicode.Scalar(0x10000 + ((high - 0xD800) << 10) + (low - 0xDC00)) ?? "\u{FFFD}"
             }
+            // Not a pair: the next escape is a character of its own.
+            index = resume
             return "\u{FFFD}"
         }
         return Unicode.Scalar(high) ?? "\u{FFFD}"

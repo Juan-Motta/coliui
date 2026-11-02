@@ -51,7 +51,8 @@ extension DockerEngineRepository: ContainerRunner {
         }
         let home = NSHomeDirectory()
         let binds = request.volumes.map { volume in
-            let source = volume.source.hasPrefix("~") ? home + volume.source.dropFirst() : volume.source
+            // Only `~` and `~/…` are our home; `~other` stays as typed.
+            let source = volume.source == "~" || volume.source.hasPrefix("~/") ? home + volume.source.dropFirst() : volume.source
             return "\(source):\(volume.target)"
         }
         return [

@@ -87,8 +87,9 @@ enum HTTPMessage {
             }
             if size == 0 { break }
             let chunkStart = lineEnd.upperBound
+            // Compare against what is left first: a huge size field must not overflow the index.
+            guard size <= data.endIndex - chunkStart else { throw DockerError.malformedResponse }
             let chunkEnd = chunkStart + size
-            guard chunkEnd <= data.endIndex else { throw DockerError.malformedResponse }
             output.append(data[chunkStart..<chunkEnd])
             cursor = min(chunkEnd + crlf.count, data.endIndex)
         }

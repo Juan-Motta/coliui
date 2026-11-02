@@ -17,6 +17,7 @@ Branch: `fix/review-findings` · Delivery: work-unit commits, no push · Runner:
 - T4 — S1 · inline · digest references — done (RED observed, then GREEN)
 - T5 — S1 · inline · Files start on container start; shortcuts behind Settings — done (view-only; no unit test: SwiftUI focus, disabled and task identity; built and suite green)
 - T6 — S1 · inline · one secret rule; cancellable colima commands — done (RED observed for both; 297 tests; live colima list ok)
+- T6b — S1 · inline · core edge cases: `~other` binds, ASCII-only IDs, chunk-size overflow (crashed the test process: RED), lone surrogate escape, huge folders via `find -exec stat {} +` — done (303 tests; live files ok on 11 containers)
 - T7 — S2 · inline · performance items
 - T8 — S3 · inline · cleanup items
 
@@ -24,3 +25,4 @@ Branch: `fix/review-findings` · Delivery: work-unit commits, no push · Runner:
 
 - L1 (2026-11-02, user, verbatim): "ok ahora quiero que hagas una revision del proyecto en busca de problemas de optimizacion, posibles errores, malas practicas, y busca codigo simple y limpio" → review delivered; user: "Todo por partes".
 - L2 (2026-11-02): the new socket tests sometimes killed the test process with SIGPIPE: their server replied to clients that had already left, and accepted Unix sockets neither inherit SO_NOSIGPIPE nor take it after the peer closed. The test servers now ignore SIGPIPE (the app sets SO_NOSIGPIPE before connecting, so it is not affected). Also found: the build-retry loop could run tests on a stale binary after a real compile error hidden by the TestingMacros flake; builds are now checked before testing.
+- L3 (2026-11-02): one live files run hit a 30 s socket timeout ("Resource temporarily unavailable") on one request; two reruns passed with identical results and the script answers in 0.13 s by hand. Treated as a transient Colima stall (the transport's timeout did its job).

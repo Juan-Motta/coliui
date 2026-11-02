@@ -70,6 +70,15 @@ private final class ScriptedTransport: HTTPTransport, @unchecked Sendable {
         #expect(files[4].modified == Date(timeIntervalSince1970: 1_793_500_000))
     }
 
+    /// `find` prints `./name`; the listing shows the bare name.
+    @Test func stripsFindsDotSlash() {
+        let output = "drwxr-xr-x\t4096\t1793400000\troot:root\tdirectory\t./src\t'./src'\n"
+            + "lrwxrwxrwx\t8\t1793300000\troot:root\tsymbolic link\t./lib64\t'./lib64' -> '/usr/lib'"
+        let files = ContainerFile.parse(statOutput: output)
+        #expect(files.map(\.name) == ["src", "lib64"])
+        #expect(files[1].linkTarget == "/usr/lib")
+    }
+
     @Test func joinsAndClimbsPaths() {
         #expect(ContainerPath.child(of: "/", "app") == "/app")
         #expect(ContainerPath.child(of: "/app", "src") == "/app/src")
