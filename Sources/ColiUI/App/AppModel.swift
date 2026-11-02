@@ -1,3 +1,4 @@
+import AppKit
 import ColiUICore
 import Foundation
 import Observation
@@ -13,6 +14,10 @@ final class AppModel {
     let images: ImagesViewModel
     let volumes: VolumesViewModel
     let networks: NetworksViewModel
+    let settings: AppSettings
+    let notifier: Notifying
+    /// The socket this session talks to; Settings changes apply on the next launch.
+    let socketPath: String
     var section: SidebarSection? = .containers
     private(set) var summary: DockerSummary?
     /// The open container detail, if any (shown in place of the list).
@@ -27,6 +32,7 @@ final class AppModel {
     private let events: (@Sendable () -> AsyncThrowingStream<Void, Error>)?
     private var pollTask: Task<Void, Never>?
     private var eventsTask: Task<Void, Never>?
+    private var statsTask: Task<Void, Never>?
 
     static let shared = AppModel.live()
 
@@ -38,6 +44,9 @@ final class AppModel {
         images: ImagesViewModel,
         volumes: VolumesViewModel,
         networks: NetworksViewModel,
+        settings: AppSettings,
+        notifier: Notifying = SystemNotifier(),
+        socketPath: String = "",
         repository: ContainerRepository? = nil,
         runner: ContainerRunner? = nil,
         logSource: ContainerLogSource? = nil,
@@ -51,6 +60,9 @@ final class AppModel {
         self.images = images
         self.volumes = volumes
         self.networks = networks
+        self.settings = settings
+        self.notifier = notifier
+        self.socketPath = socketPath
         self.repository = repository
         self.runner = runner
         self.logSource = logSource
@@ -123,12 +135,9 @@ final class AppModel {
         }
     }
 
-    static func live(profile: String = "default") -> AppModel {
-        let socketPath = DockerSocket.resolve(
-            environment: ProcessInfo.processInfo.environment,
-            home: NSHomeDirectory(),
-            profile: profile
-        )
+    static func live(settings: AppSettings = AppSettings()) -> AppModel {
+        let profile = settings.defaultProfile
+        let socketPath = settings.resolvedSocket(environment: ProcessInfo.processInfo.environment, home: NSHomeDirectory())
         let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socketPath))
         let containers = ContainersViewModel(repository: repository)
         let runtime: ColimaRuntime = ColimaCLIRuntime.locateExecutable()
@@ -146,6 +155,8 @@ final class AppModel {
             ),
             volumes: VolumesViewModel(repository: repository, containers: { containers.containers }),
             networks: NetworksViewModel(repository: repository, containers: { containers.containers }),
+            settings: settings,
+            socketPath: socketPath,
             repository: repository,
             runner: repository,
             logSource: DockerLogStream(socketPath: socketPath),
@@ -171,6 +182,7 @@ final class AppModel {
     /// Replace with the Docker events stream later.
     func startPolling() {
         startEvents()
+        startStats()
         guard pollTask == nil else { return }
         // `docker system df` takes about a second, so measure once at launch and on demand.
         Task { await cleanup.scan() }
@@ -179,6 +191,7 @@ final class AppModel {
             while !Task.isCancelled {
                 if tick % 5 == 0 {
                     await colima.refresh()
+                    if tick == 0, settings.startColimaOnOpen { await colima.startIfStopped() }
                     summary = try? await inventory?.summary()
                     if section == .images { await images.refresh() }
                     if section == .volumes { await volumes.refresh() }
@@ -188,6 +201,32 @@ final class AppModel {
                 tick += 1
                 try? await Task.sleep(for: .seconds(3))
             }
+        }
+    }
+
+    /// Settings › Refresh stats every: each stats round takes about a second, so the interval runs between rounds.
+    private func startStats() {
+        guard statsTask == nil else { return }
+        statsTask = Task {
+            while !Task.isCancelled {
+                if let interval = settings.statsInterval.duration {
+                    await containers.refreshStats()
+                    try? await Task.sleep(for: interval)
+                } else {
+                    containers.clearStats()
+                    try? await Task.sleep(for: .seconds(1))
+                }
+            }
+        }
+    }
+
+    /// Settings › Show icon in Dock and Theme.
+    func applySystemSettings() {
+        NSApp.setActivationPolicy(settings.showInDock ? .regular : .accessory)
+        NSApp.appearance = switch settings.theme {
+        case .system: nil
+        case .light: NSAppearance(named: .aqua)
+        case .dark: NSAppearance(named: .darkAqua)
         }
     }
 

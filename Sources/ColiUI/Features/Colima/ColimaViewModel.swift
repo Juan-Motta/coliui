@@ -46,6 +46,13 @@ final class ColimaViewModel {
         }
     }
 
+    /// Settings › Start Colima when ColiUI opens. Only an existing, stopped profile:
+    /// `colima start` would create a new VM for a missing one.
+    func startIfStopped() async {
+        guard let instance, instance.status == .stopped, !isBusy else { return }
+        await perform(.start)
+    }
+
     func perform(_ action: ColimaAction) async {
         pendingAction = action
         defer { pendingAction = nil }

@@ -191,11 +191,10 @@ final class ContainersViewModel {
             errorMessage = error.localizedDescription
         }
         hasLoaded = true
-        await refreshStats()
     }
 
     /// Each stats call takes ~1 s (the engine samples twice), so query running containers in parallel.
-    private func refreshStats() async {
+    func refreshStats() async {
         let repository = repository
         let running = containers.filter(\.isRunning).map(\.id)
         stats = await withTaskGroup(of: (String, ContainerStats?).self) { group in
@@ -208,6 +207,11 @@ final class ContainersViewModel {
             }
             return collected
         }
+    }
+
+    /// Settings › Refresh stats every › Off: CPU and memory show "—".
+    func clearStats() {
+        stats = [:]
     }
 
     func perform(_ action: ContainerAction, on container: Container) async {

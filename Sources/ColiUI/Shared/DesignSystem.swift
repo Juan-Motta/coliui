@@ -40,6 +40,9 @@ enum Palette {
     static let field = dynamic(rgb(0, 0, 0, 0.05), rgb(255, 255, 255, 0.08))
     static let fieldHover = dynamic(rgb(0, 0, 0, 0.09), rgb(255, 255, 255, 0.14))
     /// Images pull bar: `rgba(0,0,0,0.08)` progress track.
+    /// Settings.dc.html: window ground and switch tint.
+    static let settingsBackground = dynamic(rgb(0xF5, 0xF5, 0xF7), rgb(0x1C, 0x1C, 0x1E))
+    static let switchOn = dynamic(rgb(0x30, 0xA1, 0x4E), rgb(0x30, 0xD1, 0x58))
     static let progressTrack = dynamic(rgb(0, 0, 0, 0.08), rgb(255, 255, 255, 0.12))
     static let toggleOn = dynamic(rgb(0, 102, 204, 0.14), rgb(77, 163, 255, 0.24))
     static let toggleOnText = dynamic(rgb(0x0B, 0x4F, 0x8A), rgb(0x7B, 0xBB, 0xFF))
@@ -349,6 +352,7 @@ struct LineIcon: Shape {
         case refresh, sort, search, plus, trash
         case chevronLeft, chevronRight, terminal, download
         case folder, copy, external, check, warning, minus
+        case bell, keyboard
     }
 
     let kind: Kind
@@ -427,6 +431,17 @@ struct LineIcon: Shape {
             line(p(5, 12), p(10, 17), p(19, 7))
         case .minus:
             line(p(6, 12), p(18, 12))
+        case .bell:
+            // M6 16V11a6 6 0 0 1 12 0v5l2 2H4z  M10 20a2 2 0 0 0 4 0
+            path.move(to: p(6, 16))
+            path.addLine(to: p(6, 11))
+            path.addArc(center: p(12, 11), radius: 6, startAngle: .degrees(180), endAngle: .degrees(360), clockwise: false)
+            path.addLine(to: p(18, 16)); path.addLine(to: p(20, 18)); path.addLine(to: p(4, 18)); path.closeSubpath()
+            path.move(to: p(10, 20))
+            path.addArc(center: p(12, 20), radius: 2, startAngle: .degrees(180), endAngle: .degrees(0), clockwise: true)
+        case .keyboard:
+            path.addRect(CGRect(x: 3, y: 6, width: 18, height: 12))
+            line(p(7, 10), p(8, 10)); line(p(11, 10), p(12, 10)); line(p(15, 10), p(16, 10)); line(p(8, 14), p(16, 14))
         case .warning:
             line(p(12, 3), p(22, 21), p(2, 21), p(12, 3))
             line(p(12, 10), p(12, 15))

@@ -28,20 +28,20 @@ struct ColiUIApp: App {
         .menuBarExtraStyle(.window)
 
         Settings {
-            ContentUnavailableView(
-                "Settings",
-                systemImage: "gearshape",
-                description: Text("Designed, not built yet.")
-            )
-            .frame(width: 480, height: 320)
+            SettingsView()
+                .environment(model)
+                .onChange(of: model.settings.showInDock) { model.applySystemSettings() }
+                .onChange(of: model.settings.theme) { model.applySystemSettings() }
         }
+        .windowStyle(.hiddenTitleBar)
+        .windowResizability(.contentSize)
     }
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Needed when launched as a bare executable (`swift run`); harmless inside the .app bundle.
-        NSApp.setActivationPolicy(.regular)
+        // Dock icon and theme from Settings; also needed when launched as a bare executable (`swift run`).
+        MainActor.assumeIsolated { AppModel.shared.applySystemSettings() }
         NSApp.activate()
     }
 }

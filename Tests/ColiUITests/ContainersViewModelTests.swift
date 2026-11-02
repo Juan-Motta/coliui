@@ -82,10 +82,15 @@ private let sample = [
         let repository = FakeContainerRepository(sample)
         let model = ContainersViewModel(repository: repository)
         await model.refresh()
+        // Stats follow their own interval (Settings › Refresh stats every), not the list refresh.
+        #expect(repository.actions.isEmpty)
+        await model.refreshStats()
 
         #expect(Set(repository.actions) == ["stats c1", "stats c2"])
         #expect(model.stats["c1"]?.cpuDisplay == "1.5%")
         #expect(model.stats["c3"] == nil)
+        model.clearStats()
+        #expect(model.stats.isEmpty)
     }
 
     @Test func sortByStatusPutsRunningFirst() async {
