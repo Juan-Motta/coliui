@@ -159,7 +159,7 @@ private let sample = [
         repository.listError = DockerError.socketUnavailable(path: "/x.sock")
         let model = ContainersViewModel(repository: repository)
         await model.refresh()
-        #expect(model.errorMessage == "Docker isn't reachable at /x.sock. Is Colima running?")
+        #expect(model.errorMessage == "Docker isn't reachable at /x.sock. Is the Docker engine running?")
         #expect(model.containers.isEmpty)
     }
 

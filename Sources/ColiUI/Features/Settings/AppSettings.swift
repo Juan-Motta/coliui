@@ -71,6 +71,32 @@ enum NotificationKind: String, CaseIterable, Identifiable {
     }
 }
 
+/// Settings › General › Docker engine (Engines.dc.html).
+enum EngineChoice: String, CaseIterable, Identifiable {
+    case automatic, colima, dockerDesktop, orbStack, rancherDesktop, custom
+
+    var id: Self { self }
+
+    /// The engine a fixed choice means; nil for Automatic and Custom socket.
+    var kind: DockerEngineKind? {
+        switch self {
+        case .colima: .colima
+        case .dockerDesktop: .dockerDesktop
+        case .orbStack: .orbStack
+        case .rancherDesktop: .rancherDesktop
+        case .automatic, .custom: nil
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .automatic: "Automatic"
+        case .custom: "Custom socket…"
+        default: kind?.displayName ?? ""
+        }
+    }
+}
+
 /// Settings.dc.html preferences, stored in UserDefaults. Defaults follow the design.
 @MainActor
 @Observable
@@ -78,6 +104,7 @@ final class AppSettings {
     private enum Key {
         static let startColima = "startColimaOnOpen", showInDock = "showInDock", profile = "defaultProfile"
         static let socket = "socketPath", stats = "statsInterval", theme = "theme", notifications = "notifications"
+        static let engine = "engine"
     }
 
     static let defaultNotifications: Set<NotificationKind> = [.containerCrashed, .restartLoop, .colimaStopped, .diskAlmostFull]
@@ -86,7 +113,9 @@ final class AppSettings {
     var showInDock: Bool { didSet { defaults.set(showInDock, forKey: Key.showInDock) } }
     /// Applies the next time ColiUI opens.
     var defaultProfile: String { didSet { defaults.set(defaultProfile, forKey: Key.profile) } }
-    /// Empty = detected from the profile. Applies the next time ColiUI opens.
+    /// Which Docker engine to talk to. Applies the next time ColiUI opens.
+    var engine: EngineChoice { didSet { defaults.set(engine.rawValue, forKey: Key.engine) } }
+    /// The socket for Engine › Custom socket. Applies the next time ColiUI opens.
     var socketPath: String { didSet { defaults.set(socketPath, forKey: Key.socket) } }
     var statsInterval: StatsInterval { didSet { defaults.set(statsInterval.rawValue, forKey: Key.stats) } }
     var theme: AppTheme { didSet { defaults.set(theme.rawValue, forKey: Key.theme) } }
@@ -106,7 +135,11 @@ final class AppSettings {
         startColimaOnOpen = defaults.object(forKey: Key.startColima) as? Bool ?? true
         showInDock = defaults.object(forKey: Key.showInDock) as? Bool ?? false
         defaultProfile = defaults.string(forKey: Key.profile) ?? "default"
-        socketPath = defaults.string(forKey: Key.socket) ?? ""
+        let savedSocket = defaults.string(forKey: Key.socket) ?? ""
+        socketPath = savedSocket
+        // Before engines, a non-empty socket overrode detection; keep that for people who set one.
+        engine = defaults.string(forKey: Key.engine).flatMap(EngineChoice.init)
+            ?? (savedSocket.trimmingCharacters(in: .whitespaces).isEmpty ? .automatic : .custom)
         statsInterval = defaults.string(forKey: Key.stats).flatMap(StatsInterval.init) ?? .twoSeconds
         theme = defaults.string(forKey: Key.theme).flatMap(AppTheme.init) ?? .system
         notifications = (defaults.stringArray(forKey: Key.notifications)?.compactMap(NotificationKind.init))
@@ -139,11 +172,19 @@ final class AppSettings {
         if enabled { notifications.insert(kind) } else { notifications.remove(kind) }
     }
 
-    func resolvedSocket(environment: [String: String], home: String) -> String {
-        let custom = socketPath.trimmingCharacters(in: .whitespaces)
-        guard !custom.isEmpty else {
-            return DockerSocket.resolve(environment: environment, home: home, profile: defaultProfile)
+    /// The engine and socket this choice means; `answers` probes a socket (Automatic tries them in order).
+    func resolvedEngine(environment: [String: String], home: String, answers: (String) -> Bool) -> DetectedEngine {
+        switch engine {
+        case .automatic:
+            return EngineDetection.automatic(environment: environment, home: home, profile: defaultProfile, answers: answers)
+        case .custom:
+            let custom = socketPath.trimmingCharacters(in: .whitespaces)
+            let path = custom.hasPrefix("~") ? home + custom.dropFirst() : custom
+            return DetectedEngine(kind: .other, socketPath: path, isAnswering: answers(path))
+        case .colima, .dockerDesktop, .orbStack, .rancherDesktop:
+            let kind = engine.kind!
+            let path = kind.socket(home: home, profile: defaultProfile)!
+            return DetectedEngine(kind: kind, socketPath: path, isAnswering: answers(path))
         }
-        return custom.hasPrefix("~") ? home + custom.dropFirst() : custom
     }
 }

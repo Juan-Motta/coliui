@@ -14,10 +14,31 @@ struct MenuBarView: View {
                 Image(nsImage: Glyph.menuBarImage(dimmed: false, side: 24))
                 VStack(alignment: .leading, spacing: 1) {
                     Text("ColiUI").font(.headline)
-                    Text("Profile: \(colima.profile)").font(.caption).foregroundStyle(.secondary)
+                    Text(verbatim: model.usesColima ? "Profile: \(colima.profile)" : model.engineKind.displayName)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
-                StatusBadge(title: colima.statusTitle, tint: colima.statusTint, isBusy: colima.isBusy)
+                if model.usesColima {
+                    StatusBadge(title: colima.statusTitle, tint: colima.statusTint, isBusy: colima.isBusy)
+                } else {
+                    StatusBadge(title: model.isEngineRunning ? "Running" : "Not running",
+                                tint: model.isEngineRunning ? .green : .gray, isBusy: false)
+                }
+            }
+
+            if !model.usesColima {
+                if let info = model.engineInfo {
+                    HStack(spacing: 8) {
+                        MetricTile(title: "CPU", value: "\(info.cpus) cores")
+                        MetricTile(title: "Memory", value: info.memoryText)
+                        MetricTile(title: "Disk", value: model.cleanup.usage.map { "\(ByteFormat.binary($0.totalBytes)) used" } ?? "—")
+                    }
+                }
+                if model.engineApp != nil {
+                    Button("Open \(model.engineKind.displayName)") { model.openEngineApp() }
+                        .frame(maxWidth: .infinity)
+                }
             }
 
             if let offer = model.updates.offer {
@@ -28,7 +49,7 @@ struct MenuBarView: View {
                 }
             }
 
-            if let instance = colima.instance {
+            if model.usesColima, let instance = colima.instance {
                 HStack(spacing: 8) {
                     MetricTile(title: "CPU", value: "\(instance.cpus) cores")
                     MetricTile(title: "Memory", value: instance.memoryDisplay)
@@ -36,21 +57,23 @@ struct MenuBarView: View {
                 }
             }
 
-            HStack {
-                if colima.isRunning {
-                    Button("Restart VM", systemImage: "arrow.clockwise") { Task { await model.performColima(.restart) } }
-                        .frame(maxWidth: .infinity)
-                    Button("Stop VM", systemImage: "stop.fill", role: .destructive) { Task { await model.performColima(.stop) } }
-                        .frame(maxWidth: .infinity)
-                } else {
-                    Button("Start VM", systemImage: "play.fill") { Task { await model.performColima(.start) } }
-                        .buttonStyle(.glassProminent)
-                        .frame(maxWidth: .infinity)
+            if model.usesColima {
+                HStack {
+                    if colima.isRunning {
+                        Button("Restart VM", systemImage: "arrow.clockwise") { Task { await model.performColima(.restart) } }
+                            .frame(maxWidth: .infinity)
+                        Button("Stop VM", systemImage: "stop.fill", role: .destructive) { Task { await model.performColima(.stop) } }
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        Button("Start VM", systemImage: "play.fill") { Task { await model.performColima(.start) } }
+                            .buttonStyle(.glassProminent)
+                            .frame(maxWidth: .infinity)
+                    }
                 }
+                .disabled(colima.isBusy)
             }
-            .disabled(colima.isBusy)
 
-            if colima.isRunning {
+            if model.isEngineRunning {
                 HStack {
                     Text("CONTAINERS").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
                     Spacer()

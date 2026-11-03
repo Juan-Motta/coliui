@@ -84,9 +84,15 @@ struct ContainersView: View {
             } description: {
                 Text(error)
             } actions: {
-                Button { Task { await model.performColima(.start) } } label: { Text("Start Colima") }
-                    .buttonStyle(TintButtonStyle())
-                    .disabled(model.colima.isBusy)
+                // Colima starts from here; other engines start in their own app.
+                if model.usesColima {
+                    Button { Task { await model.performColima(.start) } } label: { Text("Start Colima") }
+                        .buttonStyle(TintButtonStyle())
+                        .disabled(model.colima.isBusy)
+                } else if model.engineApp != nil {
+                    Button { model.openEngineApp() } label: { Text(verbatim: "Open \(model.engineKind.displayName)") }
+                        .buttonStyle(TintButtonStyle())
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if visible.isEmpty {

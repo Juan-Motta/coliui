@@ -22,6 +22,14 @@ final class AppModel {
     let notifier: Notifying
     /// The socket this session talks to; Settings changes apply on the next launch.
     let socketPath: String
+    /// The engine chosen when ColiUI opened (Settings › Docker engine).
+    let engine: DetectedEngine
+    /// What the engine says about itself; nil until it answers, or while it doesn't.
+    private(set) var engineInfo: EngineInfo?
+    /// The Engine setting this session started with, to tell when a change waits for a relaunch.
+    let launchedEngineChoice: EngineChoice
+    private let colimaInstalled: Bool
+    private let engineInfoSource: EngineInfoSource?
     var section: SidebarSection? = .containers
     /// Settings opens as a sheet over the main window.
     var isSettingsPresented = false
@@ -56,6 +64,9 @@ final class AppModel {
         updates: UpdatesViewModel = UpdatesViewModel(updater: nil),
         notifier: Notifying = SystemNotifier(),
         socketPath: String = "",
+        engine: DetectedEngine = DetectedEngine(kind: .colima, socketPath: "", isAnswering: true),
+        colimaInstalled: Bool = true,
+        engineInfoSource: EngineInfoSource? = nil,
         repository: ContainerRepository? = nil,
         runner: ContainerRunner? = nil,
         logSource: ContainerLogSource? = nil,
@@ -74,6 +85,10 @@ final class AppModel {
         self.updates = updates
         self.notifier = notifier
         self.socketPath = socketPath
+        self.engine = engine
+        self.colimaInstalled = colimaInstalled
+        self.engineInfoSource = engineInfoSource
+        launchedEngineChoice = settings.engine
         self.repository = repository
         self.runner = runner
         self.logSource = logSource
@@ -207,7 +222,9 @@ final class AppModel {
 
     static func live(settings: AppSettings = AppSettings()) -> AppModel {
         let profile = settings.defaultProfile
-        let socketPath = settings.resolvedSocket(environment: ProcessInfo.processInfo.environment, home: NSHomeDirectory())
+        let engine = settings.resolvedEngine(environment: ProcessInfo.processInfo.environment, home: NSHomeDirectory(),
+                                             answers: UnixSocketTransport.answers)
+        let socketPath = engine.socketPath
         let repository = DockerEngineRepository(transport: UnixSocketTransport(socketPath: socketPath))
         let containers = ContainersViewModel(repository: repository)
         let runtime: ColimaRuntime = ColimaCLIRuntime.locateExecutable()
@@ -229,6 +246,9 @@ final class AppModel {
             about: AboutViewModel(colima: runtime as? ColimaVersionSource, engine: repository, socketPath: socketPath),
             updates: SparkleUpdater.makeViewModel() ?? UpdatesViewModel(updater: nil),
             socketPath: socketPath,
+            engine: engine,
+            colimaInstalled: !(runtime is UnavailableColimaRuntime),
+            engineInfoSource: repository,
             repository: repository,
             runner: repository,
             logSource: DockerLogStream(socketPath: socketPath),
@@ -262,8 +282,12 @@ final class AppModel {
             var tick = 0
             while !Task.isCancelled {
                 if tick % 5 == 0 {
-                    await colima.refresh()
-                    if tick == 0, settings.startColimaOnOpen { await colima.startIfStopped() }
+                    // Colima's controls only apply to Colima; `colima list` spawns processes, so skip it otherwise.
+                    if usesColima {
+                        await colima.refresh()
+                        if tick == 0, settings.startColimaOnOpen { await colima.startIfStopped() }
+                    }
+                    engineInfo = try? await engineInfoSource?.engineInfo()
                     summary = try? await inventory?.summary()
                     if section == .images { await images.refresh() }
                     if section == .volumes { await volumes.refresh() }
@@ -377,6 +401,32 @@ final class AppModel {
         case .light: NSAppearance(named: .aqua)
         case .dark: NSAppearance(named: .darkAqua)
         }
+    }
+
+    /// The engine in use: a custom socket or DOCKER_HOST is named from `/info` once the engine answers.
+    var engineKind: DockerEngineKind {
+        guard engine.kind == .other, let engineInfo else { return engine.kind }
+        return DockerEngineKind.identify(engineInfo)
+    }
+
+    /// Colima's VM controls, Profiles and "Start Colima when ColiUI opens" (Engines.dc.html).
+    var usesColima: Bool {
+        engineKind == .colima && colimaInstalled
+    }
+
+    /// Whether the engine answers; with Colima the VM status says it instead.
+    var isEngineRunning: Bool {
+        usesColima ? colima.isRunning : engineInfo != nil || (engineInfoSource == nil && engine.isAnswering)
+    }
+
+    /// The installed app that manages a non-Colima engine ("Open OrbStack").
+    var engineApp: URL? {
+        engineKind.appBundleIdentifier.flatMap { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) }
+    }
+
+    func openEngineApp() {
+        guard let engineApp else { return }
+        NSWorkspace.shared.openApplication(at: engineApp, configuration: NSWorkspace.OpenConfiguration())
     }
 
     func performColima(_ action: ColimaAction) async {

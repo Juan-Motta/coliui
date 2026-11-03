@@ -28,11 +28,11 @@
 
 ## Install
 
-1. Install Colima: `brew install colima`. ColiUI uses its Docker runtime, the default.
+1. Have a Docker engine: [Colima](https://github.com/abiosoft/colima) (`brew install colima`), or Docker Desktop, OrbStack or Rancher Desktop.
 2. Download `ColiUI-x.y.z.dmg` from the [latest release](https://github.com/Juan-Motta/coliui/releases/latest).
 3. Open it and drag **ColiUI** to **Applications**.
 
-ColiUI needs **macOS 26** or later. It's signed and notarized by Apple, and it updates itself: Settings › About › Updates, or **Check for Updates…** in the menus.
+ColiUI finds the engine by itself (Settings › General › Docker engine) and needs **macOS 26** or later. It's signed and notarized by Apple, and it updates itself: Settings › About › Updates, or **Check for Updates…** in the menus.
 
 ## What you can do
 
@@ -78,7 +78,7 @@ A shell inside the container, right in the app.
   </tr>
 </table>
 
-Images, volumes and networks have their own screens too, and Settings covers startup, notifications (a container that crashes or restart-loops, a VM that stops, a disk almost full), shortcuts and a light or dark theme.
+With Colima you also get the VM controls (start, stop, restart) and Profiles; Docker Desktop, OrbStack and Rancher Desktop keep starting and stopping in their own app. Images, volumes and networks have their own screens too, and Settings covers startup, notifications (a container that crashes or restart-loops, a VM that stops, a disk almost full), shortcuts and a light or dark theme.
 
 ## Build from source
 
@@ -101,7 +101,7 @@ Releases, signing and updates: [docs/RELEASING.md](docs/RELEASING.md). Designs: 
 
 ## How it works
 
-ColiUI talks to the Docker Engine API directly over Colima's Unix socket (`~/.colima/<profile>/docker.sock`, or a `unix://` `DOCKER_HOST`), and to the `colima` CLI for the VM. No Docker CLI or Docker Desktop is needed.
+ColiUI talks to the Docker Engine API directly over the engine's Unix socket, and to the `colima` CLI for the VM. Automatic uses a `unix://` `DOCKER_HOST` when set, otherwise the first socket that answers: Colima (`~/.colima/<profile>/docker.sock`), Docker Desktop (`~/.docker/run/docker.sock`), OrbStack (`~/.orbstack/run/docker.sock`), Rancher Desktop (`~/.rd/docker.sock`). No Docker CLI is needed.
 
 ```
 Sources/

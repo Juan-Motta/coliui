@@ -88,17 +88,21 @@ struct SidebarPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Color.clear.frame(height: 12) // traffic lights row
-            ColimaCard()
+            if model.usesColima {
+                ColimaCard()
+            } else {
+                EngineCard()
+            }
             group("DOCKER", [
                 (.containers, "\(model.containers.containers.count)"),
                 (.images, model.summary.map { "\($0.images)" }),
                 (.volumes, model.summary.map { "\($0.volumes)" }),
                 (.networks, model.summary.map { "\($0.networks)" }),
             ])
+            // Profiles are Colima's; other engines are managed in their own app.
             group("SYSTEM", [
                 (.cleanup, model.cleanup.usage.map { _ in ByteFormat.short(model.cleanup.totalReclaimable) }),
-                (.profiles, model.colima.profileCount > 0 ? "\(model.colima.profileCount)" : nil),
-            ])
+            ] + (model.usesColima ? [(.profiles, model.colima.profileCount > 0 ? "\(model.colima.profileCount)" : nil)] : []))
             Button { model.isSettingsPresented = true } label: {
                 SidebarRowLabel(icon: .settings, title: "Settings", trailing: "⌘,", isSelected: model.isSettingsPresented)
             }
@@ -166,6 +170,57 @@ struct SidebarRowLabel: View {
             .background(isSelected ? Palette.selected : hovered ? Palette.hoverSubtle : .clear, in: .rect(cornerRadius: 8))
             .contentShape(.rect(cornerRadius: 8))
         }
+    }
+}
+
+/// Engines.dc.html › Sidebar for Docker Desktop, OrbStack, Rancher Desktop or another socket: name, version
+/// and resources, and the app that starts and stops it.
+struct EngineCard: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        let running = model.isEngineRunning
+        let name = model.engineKind.displayName
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(running ? name.uppercased() : "DOCKER")
+                    .font(.ui(11, .semibold))
+                    .tracking(0.44)
+                    .foregroundStyle(Palette.sidebarSecondary)
+                Spacer()
+                HStack(spacing: 5) {
+                    Circle().fill(running ? Palette.greenDot : Palette.grayDot).frame(width: 7, height: 7)
+                    Text(running ? "Running" : "Not running")
+                }
+                .font(.ui(11, .semibold))
+                .foregroundStyle(running ? Palette.greenText : Palette.sidebarSecondary)
+            }
+            Text(verbatim: running ? name : "No engine running").font(.ui(14, .semibold))
+            Text(verbatim: running ? model.engineInfo?.summary ?? "" : "Start Colima, Docker Desktop or OrbStack")
+                .font(.ui(12))
+                .foregroundStyle(Palette.sidebarSecondary)
+                .lineLimit(2)
+            if model.engineApp != nil {
+                Button { model.openEngineApp() } label: {
+                    Hoverable { hovered in
+                        Text(verbatim: "Open \(name)")
+                            .font(.ui(12))
+                            .foregroundStyle(Palette.text)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 26)
+                            .background(Palette.colimaButton, in: .capsule)
+                            .overlay(Capsule().fill(hovered ? Palette.hoverSubtle : .clear))
+                            .contentShape(.capsule)
+                    }
+                }
+                .buttonStyle(.plain)
+                .help("\(name) starts and stops its own VM")
+                .padding(.top, 4)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Palette.colimaCard, in: .rect(cornerRadius: 12))
     }
 }
 

@@ -78,12 +78,33 @@ private func freshDefaults() -> UserDefaults {
         #expect(settings.loginItemError != nil)
     }
 
-    @Test func socketOverrideWinsAndExpandsTheHomeFolder() {
+    @Test func aCustomSocketExpandsTheHomeFolder() {
         let settings = AppSettings(defaults: freshDefaults(), loginItem: FakeLoginItem(isEnabled: false))
-        settings.defaultProfile = "work"
-        #expect(settings.resolvedSocket(environment: [:], home: "/Users/me") == "/Users/me/.colima/work/docker.sock")
+        settings.engine = .custom
         settings.socketPath = "  ~/run/docker.sock "
-        #expect(settings.resolvedSocket(environment: [:], home: "/Users/me") == "/Users/me/run/docker.sock")
+        #expect(settings.resolvedEngine(environment: [:], home: "/Users/me") { _ in true }
+                == DetectedEngine(kind: .other, socketPath: "/Users/me/run/docker.sock", isAnswering: true))
+    }
+
+    @Test func automaticFollowsTheProfileAndFixedChoicesUseTheirSocket() {
+        let settings = AppSettings(defaults: freshDefaults(), loginItem: FakeLoginItem(isEnabled: false))
+        #expect(settings.engine == .automatic)
+        settings.defaultProfile = "work"
+        #expect(settings.resolvedEngine(environment: [:], home: "/Users/me") { _ in true }.socketPath
+                == "/Users/me/.colima/work/docker.sock")
+        settings.engine = .orbStack
+        #expect(settings.resolvedEngine(environment: [:], home: "/Users/me") { _ in false }
+                == DetectedEngine(kind: .orbStack, socketPath: "/Users/me/.orbstack/run/docker.sock", isAnswering: false))
+    }
+
+    @Test func aSocketSavedBeforeEnginesBecomesCustomAndTheChoiceIsSaved() {
+        let defaults = freshDefaults()
+        defaults.set("/Users/me/run/docker.sock", forKey: "socketPath")
+        #expect(AppSettings(defaults: defaults, loginItem: FakeLoginItem(isEnabled: false)).engine == .custom)
+
+        let saved = freshDefaults()
+        AppSettings(defaults: saved, loginItem: FakeLoginItem(isEnabled: false)).engine = .dockerDesktop
+        #expect(AppSettings(defaults: saved, loginItem: FakeLoginItem(isEnabled: false)).engine == .dockerDesktop)
     }
 
     @Test func statsIntervals() {

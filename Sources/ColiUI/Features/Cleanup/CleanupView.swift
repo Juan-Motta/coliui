@@ -94,7 +94,10 @@ private struct DiskCard: View {
 
     var body: some View {
         let usage = model.cleanup.usage
-        let capacity = max(model.colima.instance?.diskBytes ?? 0, usage?.totalBytes ?? 0)
+        // Only Colima reports its disk size; other engines set it in their own app, so the bar shows the split.
+        let colimaDisk = model.usesColima ? model.colima.instance?.diskBytes : nil
+        let capacity = max(colimaDisk ?? 0, usage?.totalBytes ?? 0)
+        let name = model.engineKind.displayName
         let segments: [(String, Color, Int64)] = [
             ("Images", Palette.diskImages, usage?.images.totalBytes ?? 0),
             ("Build cache", Palette.diskCache, usage?.buildCache.totalBytes ?? 0),
@@ -104,11 +107,13 @@ private struct DiskCard: View {
         let used = usage?.totalBytes ?? 0
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .firstTextBaseline) {
-                Text("Colima VM disk · \(model.colima.profile)").font(.ui(15, .semibold))
+                Text(verbatim: model.usesColima ? "Colima VM disk · \(model.colima.profile)" : "\(name) disk")
+                    .font(.ui(15, .semibold))
                 Spacer()
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(verbatim: ByteFormat.binary(used)).font(.ui(20, .semibold))
-                    Text(verbatim: capacity > 0 ? "of \(ByteFormat.binary(capacity)) used by Docker" : "used by Docker")
+                    Text(verbatim: colimaDisk == nil ? "used by images, cache, volumes and containers"
+                         : "of \(ByteFormat.binary(capacity)) used by Docker")
                         .font(.ui(13))
                         .foregroundStyle(Palette.tertiary)
                 }
@@ -134,12 +139,14 @@ private struct DiskCard: View {
                 ForEach(segments, id: \.0) { name, color, bytes in
                     legend(color: color, text: "\(name) \(ByteFormat.binary(bytes))")
                 }
-                if capacity > 0 {
+                if colimaDisk != nil, capacity > 0 {
                     legend(color: Palette.field, text: "Free \(ByteFormat.binary(max(capacity - used, 0)))")
                 }
             }
 
-            Text("Colima disks can only grow — freeing space inside the VM is the only way to reclaim it.")
+            Text(model.usesColima
+                 ? "Colima disks can only grow — freeing space inside the VM is the only way to reclaim it."
+                 : "\(name) sets its disk size in its own settings, so ColiUI shows what Docker uses, not the free space.")
                 .font(.ui(12))
                 .foregroundStyle(Palette.secondary)
         }

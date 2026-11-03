@@ -107,51 +107,77 @@ private struct GeneralSettings: View {
     var body: some View {
         @Bindable var settings = model.settings
         let profiles = Array(Set(model.profiles.profiles.map(\.name) + [settings.defaultProfile, model.colima.profile])).sorted()
-        let detected = DockerSocket.resolve(
-            environment: ProcessInfo.processInfo.environment, home: NSHomeDirectory(), profile: settings.defaultProfile
-        )
-        let pendingRelaunch = settings.defaultProfile != model.colima.profile
-            || settings.resolvedSocket(environment: ProcessInfo.processInfo.environment, home: NSHomeDirectory()) != model.socketPath
+        let colimaChosen = settings.engine == .colima || (settings.engine == .automatic && model.usesColima)
+        let pendingRelaunch = settings.engine != model.launchedEngineChoice
+            || (settings.engine == .custom && Self.expanded(settings.socketPath) != model.socketPath)
+            || (colimaChosen && settings.defaultProfile != model.colima.profile)
         VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 6) {
+                SettingsSection("Docker engine") {
+                    SettingsRow {
+                        Text("Engine")
+                        Spacer()
+                        PillPicker(selection: $settings.engine, options: EngineChoice.allCases.map { ($0, title(of: $0)) })
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Docker socket")
+                        if settings.engine == .custom {
+                            TextField("~/.docker/run/docker.sock", text: $settings.socketPath)
+                                .textFieldStyle(.plain)
+                                .font(.mono(12))
+                                .padding(.horizontal, 10)
+                                .frame(height: 30)
+                                .background(Palette.field, in: .rect(cornerRadius: 10))
+                        } else {
+                            Text(verbatim: shown(socketFor(settings.engine)))
+                                .font(.mono(12))
+                                .foregroundStyle(Palette.tertiary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                                .textSelection(.enabled)
+                                .padding(.horizontal, 10)
+                                .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading)
+                                .background(Palette.field, in: .rect(cornerRadius: 10))
+                        }
+                        Text(socketHint(settings.engine))
+                            .font(.ui(11))
+                            .foregroundStyle(Palette.secondary)
+                    }
+                    .font(.ui(13))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    if colimaChosen {
+                        SettingsRow {
+                            Text("Colima profile")
+                            Spacer()
+                            PillPicker(selection: $settings.defaultProfile, options: profiles.map { ($0, $0) })
+                        }
+                    }
+                    SettingsRow {
+                        Text("Refresh stats every")
+                        Spacer()
+                        PillPicker(selection: $settings.statsInterval, options: StatsInterval.allCases.map { ($0, $0.rawValue) })
+                    }
+                    if pendingRelaunch {
+                        RowNote("Engine, socket and profile changes apply the next time ColiUI opens.", color: Palette.secondary)
+                    }
+                }
+                Text("Automatic picks the first engine that answers: Colima, then Docker Desktop, OrbStack and Rancher Desktop. Changes apply on the next launch.")
+                    .font(.ui(11))
+                    .foregroundStyle(Palette.secondary)
+                    .padding(.horizontal, 6)
+            }
+
             SettingsSection("Startup") {
                 SwitchRow("Launch ColiUI at login", isOn: $settings.launchAtLogin)
                 if let error = settings.loginItemError {
                     RowNote(error, color: Palette.danger)
                 }
-                SwitchRow("Start Colima when ColiUI opens", isOn: $settings.startColimaOnOpen)
+                if colimaChosen {
+                    SwitchRow("Start Colima when ColiUI opens", isOn: $settings.startColimaOnOpen)
+                }
                 SwitchRow("Show icon in Dock", isOn: $settings.showInDock)
-            }
-
-            SettingsSection("Colima") {
-                SettingsRow {
-                    Text("Default profile")
-                    Spacer()
-                    PillPicker(selection: $settings.defaultProfile, options: profiles.map { ($0, $0) })
-                }
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Docker socket")
-                    TextField(detected, text: $settings.socketPath)
-                        .textFieldStyle(.plain)
-                        .font(.mono(12))
-                        .padding(.horizontal, 10)
-                        .frame(height: 30)
-                        .background(Palette.field, in: .rect(cornerRadius: 10))
-                    Text("Detected automatically from the active profile")
-                        .font(.ui(11))
-                        .foregroundStyle(Palette.secondary)
-                }
-                .font(.ui(13))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                SettingsRow {
-                    Text("Refresh stats every")
-                    Spacer()
-                    PillPicker(selection: $settings.statsInterval, options: StatsInterval.allCases.map { ($0, $0.rawValue) })
-                }
-                if pendingRelaunch {
-                    RowNote("Profile and socket changes apply the next time ColiUI opens.", color: Palette.secondary)
-                }
             }
 
             SettingsSection("Appearance") {
@@ -162,6 +188,42 @@ private struct GeneralSettings: View {
                 }
             }
         }
+    }
+
+    /// "Automatic (OrbStack)" names what Automatic found when ColiUI opened.
+    private func title(of choice: EngineChoice) -> String {
+        guard choice == .automatic, model.launchedEngineChoice == .automatic, model.engine.isAnswering else { return choice.title }
+        return "Automatic (\(model.engineKind.displayName))"
+    }
+
+    /// The socket a choice connects to; the live one when it's the choice ColiUI opened with.
+    private func socketFor(_ choice: EngineChoice) -> String? {
+        if choice == model.launchedEngineChoice { return model.socketPath }
+        return choice.kind?.socket(home: NSHomeDirectory(), profile: model.settings.defaultProfile)
+    }
+
+    private func shown(_ path: String?) -> String {
+        guard let path, !path.isEmpty else { return "Detected when ColiUI opens" }
+        let home = NSHomeDirectory()
+        return path.hasPrefix(home + "/") ? "~" + path.dropFirst(home.count) : path
+    }
+
+    private func socketHint(_ choice: EngineChoice) -> String {
+        if choice == .custom { return "Any Docker Engine socket, for example one forwarded over SSH." }
+        guard choice == model.launchedEngineChoice else { return "Used the next time ColiUI opens." }
+        if model.usesColima { return "Detected automatically from the active profile." }
+        if !model.engine.isAnswering && model.engineInfo == nil {
+            return "No engine answered when ColiUI opened. Start one, then reopen ColiUI."
+        }
+        let name = model.engineKind.displayName
+        return model.engineKind.appBundleIdentifier == nil
+            ? "Detected automatically."
+            : "Detected automatically. \(name) runs its own VM; start and stop it in \(name)."
+    }
+
+    private static func expanded(_ path: String) -> String {
+        let trimmed = path.trimmingCharacters(in: .whitespaces)
+        return trimmed.hasPrefix("~") ? NSHomeDirectory() + trimmed.dropFirst() : trimmed
     }
 }
 
