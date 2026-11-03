@@ -10,7 +10,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Juan-Motta/coliui/releases/latest"><b>Download the latest release</b></a>
+  <a href="https://github.com/Juan-Motta/coliui/releases/latest">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/images/download-dark.svg">
+      <img src="docs/images/download-light.svg" width="320" height="80" alt="Download ColiUI for macOS">
+    </picture>
+  </a>
+  <br>
+  <sub>Signed &amp; notarized · updates itself</sub>
 </p>
 
 <p align="center">

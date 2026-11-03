@@ -9,4 +9,4 @@ The canvas is the source of truth: new screens are designed and approved there f
 
 The files load `support.js` from the canvas editor, which isn't part of this copy, so opening one in a browser shows the static markup without its sample data or interactions. To see them rendered, open the canvas link.
 
-Snapshot taken 2026-11-03 (27 artboards).
+Snapshot taken 2026-11-03 (28 artboards).
