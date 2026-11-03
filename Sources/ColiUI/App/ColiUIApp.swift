@@ -41,6 +41,14 @@ struct ColiUIApp: App {
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        // With a mouse attached, macOS's "Automatic" setting draws wide, always-on scroll bars. Default to the
+        // thin ones that show while scrolling; registered defaults sit below the global domain, so a user who
+        // chose "Always" in System Settings › Appearance still gets them.
+        UserDefaults.standard.register(defaults: ["AppleShowScrollBars": "WhenScrolling"])
+        MainActor.assumeIsolated { NSScroller.installSubtleKnobs }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Dock icon and theme from Settings; also needed when launched as a bare executable (`swift run`).
         MainActor.assumeIsolated { AppModel.shared.applySystemSettings() }
