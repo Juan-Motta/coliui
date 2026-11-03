@@ -11,10 +11,16 @@ let package = Package(
         // Terminal emulation for the container shell; the app target only, ColiUICore stays dependency-free.
         // 1.11.2 is the newest release without Metal shaders, which need Xcode to compile.
         .package(url: "https://github.com/migueldeicaza/SwiftTerm", exact: "1.11.2"),
+        // Self-updates: download, EdDSA + code-signature verification and install. ColiUI draws its own UI.
+        .package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.10.0"),
     ],
     targets: [
         .target(name: "ColiUICore"),
-        .executableTarget(name: "ColiUI", dependencies: ["ColiUICore", .product(name: "SwiftTerm", package: "SwiftTerm")]),
+        .executableTarget(name: "ColiUI", dependencies: [
+            "ColiUICore",
+            .product(name: "SwiftTerm", package: "SwiftTerm"),
+            .product(name: "Sparkle", package: "Sparkle"),
+        ]),
         .testTarget(name: "ColiUICoreTests", dependencies: ["ColiUICore"]),
         .testTarget(name: "ColiUITests", dependencies: ["ColiUI", "ColiUICore"]),
     ]
