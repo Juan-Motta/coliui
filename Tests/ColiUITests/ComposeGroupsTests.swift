@@ -103,7 +103,11 @@ private let fleet = [
         let model = ContainersViewModel(repository: FakeContainerRepository(fleet), toastDuration: .milliseconds(20))
         model.showToast("Copied docker exec -it a sh")
         #expect(model.toast == "Copied docker exec -it a sh")
-        try await Task.sleep(for: .milliseconds(80))
+        // Wait for the clear instead of a fixed sleep: CI runners can be slower than 80 ms.
+        let deadline = ContinuousClock.now + .seconds(2)
+        while model.toast != nil, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
         #expect(model.toast == nil)
     }
 }
