@@ -47,21 +47,29 @@ A shell inside the container, right in the app.
 
 ### Everything else about a container
 
-| | |
-| --- | --- |
-| **Stats** — live CPU, memory, network and block I/O charts | **Files** — browse folders, preview files and download them |
-| ![Live stats](docs/images/stats.png) | ![Files](docs/images/files.png) |
-| **Environment** — variables from the image and the container, secrets masked | **Inspect** — the full `docker inspect` as a collapsible tree |
-| ![Environment](docs/images/environment.png) | ![Inspect](docs/images/inspect.png) |
+<table>
+  <tr>
+    <td width="50%" valign="top"><b>Stats</b> — live CPU, memory, network and block I/O charts<br><br><img src="docs/images/stats.png" width="100%" alt="Live stats"></td>
+    <td width="50%" valign="top"><b>Files</b> — browse folders, preview files and download them<br><br><img src="docs/images/files.png" width="100%" alt="Files"></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><b>Environment</b> — variables from the image and the container, secrets masked<br><br><img src="docs/images/environment.png" width="100%" alt="Environment"></td>
+    <td width="50%" valign="top"><b>Inspect</b> — the full <code>docker inspect</code> as a collapsible tree<br><br><img src="docs/images/inspect.png" width="100%" alt="Inspect"></td>
+  </tr>
+</table>
 
 ### Run, clean up and manage Colima
 
-| | |
-| --- | --- |
-| **Run a container** — image, name, ports, volumes, environment and restart policy | **Cleanup** — see what fills the VM disk and prune it |
-| ![Run container](docs/images/run-container.png) | ![Cleanup](docs/images/cleanup.png) |
-| **Profiles** — create, edit and delete Colima profiles | **Menu bar** — VM status and quick start and stop, without opening the window |
-| ![Profiles](docs/images/profiles.png) | ![Menu bar](docs/images/menu-bar.png) |
+<table>
+  <tr>
+    <td width="50%" valign="top"><b>Run a container</b> — image, name, ports, volumes, environment and restart policy<br><br><img src="docs/images/run-container.png" width="100%" alt="Run container"></td>
+    <td width="50%" valign="top"><b>Cleanup</b> — see what fills the VM disk and prune it<br><br><img src="docs/images/cleanup.png" width="100%" alt="Cleanup"></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><b>Profiles</b> — create, edit and delete Colima profiles<br><br><img src="docs/images/profiles.png" width="100%" alt="Profiles"></td>
+    <td width="50%" valign="top"><b>Menu bar</b> — VM status and quick start and stop, without opening the window<p align="center"><img src="docs/images/menu-bar.png" width="170" alt="Menu bar"></p></td>
+  </tr>
+</table>
 
 Images, volumes and networks have their own screens too, and Settings covers startup, notifications (a container that crashes or restart-loops, a VM that stops, a disk almost full), shortcuts and a light or dark theme.
 
