@@ -18,6 +18,27 @@ open build/ColiUI.app
 swift scripts/make-icon.swift   # regenerate Resources/AppIcon.icns from the Paper design
 ```
 
+## Releases
+
+`scripts/make-dmg.sh 0.2.0` builds `build/ColiUI-0.2.0.dmg` locally (ad-hoc signed unless the signing variables in the script are set). `scripts/release-notes.sh v0.2.0` prints the notes for a tag: its `feat`, `fix`, `perf` and `refactor` commits since the previous tag.
+
+Pushing a version tag publishes a release: `.github/workflows/release.yml` runs the tests, then builds, signs and notarizes the DMG, and creates the GitHub Release with the DMG and the notes.
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+The workflow needs these repository secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Value |
+| --- | --- |
+| `DEVELOPER_ID_P12_BASE64` | Your *Developer ID Application* certificate and private key exported from Keychain Access as `.p12`, then `base64 -i cert.p12` |
+| `DEVELOPER_ID_P12_PASSWORD` | The password you set on that `.p12` export |
+| `NOTARY_KEY_P8_BASE64` | An App Store Connect API key (Users and Access → Integrations → Team Keys, role *Developer*), as `base64 -i AuthKey_XXXX.p8` |
+| `NOTARY_KEY_ID` | That key's ID |
+| `NOTARY_ISSUER_ID` | The issuer ID shown above the keys list |
+
 ## What works today
 
 - Colima status for the `default` profile, with start, stop and restart.
