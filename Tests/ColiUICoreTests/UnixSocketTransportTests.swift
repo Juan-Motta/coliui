@@ -84,7 +84,7 @@ private final class SlowServer: @unchecked Sendable {
             Issue.record("expected a connection error")
         } catch {
             #expect(error as? DockerError == .socketUnavailable(path: path, reason: "No such file or directory"))
-            #expect(error.localizedDescription == "Docker isn't reachable at \(path) (No such file or directory). Is Colima running?")
+            #expect(error.localizedDescription == "Docker isn't reachable at \(path) (No such file or directory). Is the Docker engine running?")
         }
     }
 }

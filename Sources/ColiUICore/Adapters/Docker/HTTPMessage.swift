@@ -24,7 +24,7 @@ public enum DockerError: Error, Equatable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .socketUnavailable(let path, let reason):
-            "Docker isn't reachable at \(path)\(reason.isEmpty ? "" : " (\(reason))"). Is Colima running?"
+            "Docker isn't reachable at \(path)\(reason.isEmpty ? "" : " (\(reason))"). Is the Docker engine running?"
         case .connectionFailed(let reason): "Lost connection to Docker: \(reason)"
         case .malformedResponse: "Docker returned an unexpected response."
         case .invalidContainerID: "Invalid container identifier."

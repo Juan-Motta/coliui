@@ -46,6 +46,14 @@ public struct UnixSocketTransport: HTTPTransport {
     }
 
     /// Opens a connected socket; `timeoutSeconds == 0` means reads may block indefinitely (event streams).
+    /// Whether something accepts connections on `socketPath` right now (engine detection at launch).
+    /// A missing socket or a stopped engine fails at once, so this never waits.
+    public static func answers(socketPath: String) -> Bool {
+        guard let fd = try? connect(socketPath: socketPath, timeoutSeconds: 1) else { return false }
+        Darwin.close(fd)
+        return true
+    }
+
     static func connect(socketPath: String, timeoutSeconds: Int) throws -> Int32 {
         let fd = socket(AF_UNIX, SOCK_STREAM, 0)
         guard fd >= 0 else { throw DockerError.connectionFailed(String(cString: strerror(errno))) }

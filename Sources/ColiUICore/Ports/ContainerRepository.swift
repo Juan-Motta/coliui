@@ -35,6 +35,11 @@ public protocol EngineVersionSource: Sendable {
     func engineVersion() async throws -> EngineVersion
 }
 
+/// What the engine reports about itself (`/info`): its name, version, CPUs and memory.
+public protocol EngineInfoSource: Sendable {
+    func engineInfo() async throws -> EngineInfo
+}
+
 /// The installed Colima's version (Settings › About).
 public protocol ColimaVersionSource: Sendable {
     func version() async throws -> String

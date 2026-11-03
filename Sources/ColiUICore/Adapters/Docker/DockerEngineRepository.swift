@@ -1,7 +1,8 @@
 import Foundation
 
 /// `ContainerRepository` backed by the Docker Engine REST API.
-public struct DockerEngineRepository: ContainerRepository, ContainerInspector, ContainerEnvironmentSource, EngineVersionSource, DockerInventory {
+public struct DockerEngineRepository: ContainerRepository, ContainerInspector, ContainerEnvironmentSource, EngineVersionSource, EngineInfoSource,
+    DockerInventory {
     let transport: HTTPTransport
 
     public init(transport: HTTPTransport) {
@@ -21,6 +22,12 @@ public struct DockerEngineRepository: ContainerRepository, ContainerInspector, C
     public func engineVersion() async throws -> EngineVersion {
         let dto = try await decode(VersionDTO.self, path: "/version")
         return EngineVersion(version: dto.version, apiVersion: dto.apiVersion)
+    }
+
+    public func engineInfo() async throws -> EngineInfo {
+        let dto = try await decode(InfoDTO.self, path: "/info")
+        return EngineInfo(name: dto.name ?? "", operatingSystem: dto.operatingSystem ?? "", serverVersion: dto.serverVersion ?? "",
+                          cpus: dto.cpus ?? 0, memoryBytes: dto.memory ?? 0)
     }
 
     public func summary() async throws -> DockerSummary {
@@ -215,6 +222,17 @@ private struct VersionDTO: Decodable {
     let version: String
     let apiVersion: String
     enum CodingKeys: String, CodingKey { case version = "Version", apiVersion = "ApiVersion" }
+}
+
+private struct InfoDTO: Decodable {
+    let name: String?
+    let operatingSystem: String?
+    let serverVersion: String?
+    let cpus: Int?
+    let memory: Int64?
+    enum CodingKeys: String, CodingKey {
+        case name = "Name", operatingSystem = "OperatingSystem", serverVersion = "ServerVersion", cpus = "NCPU", memory = "MemTotal"
+    }
 }
 
 private struct VolumesDTO: Decodable {
