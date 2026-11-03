@@ -39,6 +39,16 @@ public enum DockerEngineKind: String, CaseIterable, Sendable {
         }
     }
 
+    /// The engine a socket path belongs to: any profile under `~/.colima` is Colima, the others by their fixed path.
+    public static func owning(socketPath path: String, home: String) -> DockerEngineKind {
+        let colima = "\(home)/.colima/"
+        if path.hasPrefix(colima), path.hasSuffix("/docker.sock"),
+           !path.dropFirst(colima.count).dropLast("/docker.sock".count).contains("/") {
+            return .colima
+        }
+        return detectionOrder.first { $0 != .colima && $0.socket(home: home, profile: "") == path } ?? .other
+    }
+
     /// Names an engine reached through a custom socket or `DOCKER_HOST` from what it reports in `/info`.
     public static func identify(_ info: EngineInfo) -> DockerEngineKind {
         let system = info.operatingSystem.lowercased()
@@ -98,8 +108,7 @@ public enum EngineDetection {
                                  answers: (String) -> Bool) -> DetectedEngine {
         if let host = environment["DOCKER_HOST"], host.hasPrefix("unix://") {
             let path = String(host.dropFirst("unix://".count))
-            let kind = DockerEngineKind.detectionOrder.first { $0.socket(home: home, profile: profile) == path } ?? .other
-            return DetectedEngine(kind: kind, socketPath: path, isAnswering: answers(path))
+            return DetectedEngine(kind: .owning(socketPath: path, home: home), socketPath: path, isAnswering: answers(path))
         }
         for kind in DockerEngineKind.detectionOrder {
             guard let path = kind.socket(home: home, profile: profile), answers(path) else { continue }

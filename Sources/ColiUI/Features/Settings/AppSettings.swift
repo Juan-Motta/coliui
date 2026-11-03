@@ -179,8 +179,13 @@ final class AppSettings {
             return EngineDetection.automatic(environment: environment, home: home, profile: defaultProfile, answers: answers)
         case .custom:
             let custom = socketPath.trimmingCharacters(in: .whitespaces)
+            // An empty field means nothing to connect to; detect instead.
+            guard !custom.isEmpty else {
+                return EngineDetection.automatic(environment: environment, home: home, profile: defaultProfile, answers: answers)
+            }
             let path = custom.hasPrefix("~") ? home + custom.dropFirst() : custom
-            return DetectedEngine(kind: .other, socketPath: path, isAnswering: answers(path))
+            // A saved Colima socket keeps Colima's controls (S7).
+            return DetectedEngine(kind: .owning(socketPath: path, home: home), socketPath: path, isAnswering: answers(path))
         case .colima, .dockerDesktop, .orbStack, .rancherDesktop:
             let kind = engine.kind!
             let path = kind.socket(home: home, profile: defaultProfile)!

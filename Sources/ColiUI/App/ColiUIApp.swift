@@ -34,7 +34,7 @@ struct ColiUIApp: App {
             MenuBarView()
                 .environment(model)
         } label: {
-            Image(nsImage: Glyph.menuBarImage(dimmed: !model.colima.isRunning))
+            Image(nsImage: Glyph.menuBarImage(dimmed: !model.isEngineRunning))
         }
         .menuBarExtraStyle(.window)
     }

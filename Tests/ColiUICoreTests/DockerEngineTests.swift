@@ -39,10 +39,23 @@ import Testing
                                                home: home, profile: "default") { _ in true }
         #expect(custom == DetectedEngine(kind: .other, socketPath: "/tmp/d.sock", isAnswering: true))
 
+        // Any Colima profile's socket is Colima, not just the default profile's.
+        let work = EngineDetection.automatic(environment: ["DOCKER_HOST": "unix:///Users/me/.colima/work/docker.sock"],
+                                             home: home, profile: "default") { _ in false }
+        #expect(work.kind == .colima)
+
         // A tcp:// host isn't a socket ColiUI can use, so detection carries on.
         let tcp = EngineDetection.automatic(environment: ["DOCKER_HOST": "tcp://1.2.3.4:2375"],
                                             home: home, profile: "default") { _ in false }
         #expect(tcp.kind == .colima)
+    }
+
+    @Test func socketPathsNameTheirEngine() {
+        #expect(DockerEngineKind.owning(socketPath: "/Users/me/.colima/default/docker.sock", home: home) == .colima)
+        #expect(DockerEngineKind.owning(socketPath: "/Users/me/.colima/work/docker.sock", home: home) == .colima)
+        #expect(DockerEngineKind.owning(socketPath: "/Users/me/.colima/a/b/docker.sock", home: home) == .other)
+        #expect(DockerEngineKind.owning(socketPath: "/Users/me/.docker/run/docker.sock", home: home) == .dockerDesktop)
+        #expect(DockerEngineKind.owning(socketPath: "/tmp/d.sock", home: home) == .other)
     }
 
     @Test func infoNamesAnEngineReachedThroughAnotherSocket() {

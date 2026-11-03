@@ -282,12 +282,13 @@ final class AppModel {
             var tick = 0
             while !Task.isCancelled {
                 if tick % 5 == 0 {
+                    // First: `/info` names an engine reached through another socket before the Colima check below.
+                    engineInfo = try? await engineInfoSource?.engineInfo()
                     // Colima's controls only apply to Colima; `colima list` spawns processes, so skip it otherwise.
                     if usesColima {
                         await colima.refresh()
                         if tick == 0, settings.startColimaOnOpen { await colima.startIfStopped() }
                     }
-                    engineInfo = try? await engineInfoSource?.engineInfo()
                     summary = try? await inventory?.summary()
                     if section == .images { await images.refresh() }
                     if section == .volumes { await volumes.refresh() }

@@ -78,6 +78,14 @@ private func freshDefaults() -> UserDefaults {
         #expect(settings.loginItemError != nil)
     }
 
+    @Test func anEmptyCustomSocketFallsBackToDetection() {
+        let settings = AppSettings(defaults: freshDefaults(), loginItem: FakeLoginItem(isEnabled: false))
+        settings.engine = .custom
+        settings.socketPath = "  "
+        #expect(settings.resolvedEngine(environment: [:], home: "/Users/me") { _ in false }.socketPath
+                == "/Users/me/.colima/default/docker.sock")
+    }
+
     @Test func aCustomSocketExpandsTheHomeFolder() {
         let settings = AppSettings(defaults: freshDefaults(), loginItem: FakeLoginItem(isEnabled: false))
         settings.engine = .custom
@@ -101,6 +109,13 @@ private func freshDefaults() -> UserDefaults {
         let defaults = freshDefaults()
         defaults.set("/Users/me/run/docker.sock", forKey: "socketPath")
         #expect(AppSettings(defaults: defaults, loginItem: FakeLoginItem(isEnabled: false)).engine == .custom)
+
+        // A saved Colima socket keeps Colima's controls even before the engine answers.
+        let colima = freshDefaults()
+        colima.set("~/.colima/work/docker.sock", forKey: "socketPath")
+        #expect(AppSettings(defaults: colima, loginItem: FakeLoginItem(isEnabled: false))
+            .resolvedEngine(environment: [:], home: "/Users/me") { _ in false }
+            == DetectedEngine(kind: .colima, socketPath: "/Users/me/.colima/work/docker.sock", isAnswering: false))
 
         let saved = freshDefaults()
         AppSettings(defaults: saved, loginItem: FakeLoginItem(isEnabled: false)).engine = .dockerDesktop
