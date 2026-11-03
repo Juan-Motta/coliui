@@ -20,7 +20,7 @@ swift scripts/make-icon.swift   # regenerate Resources/AppIcon.icns from the Pap
 
 ## Releases
 
-`scripts/make-dmg.sh 0.2.0` builds `build/ColiUI-0.2.0.dmg` locally (ad-hoc signed unless the signing variables in the script are set). `scripts/release-notes.sh v0.2.0` prints the notes for a tag: its commits since the previous published release, grouped into Features, Fixes, Performance, Refactoring and Other changes.
+`scripts/make-dmg.sh 0.2.0` builds `build/ColiUI-0.2.0.dmg` locally (ad-hoc signed unless the signing variables in the script are set). It needs [dmgbuild](https://pypi.org/project/dmgbuild/) (`pip install dmgbuild==1.6.7`, or point `DMGBUILD` at it), which lays out the installer window from `scripts/dmg-settings.py`. The window background comes from `swift scripts/make-dmg-background.swift`. `scripts/release-notes.sh v0.2.0` prints the notes for a tag: its commits since the previous published release, grouped into Features, Fixes, Performance, Refactoring and Other changes.
 
 Pushing a version tag publishes a release: `.github/workflows/release.yml` runs the tests, then builds, signs and notarizes the DMG, and creates the GitHub Release with the DMG and the notes.
 

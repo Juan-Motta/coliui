@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Builds build/ColiUI-<version>.dmg: the app plus an Applications shortcut to drag it onto.
+# Builds build/ColiUI-<version>.dmg: the installer window with the app, an Applications shortcut to drag it
+# onto, and the volume icon. Needs dmgbuild (pip install dmgbuild==1.6.7).
 # Usage: scripts/make-dmg.sh <version>            e.g. scripts/make-dmg.sh 0.2.0
 # Signing and notarization run only when their variables are set:
 #   SIGN_IDENTITY       "Developer ID Application: Name (TEAMID)"
@@ -16,15 +17,18 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 SIGN_IDENTITY="${SIGN_IDENTITY:-}"
 DMG="build/ColiUI-$VERSION.dmg"
-STAGING="$(mktemp -d)"
-trap 'rm -rf "$STAGING"' EXIT
+DMGBUILD="${DMGBUILD:-dmgbuild}"
+if ! command -v "$DMGBUILD" >/dev/null; then
+    echo "dmgbuild is missing: pip install dmgbuild==1.6.7 (or set DMGBUILD to its path)" >&2
+    exit 1
+fi
 
 VERSION="$VERSION" SIGN_IDENTITY="$SIGN_IDENTITY" scripts/bundle.sh
 
-cp -R build/ColiUI.app "$STAGING/"
-ln -s /Applications "$STAGING/Applications"
+# dmgbuild writes the window layout (background, icon positions, volume icon) without driving Finder,
+# so it also works on CI runners. Layout: scripts/dmg-settings.py; background: make-dmg-background.swift.
 rm -f "$DMG"
-hdiutil create -volname "ColiUI $VERSION" -srcfolder "$STAGING" -fs HFS+ -format UDZO -ov "$DMG" >/dev/null
+"$DMGBUILD" -s scripts/dmg-settings.py -D app=build/ColiUI.app "ColiUI $VERSION" "$DMG"
 
 if [[ -n "$SIGN_IDENTITY" ]]; then
     codesign --force --timestamp --sign "$SIGN_IDENTITY" "$DMG"

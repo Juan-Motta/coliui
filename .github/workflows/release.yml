@@ -53,6 +53,12 @@ jobs:
           fi
           echo "SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
 
+      - name: Install dmgbuild
+        run: |
+          python3 -m venv "$RUNNER_TEMP/dmgbuild"
+          "$RUNNER_TEMP/dmgbuild/bin/pip" install --quiet dmgbuild==1.6.7
+          echo "DMGBUILD=$RUNNER_TEMP/dmgbuild/bin/dmgbuild" >> "$GITHUB_ENV"
+
       - name: Build, sign and notarize the DMG
         env:
           NOTARY_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
