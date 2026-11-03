@@ -9,6 +9,8 @@ final class FakeImageRepository: ImageRepository, @unchecked Sendable {
     private var _loads = 0
     var images: [DockerImage]
     var removeError: Error?
+    /// What `removeDanglingImage` reports as removed along with the image.
+    var danglingLayers = 0
 
     init(images: [DockerImage]) { self.images = images }
 
@@ -23,6 +25,11 @@ final class FakeImageRepository: ImageRepository, @unchecked Sendable {
     func removeImage(_ reference: String) async throws {
         if let removeError { throw removeError }
         lock.withLock { _removed.append(reference) }
+    }
+
+    func removeDanglingImage(id: String) async throws -> Int {
+        try await removeImage("dangling:" + id)
+        return danglingLayers
     }
 }
 
@@ -117,7 +124,20 @@ private func makeModel(
         #expect(repository.loads == 2)
         #expect(model.toast == "Removed node:22-alpine")
         await model.remove(dangling)
-        #expect(repository.removed.last == "ccc333")
+        #expect(repository.removed.last == "dangling:ccc333")
+    }
+
+    @Test func aDanglingImageSaysWhichBuildLayersWentWithIt() async {
+        let (model, repository) = makeModel()
+        var removals = 0
+        model.onRemoved = { removals += 1 }
+        repository.danglingLayers = 2
+        await model.remove(dangling)
+        #expect(model.toast?.hasSuffix(" and 2 untagged build layers under it") == true)
+        repository.danglingLayers = 0
+        await model.remove(node)
+        #expect(model.toast == "Removed node:22-alpine")
+        #expect(removals == 2)
     }
 
     @Test func keepsTheRemoveErrorAfterTheRefresh() async {

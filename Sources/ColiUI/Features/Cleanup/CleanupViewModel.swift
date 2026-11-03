@@ -56,6 +56,9 @@ final class CleanupViewModel {
         }
     }
 
+    /// After a clean-up, so the Images, Volumes and Networks lists drop what was pruned.
+    var onCleaned: (() -> Void)?
+
     func cleanUp() async {
         isCleaning = true
         defer { isCleaning = false }
@@ -74,5 +77,6 @@ final class CleanupViewModel {
         }
         lastFreedBytes = freed
         await scan()
+        onCleaned?()
     }
 }

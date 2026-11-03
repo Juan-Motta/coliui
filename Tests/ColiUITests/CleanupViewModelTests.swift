@@ -68,10 +68,14 @@ private let usage = DiskUsage(
     @Test func cleanUpPrunesOnlySelectedCategoriesAndRescans() async {
         let maintenance = FakeMaintenance(usage: usage)
         let model = CleanupViewModel(maintenance: maintenance)
+        var cleaned = 0
+        model.onCleaned = { cleaned += 1 }
         await model.scan()
 
         await model.cleanUp()
 
+        // The other lists refresh so pruned images, volumes and networks don't linger there.
+        #expect(cleaned == 1)
         #expect(Set(maintenance.pruned) == [.images, .containers, .buildCache])
         #expect(model.lastFreedBytes == Int64(3_400 + 120 + 6_800))
         #expect(maintenance.scans == 2)

@@ -40,6 +40,8 @@ final class ImagesViewModel {
     var isPulling: Bool { pullTask != nil }
     /// Called with the reference and how long a successful pull took (Settings › Notifications).
     var onPullFinished: ((String, Duration) -> Void)?
+    /// After a removal, so Cleanup measures the disk again.
+    var onRemoved: (() -> Void)?
 
     private let repository: ImageRepository
     private let puller: ImagePuller
@@ -137,14 +139,22 @@ final class ImagesViewModel {
     func remove(_ image: DockerImage) async {
         removingIDs.insert(image.id)
         defer { removingIDs.remove(image.id) }
+        var layers = 0
         do {
-            try await repository.removeImage(image.reference)
+            // A dangling image takes the untagged build layers under it along, or the next one shows up in its place.
+            if image.isDangling {
+                layers = try await repository.removeDanglingImage(id: image.reference)
+            } else {
+                try await repository.removeImage(image.reference)
+            }
         } catch {
             errorMessage = error.localizedDescription
             return
         }
         await refresh()
-        showToast("Removed \(image.isDangling ? image.shortID : image.reference)")
+        onRemoved?()
+        let extra = layers == 0 ? "" : " and \(layers) untagged build layer\(layers == 1 ? "" : "s") under it"
+        showToast("Removed \(image.isDangling ? image.shortID : image.reference)" + extra)
     }
 
     func openPull() {

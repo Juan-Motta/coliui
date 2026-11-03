@@ -323,6 +323,18 @@ final class AppModel {
             guard let self, let capacity = colima.instance?.diskBytes else { return }
             deliver(alertRules.diskMeasured(used: usage.totalBytes, capacity: capacity, profile: colima.profile))
         }
+        images.onRemoved = { [weak self] in
+            guard let self else { return }
+            Task { await cleanup.scan() }
+        }
+        cleanup.onCleaned = { [weak self] in
+            guard let self else { return }
+            Task {
+                await images.refresh()
+                await volumes.refresh()
+                await networks.refresh()
+            }
+        }
         images.onPullFinished = { [weak self] reference, duration in
             guard let self, let alert = AlertRules.pullFinished(reference: reference, duration: duration) else { return }
             deliver([alert])

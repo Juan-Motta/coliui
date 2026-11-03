@@ -12,6 +12,47 @@ extension DockerEngineRepository: ImageRepository {
         try Self.check(response)
     }
 
+    /// A multi-step `docker build` stacks untagged layers under its result, and Docker lists only the layers no
+    /// other image builds on. Removing the top one exposes the next, which looks like the same dangling image
+    /// coming back. So this walks down: each layer that is now untagged with nothing on top goes as well.
+    /// It stops at a tagged layer, one another image still builds on, or one a container uses.
+    public func removeDanglingImage(id: String) async throws -> Int {
+        let target = Self.hex(id)
+        let layers = try await imageLayers()
+        var chain: [String] = []
+        var next = layers[target]?.parent
+        while let parent = next, let layer = layers[parent], !layer.isTagged, !chain.contains(parent) {
+            chain.append(parent)
+            next = layer.parent
+        }
+        try await removeImage(target)
+        var removed = 0
+        for parent in chain {
+            let now = try await imageLayers()
+            guard let layer = now[parent], !layer.isTagged, !now.values.contains(where: { $0.parent == parent }) else { break }
+            do {
+                try await removeImage(parent)
+            } catch {
+                break // a container uses it; the rest of the chain stays with it
+            }
+            removed += 1
+        }
+        return removed
+    }
+
+    /// Every image including intermediate layers, by hex ID.
+    private func imageLayers() async throws -> [String: ImageLayer] {
+        let rows = try await decode([ImageLayerDTO].self, path: "/images/json?all=1")
+        return Dictionary(rows.map { row in
+            (Self.hex(row.id), ImageLayer(parent: row.parentID.flatMap { $0.isEmpty ? nil : Self.hex($0) },
+                                          isTagged: (row.repoTags ?? []).contains { $0 != "<none>:<none>" }))
+        }, uniquingKeysWith: { first, _ in first })
+    }
+
+    private static func hex(_ id: String) -> String {
+        id.hasPrefix("sha256:") ? String(id.dropFirst(7)) : id
+    }
+
     /// References only use `[A-Za-z0-9_.-:/@]`; anything else could escape the path or add query parameters.
     static func validatedImageReference(_ reference: String) throws -> String {
         let allowed = DockerEngineRepository.asciiAlphanumerics.union(CharacterSet(charactersIn: "_.-:/@"))
@@ -21,6 +62,18 @@ extension DockerEngineRepository: ImageRepository {
         }
         return reference
     }
+}
+
+private struct ImageLayer {
+    let parent: String?
+    let isTagged: Bool
+}
+
+private struct ImageLayerDTO: Decodable {
+    let id: String
+    let parentID: String?
+    let repoTags: [String]?
+    enum CodingKeys: String, CodingKey { case id = "Id", parentID = "ParentId", repoTags = "RepoTags" }
 }
 
 private struct ImageDTO: Decodable {

@@ -69,6 +69,15 @@ public protocol ImageRepository: Sendable {
     func images() async throws -> [DockerImage]
     /// Removes a tag (or an untagged image by ID); fails while a container uses it.
     func removeImage(_ reference: String) async throws
+    /// Removes an untagged image and the untagged build layers it leaves behind; returns how many layers went too.
+    func removeDanglingImage(id: String) async throws -> Int
+}
+
+extension ImageRepository {
+    public func removeDanglingImage(id: String) async throws -> Int {
+        try await removeImage(id)
+        return 0
+    }
 }
 
 public protocol ImagePuller: Sendable {
