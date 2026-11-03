@@ -283,6 +283,8 @@ private struct AboutSettings: View {
             }
             .padding(.top, 8)
 
+            UpdatesSettings(updates: model.updates)
+
             SettingsSection("This Mac") {
                 ForEach(about?.rows ?? [], id: \.title) { row in
                     SettingsRow {
@@ -317,6 +319,63 @@ private struct AboutSettings: View {
         }
         .frame(maxWidth: .infinity)
         .task { await about?.load(profile: model.colima.profile, vmType: model.colima.instance?.vmType) }
+    }
+}
+
+/// Updates.dc.html › Settings › About › Updates: the daily-check switch, the status and Check for Updates.
+private struct UpdatesSettings: View {
+    @Bindable var updates: UpdatesViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            SettingsSection("Updates") {
+                SwitchRow("Check for updates automatically", isOn: $updates.automaticallyChecks)
+                    .disabled(!updates.canUpdate)
+                SettingsRow {
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 6) {
+                            switch updates.status {
+                            case .idle, .upToDate:
+                                LineIcon(kind: .check).icon(Palette.switchOn, size: 14, svgStrokeWidth: 2.6)
+                            case .checking:
+                                ProgressView().controlSize(.mini)
+                            case .available, .failed:
+                                EmptyView()
+                            }
+                            Text(verbatim: updates.statusText)
+                                .foregroundStyle(updates.status.isFailure ? Palette.danger : Palette.text)
+                                .lineLimit(2)
+                            if updates.status == .available {
+                                Text("New")
+                                    .font(.ui(10, .semibold))
+                                    .foregroundStyle(Palette.accent)
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 2)
+                                    .background(Palette.toggleOn, in: .capsule)
+                            }
+                        }
+                        if let lastChecked = updates.lastCheckedText {
+                            Text(lastChecked).font(.ui(11)).foregroundStyle(Palette.secondary)
+                        }
+                    }
+                    Spacer()
+                    if updates.isUpdateWaiting {
+                        Button("View update") { updates.viewUpdate() }
+                            .buttonStyle(TintButtonStyle(compact: true))
+                    } else {
+                        Button("Check for Updates") { updates.check() }
+                            .buttonStyle(PillButtonStyle())
+                            .disabled(!updates.canUpdate || updates.status == .checking)
+                    }
+                }
+            }
+            Text(updates.canUpdate
+                 ? "Checks once a day. Updates are signed and verified before they install."
+                 : "Updates work in the installed app, not in development builds.")
+                .font(.ui(11))
+                .foregroundStyle(Palette.secondary)
+                .padding(.horizontal, 6)
+        }
     }
 }
 

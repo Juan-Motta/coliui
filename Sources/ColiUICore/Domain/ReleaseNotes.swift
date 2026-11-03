@@ -1,6 +1,5 @@
 import Foundation
 
-
 /// Release notes as `scripts/release-notes.sh` writes them: `## Section` headings over `- **scope:** text` bullets.
 public enum ReleaseNotes {
     public struct Section: Equatable, Sendable {

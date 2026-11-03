@@ -20,6 +20,14 @@ struct MenuBarView: View {
                 StatusBadge(title: colima.statusTitle, tint: colima.statusTint, isBusy: colima.isBusy)
             }
 
+            if let offer = model.updates.offer {
+                UpdateBanner(version: offer.version) {
+                    openWindow(id: "main")
+                    NSApp.activate()
+                    model.updates.viewUpdate()
+                }
+            }
+
             if let instance = colima.instance {
                 HStack(spacing: 8) {
                     MetricTile(title: "CPU", value: "\(instance.cpus) cores")
@@ -67,6 +75,14 @@ struct MenuBarView: View {
                 }
                 .buttonStyle(.glass)
                 Spacer()
+                if model.updates.canUpdate {
+                    Button("Check for Updates…") {
+                        openWindow(id: "main")
+                        NSApp.activate()
+                        model.checkForUpdatesFromMenu()
+                    }
+                    .buttonStyle(.borderless)
+                }
                 Button("Quit") { NSApp.terminate(nil) }
                     .keyboardShortcut("q")
                     .buttonStyle(.borderless)

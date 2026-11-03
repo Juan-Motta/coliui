@@ -61,7 +61,7 @@ struct ModalTextField: View {
     }
 }
 
-/// Shows the open create modal over the whole window (sidebar included); a click outside closes it.
+/// Shows the open modal (a create form or the update) over the whole window (sidebar included); a click outside closes it.
 struct ModalHost: View {
     @Environment(AppModel.self) private var model
 
@@ -80,6 +80,7 @@ struct ModalHost: View {
                     case .newVolume: NewVolumeModal()
                     case .newNetwork: NewNetworkModal()
                     case .newProfile: NewProfileModal()
+                    case .update: UpdateModal()
                     }
                 }
                 .padding(.top, modal.isTall ? 28 : 110)

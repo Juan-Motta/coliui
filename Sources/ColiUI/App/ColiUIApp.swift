@@ -19,6 +19,10 @@ struct ColiUIApp: App {
         .windowBackgroundDragBehavior(.enabled)
         .defaultSize(width: 1232, height: 752)
         .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") { model.checkForUpdatesFromMenu() }
+                    .disabled(!model.updates.canUpdate)
+            }
             // ⌘, opens the Settings sheet on the main window instead of a separate window.
             CommandGroup(replacing: .appSettings) {
                 Button("Settings…") { model.isSettingsPresented = true }

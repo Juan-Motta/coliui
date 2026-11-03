@@ -16,6 +16,8 @@ final class AppModel {
     let images: ImagesViewModel
     let volumes: VolumesViewModel
     let networks: NetworksViewModel
+    /// Settings › About › Updates, the update modal and the menu bar banner.
+    let updates: UpdatesViewModel
     let settings: AppSettings
     let notifier: Notifying
     /// The socket this session talks to; Settings changes apply on the next launch.
@@ -51,6 +53,7 @@ final class AppModel {
         networks: NetworksViewModel,
         settings: AppSettings,
         about: AboutViewModel? = nil,
+        updates: UpdatesViewModel = UpdatesViewModel(updater: nil),
         notifier: Notifying = SystemNotifier(),
         socketPath: String = "",
         repository: ContainerRepository? = nil,
@@ -68,6 +71,7 @@ final class AppModel {
         self.networks = networks
         self.settings = settings
         self.about = about
+        self.updates = updates
         self.notifier = notifier
         self.socketPath = socketPath
         self.repository = repository
@@ -114,13 +118,13 @@ final class AppModel {
 
     /// The create modal on screen, if any (Settings has its own).
     enum PresentedModal {
-        case run(RunContainerViewModel), pullImage, newVolume, newNetwork, newProfile
+        case run(RunContainerViewModel), pullImage, newVolume, newNetwork, newProfile, update
 
         /// Run container and New profile are long forms and sit near the top; the rest lower down.
         var isTall: Bool {
             switch self {
             case .run, .newProfile: true
-            case .pullImage, .newVolume, .newNetwork: false
+            case .pullImage, .newVolume, .newNetwork, .update: false
             }
         }
     }
@@ -131,6 +135,7 @@ final class AppModel {
         if volumes.isCreateOpen { return .newVolume }
         if networks.isCreateOpen { return .newNetwork }
         if profiles.isCreating { return .newProfile }
+        if updates.isModalOpen { return .update }
         return nil
     }
 
@@ -142,7 +147,19 @@ final class AppModel {
         case .newVolume: volumes.closeCreate()
         case .newNetwork: networks.closeCreate()
         case .newProfile: profiles.cancelNewProfile()
+        case .update: updates.closeModal()
         case nil: break
+        }
+    }
+
+    /// "Check for Updates…" in the app menu and the menu bar (the menu bar also brings the window forward).
+    func checkForUpdatesFromMenu() {
+        switch updates.checkFromMenu() {
+        case .modal:
+            isSettingsPresented = false
+        case .about:
+            settings.tab = .about
+            isSettingsPresented = true
         }
     }
 
@@ -204,6 +221,7 @@ final class AppModel {
             networks: NetworksViewModel(repository: repository, containers: { containers.containers }),
             settings: settings,
             about: AboutViewModel(colima: runtime as? ColimaVersionSource, engine: repository, socketPath: socketPath),
+            updates: SparkleUpdater.makeViewModel() ?? UpdatesViewModel(updater: nil),
             socketPath: socketPath,
             repository: repository,
             runner: repository,

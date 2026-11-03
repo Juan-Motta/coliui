@@ -284,8 +284,10 @@ struct ToolbarIconButtonStyle: ButtonStyle {
     }
 }
 
-/// `.tint`: blue capsule with a white hairline and coloured shadow.
+/// `.tint`: blue capsule with a white hairline and coloured shadow; `compact` is the 28 pt / 12 pt row button.
 struct TintButtonStyle: ButtonStyle {
+    var compact = false
+
     func makeBody(configuration: Configuration) -> some View {
         Hoverable { hovered in
             tinted(configuration, hovered: hovered)
@@ -294,10 +296,10 @@ struct TintButtonStyle: ButtonStyle {
 
     private func tinted(_ configuration: Configuration, hovered: Bool) -> some View {
         configuration.label
-            .font(.ui(13, .medium))
+            .font(.ui(compact ? 12 : 13, .medium))
             .foregroundStyle(.white)
             .padding(.horizontal, 14)
-            .frame(height: 34)
+            .frame(height: compact ? 28 : 34)
             .background((hovered ? Palette.tintHover : Palette.tint).opacity(configuration.isPressed ? 0.88 : 1), in: .capsule)
             .overlay(Capsule().strokeBorder(.white.opacity(0.4), lineWidth: 1))
             .overlay(Capsule().inset(by: 1).stroke(

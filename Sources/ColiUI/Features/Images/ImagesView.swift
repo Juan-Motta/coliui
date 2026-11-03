@@ -177,7 +177,7 @@ struct PullImageModal: View {
 }
 
 /// 6 pt track with the `#0066CC` fill; indeterminate before sizes are known.
-private struct ProgressBar: View {
+struct ProgressBar: View {
     let fraction: Double?
 
     var body: some View {
