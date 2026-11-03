@@ -13,7 +13,7 @@ VERSION="${VERSION:-0.1.0}"
 BUILD_NUMBER="${BUILD_NUMBER:-$(git rev-list --count HEAD 2>/dev/null || echo 1)}"
 SIGN_IDENTITY="${SIGN_IDENTITY:-}"
 SPARKLE_FEED_URL="${SPARKLE_FEED_URL:-https://github.com/Juan-Motta/coliui/releases/latest/download/appcast.xml}"
-SPARKLE_PUBLIC_KEY="${SPARKLE_PUBLIC_KEY:-$(tr -d '[:space:]' < Resources/sparkle-public-key 2>/dev/null || true)}"
+SPARKLE_PUBLIC_KEY="${SPARKLE_PUBLIC_KEY:-$( { tr -d '[:space:]' < Resources/sparkle-public-key; } 2>/dev/null || true)}"
 
 swift build -c "$CONFIG"
 BIN="$(swift build -c "$CONFIG" --show-bin-path)/ColiUI"
@@ -68,7 +68,8 @@ if [[ -n "$SIGN_IDENTITY" ]]; then
     "${SIGN[@]}" --entitlements Resources/ColiUI.entitlements "$APP"
 else
     for item in "$SPARKLE/Versions/B/Autoupdate" "$SPARKLE/Versions/B/Updater.app" "$SPARKLE" "$APP"; do
-        codesign --force --sign - "$item" 2>/dev/null
+        codesign --force --sign - "$item" 2>&1 | grep -v "replacing existing signature" >&2 || true
+        codesign --verify "$item"
     done
 fi
 echo "Built $APP ($VERSION, build $BUILD_NUMBER)"

@@ -24,7 +24,7 @@ struct MenuBarView: View {
                 UpdateBanner(version: offer.version) {
                     openWindow(id: "main")
                     NSApp.activate()
-                    model.updates.viewUpdate()
+                    model.viewUpdate()
                 }
             }
 

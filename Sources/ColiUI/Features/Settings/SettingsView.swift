@@ -283,7 +283,7 @@ private struct AboutSettings: View {
             }
             .padding(.top, 8)
 
-            UpdatesSettings(updates: model.updates)
+            UpdatesSettings(updates: model.updates, viewUpdate: model.viewUpdate)
 
             SettingsSection("This Mac") {
                 ForEach(about?.rows ?? [], id: \.title) { row in
@@ -325,6 +325,7 @@ private struct AboutSettings: View {
 /// Updates.dc.html › Settings › About › Updates: the daily-check switch, the status and Check for Updates.
 private struct UpdatesSettings: View {
     @Bindable var updates: UpdatesViewModel
+    let viewUpdate: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -360,7 +361,7 @@ private struct UpdatesSettings: View {
                     }
                     Spacer()
                     if updates.isUpdateWaiting {
-                        Button("View update") { updates.viewUpdate() }
+                        Button("View update", action: viewUpdate)
                             .buttonStyle(TintButtonStyle(compact: true))
                     } else {
                         Button("Check for Updates") { updates.check() }

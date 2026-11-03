@@ -152,6 +152,12 @@ final class AppModel {
         }
     }
 
+    /// "View update" in About and the menu bar banner: the modal draws under Settings, so Settings closes first.
+    func viewUpdate() {
+        isSettingsPresented = false
+        updates.viewUpdate()
+    }
+
     /// "Check for Updates…" in the app menu and the menu bar (the menu bar also brings the window forward).
     func checkForUpdatesFromMenu() {
         switch updates.checkFromMenu() {
