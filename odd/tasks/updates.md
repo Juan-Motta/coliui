@@ -16,13 +16,14 @@ Assumption: "Later" on a downloaded update lets Sparkle install it when ColiUI q
 
 ## Tasks
 
-- T1 (S3) ReleaseNotes parser in ColiUICore — inline — pending
-- T2 (S1–S4, S6) UpdatesViewModel + Sparkle user driver + About group, modal, menu bar — inline — pending
-- T3 (S1, S5, S6) bundle.sh embeds and signs Sparkle.framework; Info.plist feed and key — inline — pending
-- T4 (S5) release workflow signs and publishes appcast.xml — inline — pending
+- T1 (S3) ReleaseNotes parser in ColiUICore — inline — done (3b5a280)
+- T2 (S1–S4, S6) UpdatesViewModel + Sparkle user driver + About group, modal, menu bar — inline — done
+- T3 (S1, S5, S6) bundle.sh embeds and signs Sparkle.framework; Info.plist feed and key — inline — done
+- T4 (S5) release workflow signs and publishes appcast.xml — inline — done; first real run pending the key setup
 
 Risk: item 2 (update signature verification and signing key), item 5 (new dependency, release workflow).
 
 ## Log
 
 - L1 (2026-11-03) "y me gustaria agregar de una vez la opcion para verificar si existe una version nueva y actualizar" — then chose Sparkle with ColiUI's own UI ("ok"), and approved Updates.dc.html ("Se ve bien").
+- L2 (2026-11-03) Local end-to-end run with a throwaway Ed25519 key and a localhost feed: 0.1.0 found 0.9.0, showed the notes, downloaded, verified and relaunched as 0.9.0 (9000), signature valid. User: "ya instale el update y si le doy de nuevo a chack no aparece nada" → "me refiero a ciando presiono rn el boton de la barra superiior que no abre nada": menu checks now open Settings › About (or the waiting update), and "Checking…" stays at least 0.7 s. User: "ok se ve bien".

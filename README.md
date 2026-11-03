@@ -39,7 +39,25 @@ The workflow needs these repository secrets (Settings → Secrets and variables 
 | `APP_STORE_CONNECT_KEY_ID` | That key's ID |
 | `APP_STORE_CONNECT_ISSUER_ID` | The issuer ID shown above the keys list |
 
+| `SPARKLE_PRIVATE_KEY` | The EdDSA private key that signs `appcast.xml` (see below) |
+
 The names and formats match the Loqui repository, so the same values work in both.
+
+### Updates
+
+ColiUI updates itself with [Sparkle](https://sparkle-project.org): Settings › About › Updates, "Check for Updates…" in the menus, and a daily check. Each release publishes `appcast.xml` next to the DMG; the app reads `releases/latest/download/appcast.xml` and installs an update only when its EdDSA signature matches `Resources/sparkle-public-key` and its Developer ID matches the installed app.
+
+One-time key setup (the private key never leaves your keychain and the repository secret):
+
+```bash
+swift package resolve
+.build/artifacts/sparkle/Sparkle/bin/generate_keys            # creates the key in your keychain, prints the public key
+.build/artifacts/sparkle/Sparkle/bin/generate_keys -p > Resources/sparkle-public-key
+.build/artifacts/sparkle/Sparkle/bin/generate_keys -x sparkle-private-key
+gh secret set SPARKLE_PRIVATE_KEY -R Juan-Motta/coliui < sparkle-private-key && rm sparkle-private-key
+```
+
+Builds without `Resources/sparkle-public-key` (or `SPARKLE_PUBLIC_KEY`) run with updates off; `SPARKLE_FEED_URL` points a test build at another feed. `scripts/make-appcast.sh` writes the appcast from the built app and DMG.
 
 ## What works today
 
