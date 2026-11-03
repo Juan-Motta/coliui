@@ -33,11 +33,13 @@ The workflow needs these repository secrets (Settings → Secrets and variables 
 
 | Secret | Value |
 | --- | --- |
-| `DEVELOPER_ID_P12_BASE64` | Your *Developer ID Application* certificate and private key exported from Keychain Access as `.p12`, then `base64 -i cert.p12` |
-| `DEVELOPER_ID_P12_PASSWORD` | The password you set on that `.p12` export |
-| `NOTARY_KEY_P8_BASE64` | An App Store Connect API key (Users and Access → Integrations → Team Keys, role *Developer*), as `base64 -i AuthKey_XXXX.p8` |
-| `NOTARY_KEY_ID` | That key's ID |
-| `NOTARY_ISSUER_ID` | The issuer ID shown above the keys list |
+| `MACOS_CERTIFICATE_P12_BASE64` | Your *Developer ID Application* certificate and private key exported from Keychain Access as `.p12`, then `base64 -i cert.p12` |
+| `MACOS_CERTIFICATE_PASSWORD` | The password you set on that `.p12` export |
+| `APP_STORE_CONNECT_API_KEY_P8` | The full text of an App Store Connect API key file (`AuthKey_XXXX.p8`; Users and Access → Integrations → Team Keys, role *Developer*) |
+| `APP_STORE_CONNECT_KEY_ID` | That key's ID |
+| `APP_STORE_CONNECT_ISSUER_ID` | The issuer ID shown above the keys list |
+
+The names and formats match the Loqui repository, so the same values work in both.
 
 ## What works today
 
