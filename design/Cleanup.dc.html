@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Cleanup</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.cap{box-sizing:border-box;height:34px;border-radius:17px;display:inline-flex;align-items:center;gap:2px;padding:0 3px}
+.seg{height:28px;padding:0 12px;border:0;border-radius:14px;background:transparent;font-size:12px;font-family:inherit;color:#3A3A3C;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer}
+.seg:hover{background:rgba(0,0,0,0.06)}
+.nav:hover{background:rgba(0,0,0,0.05)}
+.card{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px}
+.opt{cursor:pointer}
+.opt:hover{border-color:rgba(0,102,204,0.35)}
+.pill{box-sizing:border-box;height:32px;padding:0 14px;border:0;border-radius:16px;background:rgba(0,0,0,0.05);font-size:13px;font-family:inherit;color:#1D1D1F;cursor:pointer}
+.danger{box-sizing:border-box;height:32px;padding:0 16px;border:1px solid rgba(255,255,255,0.4);border-radius:16px;background:#C4320A;color:#FFFFFF;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,0.3),0 4px 14px rgba(196,50,10,0.3)}
+</style>
+</helmet>
+<div style="min-height: 800px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="width: 100%; max-width: 1232px; min-height: 752px; display: flex; flex-wrap: wrap; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+
+<div style="flex: 0 0 240px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column">
+<dc-import name="Sidebar" selected="Cleanup" hint-size="240px,752px"></dc-import>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; margin-right: 6px">
+<span style="font-size: 15px; font-weight: 600">Cleanup</span>
+<span style="font-size: 11px; color: #6E6E73">Last scanned just now</span>
+</div>
+<div style="flex: 1"></div>
+<div class="glass cap">
+<button class="seg" style="gap: 6px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>Rescan</button>
+</div>
+</header>
+
+<main style="flex: 1; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 16px">
+<section aria-labelledby="disk-h" class="card" style="padding: 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px">
+<h2 id="disk-h" style="margin: 0; font-size: 15px; font-weight: 600">Colima VM disk · default</h2>
+<span style="font-size: 13px; color: #3A3A3C"><strong style="font-size: 20px; color: #1D1D1F">41.2 GiB</strong> of 60 GiB used</span>
+</div>
+<div role="img" aria-label="Disk usage: images 24.6 GiB, build cache 6.8 GiB, volumes 8.4 GiB, containers 1.4 GiB, free 18.8 GiB" style="display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: rgba(0,0,0,0.06); gap: 2px">
+<span style="width: 41%; background: #0066CC"></span>
+<span style="width: 11.3%; background: #C2410C"></span>
+<span style="width: 14%; background: #7C5CD6"></span>
+<span style="width: 2.3%; background: #1E7F3C"></span>
+</div>
+<div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 12px; color: #3A3A3C">
+<span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 5px; background: #0066CC"></span>Images 24.6 GiB</span>
+<span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 5px; background: #C2410C"></span>Build cache 6.8 GiB</span>
+<span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 5px; background: #7C5CD6"></span>Volumes 8.4 GiB</span>
+<span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 5px; background: #1E7F3C"></span>Containers 1.4 GiB</span>
+<span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 5px; background: rgba(0,0,0,0.08)"></span>Free 18.8 GiB</span>
+</div>
+<p style="margin: 0; font-size: 12px; color: #6E6E73">Colima disks can only grow — freeing space inside the VM is the only way to reclaim it.</p>
+</section>
+
+<section aria-labelledby="rec-h" style="display: flex; flex-direction: column; gap: 10px">
+<h2 id="rec-h" style="margin: 0; font-size: 15px; font-weight: 600">Reclaimable</h2>
+<sc-for list="{{items}}" as="it" hint-placeholder-count="4">
+<label class="card opt" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-color: {{it.border}}; background: {{it.bg}}">
+<input type="checkbox" checked="{{it.on}}" onChange="{{it.toggle}}" style="width: 16px; height: 16px; accent-color: #0066CC">
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 500">{{it.title}}</span>
+<span style="font-size: 12px; color: #6E6E73">{{it.desc}}</span>
+<sc-if value="{{it.warn}}" hint-placeholder-val="{{false}}">
+<span style="font-size: 12px; color: #B54708; display: flex; align-items: center; gap: 4px"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3l10 18H2zM12 10v5M12 18v.5"></path></svg>Deletes data permanently</span>
+</sc-if>
+</div>
+<span style="font-size: 12px; color: #6E6E73">{{it.count}}</span>
+<span style="font-size: 15px; font-weight: 600; width: 84px; text-align: right">{{it.size}}</span>
+</label>
+</sc-for>
+</section>
+
+<div class="glass" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 10px 10px 18px; border-radius: 24px; flex-wrap: wrap">
+<span style="font-size: 13px; color: #3A3A3C">Selected: <strong style="font-size: 17px; color: #1D1D1F">{{total}}</strong> to free</span>
+<div style="display: flex; gap: 8px">
+<button class="pill">Review items…</button>
+<button class="danger">Clean up selected</button>
+</div>
+</div>
+</main>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { on: { images: true, containers: true, volumes: false, cache: true } }; }
+  renderVals() {
+    const defs = [
+      { id: 'images', title: 'Dangling & unused images', desc: 'Untagged layers and images no container uses', count: '8 images', gb: 3.4 },
+      { id: 'containers', title: 'Stopped containers', desc: 'worker-jobs, mailpit', count: '2 containers', gb: 0.12 },
+      { id: 'volumes', title: 'Unused volumes', desc: 'Not mounted by any container', count: '3 volumes', gb: 1.1, warn: true },
+      { id: 'cache', title: 'Build cache', desc: 'BuildKit cache older than 7 days', count: '214 entries', gb: 6.8 }
+    ];
+    const fmt = (gb) => gb < 1 ? Math.round(gb * 1024) + ' MB' : gb.toFixed(1) + ' GB';
+    const on = this.state.on;
+    const items = defs.map((d) => ({
+      ...d, warn: !!d.warn, on: !!on[d.id], size: fmt(d.gb),
+      border: on[d.id] ? 'rgba(0,102,204,0.4)' : 'rgba(0,0,0,0.08)',
+      bg: on[d.id] ? '#F6F9FE' : '#FFFFFF',
+      toggle: () => this.setState({ on: { ...on, [d.id]: !on[d.id] } })
+    }));
+    const total = fmt(defs.reduce((s, d) => s + (on[d.id] ? d.gb : 0), 0));
+    return { items, total };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Live stats</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.cap{box-sizing:border-box;height:34px;border-radius:17px;display:inline-flex;align-items:center;gap:2px;padding:0 3px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:34px;height:28px;border:0;border-radius:14px;background:transparent;color:#1D1D1F;cursor:pointer;padding:0;text-decoration:none}
+.ib:hover{background:rgba(0,0,0,0.06);color:#1D1D1F}
+.seg{height:28px;padding:0 12px;border:0;border-radius:14px;background:transparent;font-size:12px;font-family:inherit;color:#3A3A3C;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer}
+.seg:hover{color:#1D1D1F}
+.on{background:#FFFFFF;color:#1D1D1F;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.14)}
+.nav:hover{background:rgba(0,0,0,0.05)}
+.card{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px}
+.pill{box-sizing:border-box;height:30px;padding:0 12px;border:0;border-radius:15px;background:rgba(0,0,0,0.05);font-size:12px;font-family:inherit;color:#1D1D1F;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+</style>
+</helmet>
+<div style="min-height: 800px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="width: 100%; max-width: 1232px; min-height: 752px; display: flex; flex-wrap: wrap; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+
+<div style="flex: 0 0 240px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column">
+<dc-import name="Sidebar" selected="Containers" hint-size="240px,752px"></dc-import>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; flex-wrap: wrap">
+<div class="glass cap"><a class="ib" href="Main.dc.html" aria-label="Back to containers" style="width: 28px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a></div>
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 15px; font-weight: 600">api-server</span>
+<span style="font-size: 11px; color: #6E6E73; font-family: ui-monospace, Menlo, monospace">e81b3f0c55d2 · myapp/api:latest</span>
+</div>
+<span style="display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: #1E7F3C; background: #E7F6EC; padding: 4px 10px; border-radius: 999px"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: #28C840"></span>Up 12 min</span>
+<div style="flex: 1"></div>
+<div class="glass cap">
+<button class="ib" aria-label="Stop"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"></rect></svg></button>
+<button class="ib" aria-label="Restart"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></button>
+<a class="ib" href="Terminal.dc.html" aria-label="Open shell"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 17l6-5-6-5M12 19h8"></path></svg></a>
+</div>
+<div class="glass cap">
+<button class="ib" aria-label="Remove container"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></button>
+</div>
+</header>
+
+<div style="padding: 0 16px">
+<nav aria-label="Container views" class="glass cap">
+<a class="seg" href="Detail.dc.html">Logs</a>
+<a class="seg on" href="LiveStats.dc.html" aria-current="page">Stats</a>
+<a class="seg" href="Terminal.dc.html">Terminal</a>
+<a class="seg" href="Detail.dc.html">Inspect</a>
+<a class="seg" href="Detail.dc.html">Environment</a>
+</nav>
+</div>
+
+<div style="flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 14px 16px 16px">
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<div role="group" aria-label="Time range" class="cap" style="background: rgba(0,0,0,0.05)">
+<sc-for list="{{ranges}}" as="r" hint-placeholder-count="3">
+<button class="{{r.cls}}" onClick="{{r.pick}}" aria-pressed="{{r.active}}">{{r.label}}</button>
+</sc-for>
+</div>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6E6E73"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: #28C840"></span>Sampling every 2 s · paused when the window is hidden</span>
+<div style="flex: 1"></div>
+<button class="pill">Pause</button>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+<sc-for list="{{charts}}" as="c" hint-placeholder-count="4">
+<div class="card" style="padding: 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<span style="font-size: 12px; color: #6E6E73">{{c.label}}</span>
+<span style="font-size: 12px; color: #6E6E73">{{c.sub}}</span>
+</div>
+<span style="font-size: 24px; font-weight: 600">{{c.value}}</span>
+<svg role="img" aria-label="{{c.aria}}" viewBox="0 0 300 90" preserveAspectRatio="none" style="width: 100%; height: 120px; display: block">
+<line x1="0" y1="22.5" x2="300" y2="22.5" stroke="#F0F0F3"></line>
+<line x1="0" y1="45" x2="300" y2="45" stroke="#F0F0F3"></line>
+<line x1="0" y1="67.5" x2="300" y2="67.5" stroke="#F0F0F3"></line>
+<polygon points="{{c.area}}" fill="rgba(0,102,204,0.10)"></polygon>
+<polyline points="{{c.line}}" fill="none" stroke="#0066CC" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></polyline>
+<sc-if value="{{c.dual}}" hint-placeholder-val="{{false}}">
+<polyline points="{{c.line2}}" fill="none" stroke="#C2410C" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></polyline>
+</sc-if>
+</svg>
+<sc-if value="{{c.dual}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; gap: 16px; font-size: 12px; color: #3A3A3C">
+<span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 12px; height: 2px; background: #0066CC"></span>{{c.k1}}</span>
+<span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 12px; height: 2px; background: #C2410C"></span>{{c.k2}}</span>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { range: '5m' }; }
+  series(seed, n, base, amp) {
+    let s = seed; const out = [];
+    for (let i = 0; i < n; i++) {
+      s = (s * 9301 + 49297) % 233280;
+      const r = s / 233280;
+      out.push(Math.max(2, Math.min(88, base + Math.sin(i / 3 + seed) * amp + (r - 0.5) * amp)));
+    }
+    return out;
+  }
+  pts(vals) {
+    const step = 300 / (vals.length - 1);
+    return vals.map((v, i) => (i * step).toFixed(1) + ',' + (90 - v).toFixed(1)).join(' ');
+  }
+  renderVals() {
+    const range = this.state.range;
+    const n = range === '1m' ? 30 : range === '5m' ? 60 : 90;
+    const ranges = [['1m', '1 min'], ['5m', '5 min'], ['15m', '15 min']].map(([id, label]) => ({
+      label, active: range === id ? 'true' : 'false',
+      cls: range === id ? 'seg on' : 'seg',
+      pick: () => this.setState({ range: id })
+    }));
+    const defs = [
+      { label: 'CPU', value: '3.1%', sub: 'of 4 cores', seed: 3, b: 18, a: 14 },
+      { label: 'Memory', value: '214 MiB', sub: 'limit 1 GiB', seed: 7, b: 40, a: 4 },
+      { label: 'Network I/O', value: '42 KB/s · 18 KB/s', sub: 'rx / tx', seed: 11, b: 30, a: 20, dual: true, k1: 'Received', k2: 'Sent' },
+      { label: 'Block I/O', value: '1.2 MB/s · 0.3 MB/s', sub: 'read / write', seed: 17, b: 16, a: 12, dual: true, k1: 'Read', k2: 'Write' }
+    ];
+    const charts = defs.map((d) => {
+      const line = this.pts(this.series(d.seed, n, d.b, d.a));
+      return {
+        ...d, dual: !!d.dual, line,
+        area: '0,90 ' + line + ' 300,90',
+        line2: d.dual ? this.pts(this.series(d.seed + 5, n, d.b * 0.5, d.a * 0.6)) : '',
+        aria: d.label + ' over the last ' + range + ', currently ' + d.value
+      };
+    });
+    return { ranges, charts };
+  }
+}
+</script>
+</body>
+</html>

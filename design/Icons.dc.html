@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — App icon</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+</style>
+</helmet>
+<div style="width: 1280px; height: 700px; box-sizing: border-box; padding: 40px 48px; background: #F2F2F5; display: flex; flex-direction: column; gap: 28px">
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px">
+
+<sc-for list="{{variants}}" as="v" hint-placeholder-count="3">
+<section style="background: #FFFFFF; border: 1px solid {{v.border}}; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px">
+<svg role="img" aria-label="{{v.aria}}" width="200" height="200" viewBox="0 0 100 100" style="filter: drop-shadow(0 6px 10px rgba(0,0,0,0.18))">
+<rect width="100" height="100" rx="22.5" fill="{{v.bg}}" stroke="{{v.edge}}" stroke-width="0.6"></rect>
+<rect x="20" y="20" width="60" height="60" rx="12.9" fill="none" stroke="{{v.fg}}" stroke-width="5.7"></rect>
+<g transform="translate(22.9 22.9) scale(0.557)"><path d="M30 95 L32 44 C32 36 34 32 37 30 L35 16 L41 27 L44 14 L47 28 C52 29 60 32 66 36 C69 38 69 44 66 46 C62 48 57 49 53 50 C51 54 50 60 50 70 L52 95 Z" fill="{{v.fg}}"></path></g></svg>
+<div style="display: flex; align-items: center; gap: 8px">
+<h2 style="margin: 0; font-size: 14px; font-weight: 600">{{v.name}}</h2>
+<sc-if value="{{v.rec}}" hint-placeholder-val="{{false}}"><span style="font-size: 11px; font-weight: 600; color: #0066CC; background: #E1E9F7; padding: 2px 8px; border-radius: 999px">Chosen</span></sc-if>
+</div>
+<p style="margin: 0; font-size: 12px; color: #6E6E73; text-align: center; line-height: 1.5">{{v.desc}}</p>
+<div style="display: flex; align-items: flex-end; gap: 14px">
+<sc-for list="{{v.sizes}}" as="s" hint-placeholder-count="3">
+<svg aria-hidden="true" width="{{s.px}}" height="{{s.px}}" viewBox="0 0 100 100">
+<rect width="100" height="100" rx="22.5" fill="{{s.bg}}" stroke="{{s.edge}}" stroke-width="1"></rect>
+<rect x="20" y="20" width="60" height="60" rx="12.9" fill="none" stroke="{{s.fg}}" stroke-width="{{s.sw}}"></rect>
+<g transform="translate(22.9 22.9) scale(0.557)"><path d="M30 95 L32 44 C32 36 34 32 37 30 L35 16 L41 27 L44 14 L47 28 C52 29 60 32 66 36 C69 38 69 44 66 46 C62 48 57 49 53 50 C51 54 50 60 50 70 L52 95 Z" fill="{{s.fg}}"></path></g></svg>
+</sc-for>
+</div>
+</section>
+</sc-for>
+
+<section aria-labelledby="g" style="background: #FFFFFF; border: 1px solid #E2E2E6; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px">
+<div style="width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; background: #F2F2F5; border-radius: 22px; color: #1D1D1F">
+<svg role="img" aria-label="Menu bar glyph: monochrome llama inside a rounded console outline" width="120" height="120" viewBox="0 0 100 100" fill="none">
+<rect x="8" y="8" width="84" height="84" rx="18" stroke="currentColor" stroke-width="8"></rect>
+<g transform="translate(12 12) scale(0.78)"><path d="M30 95 L32 44 C32 36 34 32 37 30 L35 16 L41 27 L44 14 L47 28 C52 29 60 32 66 36 C69 38 69 44 66 46 C62 48 57 49 53 50 C51 54 50 60 50 70 L52 95 Z" fill="currentColor"></path></g>
+</svg>
+</div>
+<h2 id="g" style="margin: 0; font-size: 14px; font-weight: 600">Menu bar glyph</h2>
+<p style="margin: 0; font-size: 12px; color: #6E6E73; text-align: center; line-height: 1.5">Same mark, one color, template image. The app icon only adds the squircle.</p>
+<div style="display: flex; gap: 10px">
+<div style="height: 26px; display: flex; align-items: center; gap: 12px; padding: 0 10px; background: #E4E4E8; border-radius: 6px; color: #1D1D1F">
+<svg role="img" aria-label="Glyph on a light menu bar" width="18" height="18" viewBox="0 0 100 100" fill="none"><rect x="8" y="8" width="84" height="84" rx="18" stroke="currentColor" stroke-width="9"></rect><g transform="translate(12 12) scale(0.78)"><path d="M30 95 L32 44 C32 36 34 32 37 30 L35 16 L41 27 L44 14 L47 28 C52 29 60 32 66 36 C69 38 69 44 66 46 C62 48 57 49 53 50 C51 54 50 60 50 70 L52 95 Z" fill="currentColor"></path></g></svg>
+<span style="font-size: 12px">10:48</span>
+</div>
+<div style="height: 26px; display: flex; align-items: center; gap: 12px; padding: 0 10px; background: #2C2C2E; border-radius: 6px; color: #F5F5F7">
+<svg role="img" aria-label="Glyph on a dark menu bar" width="18" height="18" viewBox="0 0 100 100" fill="none"><rect x="8" y="8" width="84" height="84" rx="18" stroke="currentColor" stroke-width="9"></rect><g transform="translate(12 12) scale(0.78)"><path d="M30 95 L32 44 C32 36 34 32 37 30 L35 16 L41 27 L44 14 L47 28 C52 29 60 32 66 36 C69 38 69 44 66 46 C62 48 57 49 53 50 C51 54 50 60 50 70 L52 95 Z" fill="currentColor"></path></g></svg>
+<span style="font-size: 12px">10:48</span>
+</div>
+</div>
+</section>
+</div>
+
+<div style="display: flex; align-items: center; gap: 20px; padding: 16px 20px; background: #FFFFFF; border: 1px solid #E2E2E6; border-radius: 12px">
+<span style="font-size: 12px; font-weight: 600; color: #6E6E73; letter-spacing: 0.04em">IN THE DOCK</span>
+<div style="display: flex; align-items: flex-end; gap: 10px; padding: 8px 14px; background: rgba(0,0,0,0.06); border-radius: 16px">
+<span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 12px; background: #D1D1D6"></span>
+<sc-for list="{{variants}}" as="v" hint-placeholder-count="3">
+<svg role="img" aria-label="{{v.name}} in the Dock" width="52" height="52" viewBox="0 0 100 100">
+<rect width="100" height="100" rx="22.5" fill="{{v.bg}}" stroke="{{v.edge}}" stroke-width="1"></rect>
+<rect x="20" y="20" width="60" height="60" rx="12.9" fill="none" stroke="{{v.fg}}" stroke-width="6.5"></rect>
+<g transform="translate(22.9 22.9) scale(0.557)"><path d="M30 95 L32 44 C32 36 34 32 37 30 L35 16 L41 27 L44 14 L47 28 C52 29 60 32 66 36 C69 38 69 44 66 46 C62 48 57 49 53 50 C51 54 50 60 50 70 L52 95 Z" fill="{{v.fg}}"></path></g></svg>
+</sc-for>
+<span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 12px; background: #C7C7CC"></span>
+</div>
+<span style="font-size: 12px; color: #6E6E73">Neighbouring apps shown as grey placeholders. Stroke thickens at small sizes so the frame survives 16 px.</span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const defs = [
+      { name: 'Graphite', bg: '#1C1C1E', fg: '#F5F5F7', cursor: '#30D158', edge: '#1C1C1E', rec: false,
+        desc: 'Dark squircle, white mark. Strongest contrast in the Dock.' },
+      { name: 'Ocean', bg: '#0066CC', fg: '#FFFFFF', cursor: '#7CF2A0', edge: '#0066CC', rec: false,
+        desc: 'System-blue squircle, matches the app accent color.' },
+      { name: 'Paper', bg: '#FFFFFF', fg: '#1C1C1E', cursor: '#1E7F3C', edge: '#D1D1D6', rec: true,
+        desc: 'Light and minimal; closest to the menu bar glyph.' }
+    ];
+    const variants = defs.map((v) => ({
+      ...v,
+      border: v.rec ? '#9DB8E3' : '#E2E2E6',
+      aria: 'ColiUI app icon, ' + v.name + ' variant: llama inside a console frame',
+      sizes: [[64, 6.5], [32, 8], [16, 10]].map(([px, sw]) => ({ px, sw, bg: v.bg, fg: v.fg, cursor: v.cursor, edge: v.edge }))
+    }));
+    return { variants };
+  }
+}
+</script>
+</body>
+</html>

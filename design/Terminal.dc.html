@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Container terminal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.cap{box-sizing:border-box;height:34px;border-radius:17px;display:inline-flex;align-items:center;gap:2px;padding:0 3px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:34px;height:28px;border:0;border-radius:14px;background:transparent;color:#1D1D1F;cursor:pointer;padding:0;text-decoration:none}
+.ib:hover{background:rgba(0,0,0,0.06);color:#1D1D1F}
+.seg{height:28px;padding:0 12px;border:0;border-radius:14px;background:transparent;font-size:12px;font-family:inherit;color:#3A3A3C;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer}
+.seg:hover{color:#1D1D1F}
+.on{background:#FFFFFF;color:#1D1D1F;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.14)}
+.nav:hover{background:rgba(0,0,0,0.05)}
+.pill{box-sizing:border-box;height:30px;padding:0 12px;border:0;border-radius:15px;background:rgba(0,0,0,0.05);font-size:12px;font-family:inherit;color:#1D1D1F;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.pill:hover{background:rgba(0,0,0,0.09)}
+</style>
+</helmet>
+<div style="min-height: 800px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="width: 100%; max-width: 1232px; min-height: 752px; display: flex; flex-wrap: wrap; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+
+<div style="flex: 0 0 240px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column">
+<dc-import name="Sidebar" selected="Containers" hint-size="240px,752px"></dc-import>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; flex-wrap: wrap">
+<div class="glass cap"><a class="ib" href="Main.dc.html" aria-label="Back to containers" style="width: 28px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a></div>
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 15px; font-weight: 600">api-server</span>
+<span style="font-size: 11px; color: #6E6E73; font-family: ui-monospace, Menlo, monospace">e81b3f0c55d2 · myapp/api:latest</span>
+</div>
+<span style="display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: #1E7F3C; background: #E7F6EC; padding: 4px 10px; border-radius: 999px"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: #28C840"></span>Up 12 min</span>
+<div style="flex: 1"></div>
+<div class="glass cap">
+<button class="ib" aria-label="Stop"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"></rect></svg></button>
+<button class="ib" aria-label="Restart"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></button>
+<a class="ib" href="Terminal.dc.html" aria-label="Open shell"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 17l6-5-6-5M12 19h8"></path></svg></a>
+</div>
+<div class="glass cap">
+<button class="ib" aria-label="Remove container"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></button>
+</div>
+</header>
+
+<div style="padding: 0 16px">
+<nav aria-label="Container views" class="glass cap">
+<a class="seg" href="Detail.dc.html">Logs</a>
+<a class="seg" href="LiveStats.dc.html">Stats</a>
+<a class="seg on" href="Terminal.dc.html" aria-current="page">Terminal</a>
+<a class="seg" href="Detail.dc.html">Inspect</a>
+<a class="seg" href="Detail.dc.html">Environment</a>
+</nav>
+</div>
+
+<div style="flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 14px 16px 16px">
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+<label class="pill">Shell <select style="border: 0; background: transparent; font-size: 12px; font-family: ui-monospace, Menlo, monospace"><option>/bin/sh</option><option>/bin/bash</option><option>/bin/zsh</option></select></label>
+<label class="pill">User <input value="root" style="border: 0; background: transparent; width: 56px; font-size: 12px; font-family: ui-monospace, Menlo, monospace"></label>
+<span style="display: flex; align-items: center; gap: 5px; font-size: 12px; color: #1E7F3C; padding: 0 6px"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: #28C840"></span>Connected</span>
+<div style="flex: 1"></div>
+<button class="pill">Open in Terminal.app</button>
+<button class="pill">New session</button>
+<button class="pill" style="color: #B42318">Disconnect</button>
+</div>
+<div role="log" aria-label="Shell session" style="flex: 1; min-height: 520px; background: #1C1C1E; border-radius: 14px; padding: 16px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.6; color: #E5E5EA; overflow: auto">
+<sc-for list="{{lines}}" as="l" hint-placeholder-count="12">
+<div style="white-space: pre"><span style="color: {{l.pc}}">{{l.prompt}}</span><span style="color: {{l.tc}}">{{l.text}}</span></div>
+</sc-for>
+<div style="white-space: pre"><span style="color: #30D158">root@e81b3f0c55d2:/app# </span><span aria-hidden="true" style="display: inline-block; width: 8px; height: 16px; background: #E5E5EA; vertical-align: text-bottom"></span></div>
+</div>
+<p style="margin: 0; font-size: 12px; color: #6E6E73">Runs <span style="font-family: ui-monospace, Menlo, monospace">docker exec -it</span> through the Engine API · ⌘K clears · ⌘+/⌘− font size</p>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = 'root@e81b3f0c55d2:/app# ';
+    const cmd = (c) => ({ prompt: P, text: c, pc: '#30D158', tc: '#E5E5EA' });
+    const out = (t, c) => ({ prompt: '', text: t, pc: '#E5E5EA', tc: c || '#C7C7CC' });
+    const lines = [
+      cmd('ls -la'),
+      out('total 48'),
+      out('drwxr-xr-x  1 root root 4096 Nov  1 10:30 .'),
+      out('-rw-r--r--  1 root root  612 Nov  1 10:30 package.json'),
+      out('drwxr-xr-x  4 root root 4096 Nov  1 10:30 src'),
+      out('drwxr-xr-x 88 root root 4096 Nov  1 10:31 node_modules'),
+      cmd('env | grep DATABASE'),
+      out('DATABASE_URL=postgres://app:••••••@db:5432/shop'),
+      cmd('curl -s localhost:8080/health'),
+      out('{"status":"ok","uptime":742}', '#FFD60A'),
+      cmd('ps aux | head -3'),
+      out('PID   USER  TIME  COMMAND'),
+      out('    1 root   0:04 node dist/server.js'),
+      out('   42 root   0:00 /bin/sh')
+    ];
+    return { lines };
+  }
+}
+</script>
+</body>
+</html>

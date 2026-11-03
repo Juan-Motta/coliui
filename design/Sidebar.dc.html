@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Sidebar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<nav aria-label="Sections" style="width: 100%; box-sizing: border-box; padding: 14px 10px 12px; display: flex; flex-direction: column; gap: 16px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif; color: {{c.text}}">
+<div aria-hidden="true" style="display: flex; gap: 8px; padding: 0 6px">
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span>
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span>
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span>
+</div>
+
+<div style="background: {{c.card}}; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="font-size: 11px; font-weight: 600; color: {{c.sub}}; letter-spacing: 0.04em">COLIMA</span>
+<span style="display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: {{c.green}}"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: {{c.dot}}"></span>Running</span>
+</div>
+<span style="font-size: 14px; font-weight: 600">default</span>
+<span style="font-size: 12px; color: {{c.sub}}">4 CPU · 8 GiB · 60 GiB · vz</span>
+<div style="display: flex; gap: 6px; margin-top: 4px">
+<button style="flex: 1; height: 26px; border: 0; border-radius: 13px; background: {{c.btn}}; color: {{c.text}}; font-size: 12px; font-family: inherit; cursor: pointer">Restart</button>
+<button style="flex: 1; height: 26px; border: 0; border-radius: 13px; background: {{c.btn}}; color: {{c.danger}}; font-size: 12px; font-family: inherit; cursor: pointer">Stop</button>
+</div>
+</div>
+
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; font-weight: 600; color: {{c.sub}}; padding: 0 8px 6px; letter-spacing: 0.04em">{{g.title}}</span>
+<sc-for list="{{g.items}}" as="i" hint-placeholder-count="4">
+<a class="nav" href="{{i.href}}" aria-current="{{i.current}}" style="{{i.style}}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{i.stroke}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{i.icon}}"></path></svg><span style="flex: 1">{{i.label}}</span><span style="font-size: 12px; color: {{c.sub}}">{{i.count}}</span></a>
+</sc-for>
+</div>
+</sc-for>
+
+<a class="nav" href="Settings.dc.html" style="{{settingsStyle}}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{c.sub}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg><span style="flex: 1">Settings</span><span style="font-size: 12px; color: {{c.sub}}">⌘,</span></a>
+</nav>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"selected":{"editor":"enum","options":["Containers","Images","Volumes","Networks","Cleanup","Profiles"],"default":"Containers"},"dark":{"editor":"boolean","default":false},"$preview":{"width":240,"height":752}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = this.props.dark === true || this.props.dark === 'true';
+    const sel = this.props.selected ?? 'Containers';
+    const c = dark
+      ? { text: '#F5F5F7', sub: '#AEAEB2', card: 'rgba(255,255,255,0.08)', btn: 'rgba(255,255,255,0.12)', danger: '#FF6961', green: '#4CD964', dot: '#30D158', accent: '#4DA3FF', selBg: 'rgba(77,163,255,0.24)' }
+      : { text: '#1D1D1F', sub: '#5E5E63', card: 'rgba(0,0,0,0.04)', btn: '#FFFFFF', danger: '#B42318', green: '#1E7F3C', dot: '#28C840', accent: '#0066CC', selBg: 'rgba(0,102,204,0.14)' };
+    const icons = {
+      Containers: 'M12 3l8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9',
+      Images: 'M3 4h18v6H3zM3 14h18v6H3z',
+      Volumes: 'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3v12c0 1.7-3.6 3-8 3s-8-1.3-8-3zM4 6c0 1.7 3.6 3 8 3s8-1.3 8-3',
+      Networks: 'M9 3h6v5H9zM3 16h6v5H3zM15 16h6v5h-6zM12 8v4M6 16v-4h12v4',
+      Cleanup: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13',
+      Profiles: 'M4 5h16v10H4zM8 19h8M12 15v4'
+    };
+    const base = 'display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 8px; border-radius: 8px; text-decoration: none; font-size: 13px; color: ' + c.text + ';';
+    const groups = [
+      { title: 'DOCKER', items: [['Containers', 'Main.dc.html', '6'], ['Images', '#', '12'], ['Volumes', '#', '5'], ['Networks', '#', '3']] },
+      { title: 'SYSTEM', items: [['Cleanup', 'Cleanup.dc.html', '11 GB'], ['Profiles', 'Profiles.dc.html', '3']] }
+    ].map((g) => ({
+      title: g.title,
+      items: g.items.map(([label, href, count]) => {
+        const on = label === sel;
+        return { label, href, count, icon: icons[label], current: on ? 'page' : 'false',
+          stroke: on ? c.accent : c.sub,
+          style: base + (on ? ' background: ' + c.selBg + '; font-weight: 600;' : '') };
+      })
+    }));
+    return { c, groups, settingsStyle: base };
+  }
+}
+</script>
+</body>
+</html>

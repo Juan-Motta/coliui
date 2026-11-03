@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Networks</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.cap{box-sizing:border-box;height:34px;border-radius:17px;display:inline-flex;align-items:center;gap:2px;padding:0 3px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:34px;height:28px;border:0;border-radius:14px;background:transparent;color:#1D1D1F;cursor:pointer;padding:0}
+.ib:hover{background:rgba(0,0,0,0.06)}
+.seg{height:28px;padding:0 12px;border:0;border-radius:14px;background:transparent;font-size:12px;font-family:inherit;color:#3A3A3C;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer}
+.on{background:#FFFFFF;color:#1D1D1F;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.14)}
+.tint{background:#0A6FD6;color:#FFFFFF;border:1px solid rgba(255,255,255,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.35),0 4px 14px rgba(0,102,204,0.3);cursor:pointer;font-family:inherit}
+.tint:hover{color:#FFFFFF;background:#0862BF}
+.row:hover{background:rgba(0,102,204,0.05)}
+.card{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px}
+.pill{box-sizing:border-box;height:32px;padding:0 14px;border:0;border-radius:16px;background:rgba(0,0,0,0.05);font-size:13px;font-family:inherit;color:#1D1D1F;cursor:pointer}
+.pill:hover{background:rgba(0,0,0,0.08)}
+.chip{display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:9px;background:rgba(0,0,0,0.06);font-size:11px;color:#3A3A3C}
+.sel{height:30px;box-sizing:border-box;padding:0 8px;border:0;border-radius:10px;background:rgba(0,0,0,0.05);font-family:inherit;font-size:12px;color:#1D1D1F}
+</style>
+</helmet>
+<div style="min-height: 800px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="width: 100%; max-width: 1232px; min-height: 752px; display: flex; flex-wrap: wrap; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+
+<div style="flex: 0 0 240px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column">
+<dc-import name="Sidebar" selected="Networks" hint-size="240px,752px"></dc-import>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; margin-right: 6px">
+<span style="font-size: 15px; font-weight: 600">Networks</span>
+<span style="font-size: 11px; color: #6E6E73">6 networks · 3 in use</span>
+</div>
+<div style="flex: 1"></div>
+<div class="glass cap">
+<button class="ib" aria-label="Refresh"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></button>
+<button class="ib" aria-label="Sort"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M7 12h10M10 17h4"></path></svg></button>
+</div>
+<label class="glass cap" style="width: 200px; padding: 0 12px; gap: 6px">
+<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6E73" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+<span style="position: absolute; left: -9999px">Search networks</span>
+<input type="search" placeholder="Search" style="border: 0; background: transparent; outline: none; font-size: 13px; width: 100%; font-family: inherit">
+</label>
+<button class="cap tint" onClick="{{toggleCreate}}" style="padding: 0 14px; gap: 6px; font-size: 13px; font-weight: 500">
+<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>New network</button>
+</header>
+
+<main style="flex: 1; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 14px">
+<sc-if value="{{createOpen}}" hint-placeholder-val="{{true}}">
+<form class="glass" style="display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: 22px; flex-wrap: wrap">
+<label for="net-name" style="font-size: 13px; font-weight: 500">Name</label>
+<input id="net-name" type="text" value="backend" style="flex: 1; min-width: 200px; height: 30px; box-sizing: border-box; padding: 0 10px; border: 0; border-radius: 10px; background: rgba(0,0,0,0.05); font-family: ui-monospace, Menlo, monospace; font-size: 12px; outline: none">
+<label for="net-driver" style="font-size: 13px; font-weight: 500">Driver</label>
+<select id="net-driver" class="sel"><option>bridge</option><option>macvlan</option></select>
+<label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #3A3A3C"><input type="checkbox" style="accent-color: #0066CC">Internal (no internet)</label>
+<button type="button" class="pill" onClick="{{toggleCreate}}">Cancel</button>
+<button type="button" class="cap tint" style="height: 32px; padding: 0 16px; font-size: 13px; font-weight: 600">Create</button>
+</form>
+</sc-if>
+
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+<div role="group" aria-label="Filter networks" class="glass cap">
+<sc-for list="{{segments}}" as="seg" hint-placeholder-count="3">
+<button class="{{seg.cls}}" onClick="{{seg.pick}}" aria-pressed="{{seg.active}}">{{seg.label}}</button>
+</sc-for>
+</div>
+<span style="font-size: 12px; color: #6E6E73">bridge, host and none are built in and can't be removed</span>
+</div>
+
+<div class="card" style="overflow-x: auto">
+<div style="min-width: 760px">
+<div style="display: grid; grid-template-columns: 2.2fr 0.8fr 1.4fr 1.1fr 2fr 84px; gap: 12px; padding: 10px 16px; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 11px; font-weight: 600; color: #6E6E73; letter-spacing: 0.03em">
+<span>NAME</span><span>DRIVER</span><span>SUBNET</span><span>GATEWAY</span><span>CONTAINERS</span><span style="text-align: center">ACTIONS</span>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+<div class="row" style="display: grid; grid-template-columns: 2.2fr 0.8fr 1.4fr 1.1fr 2fr 84px; gap: 12px; align-items: center; padding: 0 16px; height: 52px; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 13px">
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span style="font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.name}}</span>
+<sc-if value="{{r.hasChip}}" hint-placeholder-val="{{true}}">
+<span><span class="chip">{{r.chip}}</span></span>
+</sc-if>
+</div>
+<span style="font-size: 12px; color: #3A3A3C">{{r.driver}}</span>
+<span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #3A3A3C">{{r.subnet}}</span>
+<span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #3A3A3C">{{r.gateway}}</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: {{r.usedColor}}; overflow: hidden; white-space: nowrap"><span aria-hidden="true" style="flex: none; width: 8px; height: 8px; border-radius: 50%; background: {{r.dot}}"></span><span style="overflow: hidden; text-overflow: ellipsis">{{r.usedBy}}</span></span>
+<div style="display: flex; justify-content: center; gap: 2px">
+<button class="ib" aria-label="Copy network name" style="width: 28px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a1 1 0 0 1 1-1h9"></path></svg></button>
+<button class="ib" aria-label="Remove network" disabled="{{r.locked}}" style="width: 28px; opacity: {{r.removeOpacity}}"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></button>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</main>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { filter: 'all', createOpen: true }; }
+  renderVals() {
+    const all = [
+      { name: 'shop_default', chip: 'shop', driver: 'bridge', subnet: '172.19.0.0/16', gateway: '172.19.0.1', used: ['api-server', 'postgres-dev', 'redis-cache'] },
+      { name: 'proxy', chip: '', driver: 'bridge', subnet: '172.21.0.0/16', gateway: '172.21.0.1', used: ['nginx-proxy'] },
+      { name: 'legacy_default', chip: 'legacy', driver: 'bridge', subnet: '172.22.0.0/16', gateway: '172.22.0.1', used: [] },
+      { name: 'bridge', chip: 'Built-in', driver: 'bridge', subnet: '172.17.0.0/16', gateway: '172.17.0.1', used: ['mailpit'], builtIn: true },
+      { name: 'host', chip: 'Built-in', driver: 'host', subnet: '—', gateway: '—', used: [], builtIn: true },
+      { name: 'none', chip: 'Built-in', driver: 'null', subnet: '—', gateway: '—', used: [], builtIn: true }
+    ];
+    const f = this.state.filter;
+    const pick = (r, id) => id === 'all' || (id === 'used' ? r.used.length > 0 : r.used.length === 0);
+    const rows = all.filter((r) => pick(r, f)).map((r) => {
+      const inUse = r.used.length > 0;
+      const locked = inUse || !!r.builtIn;
+      return {
+        ...r,
+        locked,
+        hasChip: !!r.chip,
+        removeOpacity: locked ? '0.35' : '1',
+        usedBy: inUse ? r.used.join(', ') : 'No containers',
+        usedColor: inUse ? '#1E7F3C' : '#6E6E73',
+        dot: inUse ? '#28C840' : '#AEAEB2'
+      };
+    });
+    const segments = [['all', 'All'], ['used', 'In use'], ['unused', 'Unused']].map(([id, label]) => ({
+      label: label + ' (' + all.filter((r) => pick(r, id)).length + ')',
+      active: f === id ? 'true' : 'false',
+      cls: f === id ? 'seg on' : 'seg',
+      pick: () => this.setState({ filter: id })
+    }));
+    return { rows, segments, createOpen: this.state.createOpen, toggleCreate: () => this.setState({ createOpen: !this.state.createOpen }) };
+  }
+}
+</script>
+</body>
+</html>

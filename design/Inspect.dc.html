@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Container inspect</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.cap{box-sizing:border-box;height:34px;border-radius:17px;display:inline-flex;align-items:center;gap:2px;padding:0 3px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:34px;height:28px;border:0;border-radius:14px;background:transparent;color:#1D1D1F;cursor:pointer;padding:0;text-decoration:none}
+.ib:hover{background:rgba(0,0,0,0.06);color:#1D1D1F}
+.seg{height:28px;padding:0 12px;border:0;border-radius:14px;background:transparent;font-size:12px;font-family:inherit;color:#3A3A3C;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer}
+.seg:hover{color:#1D1D1F}
+.on{background:#FFFFFF;color:#1D1D1F;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.14)}
+.nav:hover{background:rgba(0,0,0,0.05)}
+.card{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px}
+.pill{box-sizing:border-box;height:30px;padding:0 12px;border:0;border-radius:15px;background:rgba(0,0,0,0.05);font-size:12px;font-family:inherit;color:#1D1D1F;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.pill:hover{background:rgba(0,0,0,0.09)}
+.row{display:flex;align-items:center;gap:6px;height:24px;padding-right:12px;border-radius:6px;white-space:nowrap}
+.row:hover{background:rgba(0,0,0,0.04)}
+.tw{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:0;padding:0;background:transparent;color:#8E8E93;cursor:pointer;flex:none}
+</style>
+</helmet>
+<div style="min-height: 800px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="width: 100%; max-width: 1232px; min-height: 752px; display: flex; flex-wrap: wrap; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+
+<div style="flex: 0 0 240px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column">
+<dc-import name="Sidebar" selected="Containers" hint-size="240px,752px"></dc-import>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; flex-wrap: wrap">
+<div class="glass cap"><a class="ib" href="Main.dc.html" aria-label="Back to containers" style="width: 28px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a></div>
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 15px; font-weight: 600">api-server</span>
+<span style="font-size: 11px; color: #6E6E73; font-family: ui-monospace, Menlo, monospace">e81b3f0c55d2 · myapp/api:latest</span>
+</div>
+<span style="display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: #1E7F3C; background: #E7F6EC; padding: 4px 10px; border-radius: 999px"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: #28C840"></span>Up 12 min</span>
+<div style="flex: 1"></div>
+<div class="glass cap">
+<button class="ib" aria-label="Stop"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"></rect></svg></button>
+<button class="ib" aria-label="Restart"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></button>
+<a class="ib" href="Terminal.dc.html" aria-label="Open shell"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 17l6-5-6-5M12 19h8"></path></svg></a>
+</div>
+<div class="glass cap">
+<button class="ib" aria-label="Remove container"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></button>
+</div>
+</header>
+
+<div style="padding: 0 16px">
+<nav aria-label="Container views" class="glass cap">
+<a class="seg" href="Detail.dc.html">Logs</a>
+<a class="seg" href="LiveStats.dc.html">Stats</a>
+<a class="seg" href="Terminal.dc.html">Terminal</a>
+<a class="seg on" href="Inspect.dc.html" aria-current="page">Inspect</a>
+<a class="seg" href="Detail.dc.html">Environment</a>
+</nav>
+</div>
+
+<div style="flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 14px 16px 16px">
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+<label class="cap" style="flex: 1; min-width: 180px; padding: 0 12px; gap: 6px; background: rgba(0,0,0,0.05)">
+<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6E73" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+<span style="position: absolute; left: -9999px">Filter keys and values</span>
+<input type="search" placeholder="Filter keys and values" style="border: 0; background: transparent; outline: none; font-size: 13px; width: 100%; font-family: inherit">
+</label>
+<div role="tablist" aria-label="Inspect view" class="cap" style="background: rgba(0,0,0,0.05)">
+<sc-for list="{{modes}}" as="m" hint-placeholder-count="2">
+<button role="tab" class="{{m.cls}}" aria-selected="{{m.active}}" onClick="{{m.pick}}">{{m.label}}</button>
+</sc-for>
+</div>
+<button class="pill" onClick="{{expandAll}}">Expand all</button>
+<button class="pill" onClick="{{collapseAll}}">Collapse all</button>
+<button class="pill"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg>Copy JSON</button>
+</div>
+
+<sc-if value="{{showTree}}" hint-placeholder-val="{{true}}">
+<div class="card" role="tree" aria-label="docker inspect" style="flex: 1; min-height: 540px; padding: 10px 8px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; overflow: auto">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="22">
+<div class="row" role="treeitem" aria-expanded="{{r.expanded}}" style="padding-left: {{r.indent}}">
+<sc-if value="{{r.branch}}" hint-placeholder-val="{{true}}">
+<button class="tw" aria-label="{{r.toggleLabel}}" onClick="{{r.toggle}}"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="transform: rotate({{r.rot}})"><path d="M8 5l10 7-10 7z"></path></svg></button>
+</sc-if>
+<sc-if value="{{r.leaf}}" hint-placeholder-val="{{false}}">
+<span style="width: 16px; flex: none"></span>
+</sc-if>
+<span style="color: #7A2CA8">{{r.key}}</span>
+<span style="color: #8E8E93">{{r.sep}}</span>
+<span style="color: {{r.color}}">{{r.value}}</span>
+<span style="color: #AEAEB2">{{r.summary}}</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{showRaw}}" hint-placeholder-val="{{false}}">
+<pre aria-label="docker inspect JSON" style="flex: 1; min-height: 540px; margin: 0; box-sizing: border-box; background: #1C1C1E; color: #E5E5EA; border-radius: 14px; padding: 16px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.6; overflow: auto">{{raw}}</pre>
+</sc-if>
+
+<p style="margin: 0; font-size: 12px; color: #6E6E73">Same JSON as <span style="font-family: ui-monospace, Menlo, monospace">docker inspect</span> · secrets in <span style="font-family: ui-monospace, Menlo, monospace">Env</span> are masked · click a value to copy it</p>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mode: 'tree', open: { '$': true, '$.State': true, '$.Config': true, '$.NetworkSettings': true, '$.NetworkSettings.Ports': true } };
+  }
+  data() {
+    return {
+      Id: 'e81b3f0c55d2a7c41f9e0b3d6c2a8f17e4b5d9c0a1f2e3d4c5b6a79881726354',
+      Created: '2026-11-01T10:30:12.481Z',
+      Path: 'docker-entrypoint.sh',
+      Args: ['node', 'dist/server.js'],
+      State: { Status: 'running', Running: true, Paused: false, Restarting: false, OOMKilled: false, Pid: 4182, ExitCode: 0, StartedAt: '2026-11-01T10:30:13.002Z' },
+      Image: 'sha256:4f1c8a3e9b2d',
+      Name: '/api-server',
+      RestartCount: 0,
+      HostConfig: { NetworkMode: 'bridge', RestartPolicy: { Name: 'unless-stopped', MaximumRetryCount: 0 }, Memory: 0, NanoCpus: 0 },
+      Mounts: [{ Type: 'bind', Source: '/Users/me/myapp/src', Destination: '/app/src', RW: true }, { Type: 'volume', Name: 'api-data', Destination: '/var/lib/api', RW: true }],
+      Config: { Hostname: 'e81b3f0c55d2', User: '', Tty: false, Env: ['NODE_ENV=production', 'PORT=8080', 'DATABASE_URL=••••••'], Cmd: ['node', 'dist/server.js'], Image: 'myapp/api:latest', WorkingDir: '/app', Labels: { 'com.docker.compose.project': 'myapp', 'com.docker.compose.service': 'api' } },
+      NetworkSettings: { IPAddress: '172.17.0.4', Gateway: '172.17.0.1', Ports: { '8080/tcp': [{ HostIp: '0.0.0.0', HostPort: '8080' }] }, Networks: { bridge: { IPAddress: '172.17.0.4', MacAddress: '02:42:ac:11:00:04' } } }
+    };
+  }
+  renderVals() {
+    const { mode, open } = this.state;
+    const rows = [];
+    const paths = [];
+    const fmt = (v) => {
+      if (v === null) return ['null', '#8E8E93'];
+      if (typeof v === 'string') return ['"' + v + '"', '#1E7F3C'];
+      if (typeof v === 'number') return [String(v), '#0B63C4'];
+      return [String(v), '#B4500F'];
+    };
+    const walk = (value, key, path, depth, inArray) => {
+      const isBranch = value !== null && typeof value === 'object';
+      const shownKey = key === null ? '' : (inArray ? String(key) : '"' + key + '"');
+      const sep = key === null ? '' : ': ';
+      if (isBranch) {
+        paths.push(path);
+        const isArray = Array.isArray(value);
+        const count = isArray ? value.length : Object.keys(value).length;
+        const expanded = !!open[path];
+        rows.push({
+          key: shownKey, sep, branch: true, leaf: false,
+          value: expanded ? (isArray ? '[' : '{') : '',
+          color: '#8E8E93',
+          summary: expanded ? '' : (isArray ? '[ ' + count + (count === 1 ? ' item ]' : ' items ]') : '{ ' + count + (count === 1 ? ' key }' : ' keys }')),
+          expanded: expanded ? 'true' : 'false',
+          rot: expanded ? '90deg' : '0deg',
+          toggleLabel: (expanded ? 'Collapse ' : 'Expand ') + (key === null ? 'root' : key),
+          toggle: () => this.setState({ open: { ...this.state.open, [path]: !this.state.open[path] } }),
+          indent: (depth * 18 + 4) + 'px'
+        });
+        if (expanded) {
+          if (isArray) value.forEach((v, i) => walk(v, i, path + '.' + i, depth + 1, true));
+          else Object.keys(value).forEach((k) => walk(value[k], k, path + '.' + k, depth + 1, false));
+          rows.push({ key: '', sep: '', branch: false, leaf: true, value: isArray ? ']' : '}', color: '#8E8E93', summary: '', expanded: 'false', rot: '0deg', toggleLabel: '', toggle: () => {}, indent: (depth * 18 + 4) + 'px' });
+        }
+      } else {
+        const [text, color] = fmt(value);
+        rows.push({ key: shownKey, sep, branch: false, leaf: true, value: text, color, summary: '', expanded: 'false', rot: '0deg', toggleLabel: '', toggle: () => {}, indent: (depth * 18 + 4) + 'px' });
+      }
+    };
+    const json = this.data();
+    walk(json, null, '$', 0, false);
+    const modes = [['tree', 'Tree'], ['raw', 'Raw']].map(([id, label]) => ({
+      label, active: mode === id ? 'true' : 'false', cls: mode === id ? 'seg on' : 'seg',
+      pick: () => this.setState({ mode: id })
+    }));
+    const all = {};
+    paths.forEach((p) => { all[p] = true; });
+    return {
+      rows, modes,
+      raw: JSON.stringify([json], null, 2),
+      showTree: mode === 'tree',
+      showRaw: mode === 'raw',
+      expandAll: () => {
+        const everything = {};
+        const visit = (v, p) => {
+          if (v !== null && typeof v === 'object') {
+            everything[p] = true;
+            (Array.isArray(v) ? v.map((x, i) => [x, i]) : Object.keys(v).map((k) => [v[k], k])).forEach(([x, k]) => visit(x, p + '.' + k));
+          }
+        };
+        visit(this.data(), '$');
+        this.setState({ open: everything });
+      },
+      collapseAll: () => this.setState({ open: { '$': true } })
+    };
+  }
+}
+</script>
+</body>
+</html>

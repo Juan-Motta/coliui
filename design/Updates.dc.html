@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Updates</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.group{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px;overflow:hidden}
+.r{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:8px 16px;box-sizing:border-box;font-size:13px;border-top:1px solid rgba(0,0,0,0.06)}
+.r:first-child{border-top:0}
+.cap{font-size:12px;font-weight:600;color:#6E6E73;padding:0 6px}
+.hint{font-size:11px;color:#6E6E73}
+.pill{box-sizing:border-box;height:32px;padding:0 16px;border:0;border-radius:16px;background:rgba(0,0,0,0.06);font-size:13px;font-family:inherit;color:#1D1D1F;cursor:pointer}
+.small{height:28px;padding:0 14px;font-size:12px;border-radius:14px}
+.tint{box-sizing:border-box;height:32px;padding:0 20px;border-radius:16px;background:#0A6FD6;color:#FFFFFF;border:1px solid rgba(255,255,255,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.35),0 4px 14px rgba(0,102,204,0.3);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+.tint:disabled{opacity:0.45;cursor:default}
+.link{border:0;background:transparent;font-size:12px;font-family:inherit;color:#0066CC;cursor:pointer;padding:0}
+.seg{height:26px;padding:0 12px;border:0;border-radius:13px;background:transparent;font-size:12px;font-family:inherit;color:#3A3A3C;cursor:pointer}
+.on{background:#FFFFFF;color:#1D1D1F;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.14)}
+.notes h4{margin:10px 0 4px;font-size:12px;font-weight:600}
+.notes h4:first-child{margin-top:0}
+.notes ul{margin:0;padding-left:16px;font-size:12px;line-height:1.6;color:#3A3A3C}
+.tag{font-size:10px;font-weight:600;color:#0066CC;background:#E1E9F7;padding:2px 7px;border-radius:999px}
+.mi{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 10px;border-radius:7px;font-size:13px}
+</style>
+</helmet>
+<div style="width: 1600px; height: 820px; box-sizing: border-box; padding: 32px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; gap: 28px; align-items: flex-start">
+
+<!-- 1. Settings › About: the Updates group -->
+<section aria-label="Settings, About tab, Updates group" style="flex: none; width: 520px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 12px; font-weight: 600; color: #3A3A3C">Settings › About</span>
+<div style="height: 720px; display: flex; flex-direction: column; background: #F5F5F7; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+<div style="display: flex; align-items: center; padding: 12px 16px">
+<div aria-hidden="true" style="display: flex; gap: 8px; width: 80px">
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span>
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span>
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span>
+</div>
+<div style="flex: 1; display: flex; justify-content: center">
+<div aria-hidden="true" class="glass" style="display: inline-flex; gap: 2px; padding: 3px; border-radius: 18px">
+<span class="seg" style="display: inline-flex; align-items: center">General</span>
+<span class="seg" style="display: inline-flex; align-items: center">Notifications</span>
+<span class="seg" style="display: inline-flex; align-items: center">Shortcuts</span>
+<span class="seg on" style="display: inline-flex; align-items: center">About</span>
+</div>
+</div>
+<div style="width: 80px"></div>
+</div>
+<div style="flex: 1; padding: 8px 32px 24px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 4px 0">
+<svg aria-hidden="true" width="64" height="64" viewBox="0 0 100 100" style="filter: drop-shadow(0 6px 10px rgba(0,0,0,0.14))">
+<rect width="100" height="100" rx="22.5" fill="#FFFFFF" stroke="#D1D1D6" stroke-width="0.6"></rect>
+<rect x="20" y="20" width="60" height="60" rx="12.9" fill="none" stroke="#1C1C1E" stroke-width="5.7"></rect>
+<g transform="translate(22.9 22.9) scale(0.557)"><path d="M30 95 L32 44 C32 36 34 32 37 30 L35 16 L41 27 L44 14 L47 28 C52 29 60 32 66 36 C69 38 69 44 66 46 C62 48 57 49 53 50 C51 54 50 60 50 70 L52 95 Z" fill="#1C1C1E"></path></g>
+</svg>
+<span style="font-size: 20px; font-weight: 600">ColiUI</span>
+<span style="font-size: 12px; color: #6E6E73">Version 0.1.3 (115)</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span class="cap">Updates</span>
+<div class="group">
+<label class="r">Check for updates automatically<input type="checkbox" role="switch" checked style="width: 16px; height: 16px; accent-color: #30A14E"></label>
+<div class="r">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<sc-if value="{{isIdle}}" hint-placeholder-val="{{true}}"><span style="display: flex; align-items: center; gap: 6px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#30A14E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>ColiUI is up to date</span></sc-if>
+<sc-if value="{{isChecking}}" hint-placeholder-val="{{false}}"><span style="display: flex; align-items: center; gap: 6px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2.6" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9"></path></svg>Checking…</span></sc-if>
+<sc-if value="{{isFound}}" hint-placeholder-val="{{false}}"><span style="display: flex; align-items: center; gap: 6px">Version 0.1.4 is available <span class="tag">New</span></span></sc-if>
+<span class="hint">Last checked today at 10:52</span>
+</div>
+<sc-if value="{{isFound}}" hint-placeholder-val="{{false}}"><button class="tint" style="height: 28px; padding: 0 14px; font-size: 12px" onClick="{{openModal}}">View update</button></sc-if>
+<sc-if value="{{notFound}}" hint-placeholder-val="{{true}}"><button class="pill small" onClick="{{check}}">Check for Updates</button></sc-if>
+</div>
+</div>
+<span class="hint" style="padding: 0 6px">Checks once a day. Updates are signed and verified before they install.</span>
+</div>
+
+<div aria-hidden="true" style="display: flex; flex-direction: column; gap: 6px; opacity: 0.5">
+<span class="cap">This Mac</span>
+<div class="group">
+<div class="r"><span>Colima</span><span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px">0.9.1 · profile default (vz)</span></div>
+<div class="r"><span>Docker Engine</span><span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px">28.3.2 · API 1.51</span></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- 2. The update modal, over the main window -->
+<section aria-label="Update modal" style="flex: none; width: 700px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="font-size: 12px; font-weight: 600; color: #3A3A3C">Update modal · click outside to close</span>
+<div role="group" aria-label="Modal step" class="glass" style="display: inline-flex; gap: 2px; padding: 3px; border-radius: 16px">
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="3">
+<button class="{{s.cls}}" aria-pressed="{{s.active}}" onClick="{{s.pick}}">{{s.label}}</button>
+</sc-for>
+</div>
+</div>
+<div style="position: relative; height: 720px; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+<div inert="" aria-hidden="true" style="display: flex; height: 100%">
+<div style="flex: 0 0 170px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08)"></div>
+<div style="flex: 1; display: flex; flex-direction: column; padding: 14px 16px; gap: 14px">
+<div style="display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">Containers</span><span style="font-size: 11px; color: #6E6E73">6 running · 2 stopped</span></div>
+<div style="flex: 1; border-radius: 14px; background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08)"></div>
+</div>
+</div>
+<div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(240,240,244,0.55)"></div>
+
+<div role="dialog" aria-labelledby="uh" class="glass" style="position: absolute; top: 90px; left: 50%; transform: translateX(-50%); width: 500px; box-sizing: border-box; background: rgba(252,252,254,0.9); border-radius: 26px; box-shadow: 0 30px 70px rgba(0,0,0,0.28); padding: 24px 26px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; gap: 14px">
+<svg aria-hidden="true" width="48" height="48" viewBox="0 0 100 100" style="flex: none; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.14))">
+<rect width="100" height="100" rx="22.5" fill="#FFFFFF" stroke="#D1D1D6" stroke-width="1"></rect>
+<rect x="20" y="20" width="60" height="60" rx="12.9" fill="none" stroke="#1C1C1E" stroke-width="6.5"></rect>
+<g transform="translate(22.9 22.9) scale(0.557)"><path d="M30 95 L32 44 C32 36 34 32 37 30 L35 16 L41 27 L44 14 L47 28 C52 29 60 32 66 36 C69 38 69 44 66 46 C62 48 57 49 53 50 C51 54 50 60 50 70 L52 95 Z" fill="#1C1C1E"></path></g>
+</svg>
+<div style="display: flex; flex-direction: column; gap: 3px">
+<h2 id="uh" style="margin: 0; font-size: 17px; font-weight: 600">ColiUI 0.1.4 is available</h2>
+<span style="font-size: 12px; color: #6E6E73">You have 0.1.3 · 3.2 MB download</span>
+</div>
+</div>
+
+<div class="notes" style="max-height: 230px; overflow: auto; padding: 12px 14px; border-radius: 14px; background: rgba(0,0,0,0.04)">
+<h4>Features</h4>
+<ul>
+<li><b>app:</b> check for updates and install them from Settings › About</li>
+<li><b>dmg:</b> open the installer as a drag-to-Applications window with the app icon</li>
+</ul>
+<h4>Fixes</h4>
+<ul>
+<li><b>app:</b> keep the Files tab responsive on large folders</li>
+</ul>
+<h4>Other changes</h4>
+<ul>
+<li>write the full changelog into the release notes</li>
+</ul>
+</div>
+
+<sc-if value="{{isDownloading}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 14px; background: rgba(0,0,0,0.04)">
+<div style="display: flex; justify-content: space-between; font-size: 12px"><span style="font-weight: 600">Downloading</span><span class="hint" style="font-variant-numeric: tabular-nums">1.4 MB of 3.2 MB · 44%</span></div>
+<div style="height: 6px; border-radius: 3px; background: rgba(0,0,0,0.08); overflow: hidden"><div style="width: 44%; height: 100%; background: #0066CC; border-radius: 3px"></div></div>
+<span class="hint">You can close this; the download keeps going.</span>
+</div>
+</sc-if>
+
+<sc-if value="{{isReady}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: rgba(48,161,78,0.1)">
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E7F3C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+<span style="font-size: 12px; color: #1E5F30">Downloaded and verified. ColiUI relaunches to finish; your containers keep running.</span>
+</div>
+</sc-if>
+
+<div style="display: flex; align-items: center; gap: 8px">
+<sc-if value="{{isAvailable}}" hint-placeholder-val="{{true}}"><button class="link">Skip this version</button></sc-if>
+<span style="flex: 1"></span>
+<sc-if value="{{isAvailable}}" hint-placeholder-val="{{true}}"><button class="pill">Later</button><button class="tint" onClick="{{download}}">Install update</button></sc-if>
+<sc-if value="{{isDownloading}}" hint-placeholder-val="{{false}}"><button class="pill">Cancel</button><button class="tint" disabled>Install update</button></sc-if>
+<sc-if value="{{isReady}}" hint-placeholder-val="{{false}}"><button class="pill">Later</button><button class="tint">Relaunch now</button></sc-if>
+</div>
+</div>
+</div>
+</section>
+
+<!-- 3. Menu bar popover -->
+<section aria-label="Menu bar popover with an update" style="flex: none; width: 260px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 12px; font-weight: 600; color: #3A3A3C">Menu bar popover</span>
+<div class="glass" style="border-radius: 16px; padding: 8px; display: flex; flex-direction: column; gap: 4px; background: rgba(250,250,252,0.85)">
+<div style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; background: rgba(10,111,214,0.1)">
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0A6FD6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>
+<div style="flex: 1; display: flex; flex-direction: column">
+<span style="font-size: 12px; font-weight: 600">Update available</span>
+<span class="hint">ColiUI 0.1.4</span>
+</div>
+<button class="link" style="font-weight: 600">View</button>
+</div>
+<div aria-hidden="true" style="height: 1px; background: rgba(0,0,0,0.08); margin: 4px 6px"></div>
+<div class="mi" style="color: #8E8E93">Containers…</div>
+<div class="mi">Open ColiUI</div>
+<div class="mi">Check for Updates…</div>
+<div class="mi">Settings…<span class="hint">⌘,</span></div>
+<div aria-hidden="true" style="height: 1px; background: rgba(0,0,0,0.08); margin: 4px 6px"></div>
+<div class="mi">Quit ColiUI<span class="hint">⌘Q</span></div>
+</div>
+<p style="margin: 0; font-size: 11px; color: #3A3A3C; line-height: 1.5">The banner shows only while an update is waiting. View opens the main window with the update modal.</p>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":820}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { check: 'idle', step: 'available' };
+  }
+  renderVals() {
+    const { check, step } = this.state;
+    const steps = [['available', 'Available'], ['downloading', 'Downloading'], ['ready', 'Ready']].map(([id, label]) => ({
+      label, active: step === id ? 'true' : 'false', cls: step === id ? 'seg on' : 'seg',
+      pick: () => this.setState({ step: id })
+    }));
+    return {
+      steps,
+      isIdle: check === 'idle', isChecking: check === 'checking', isFound: check === 'found', notFound: check !== 'found',
+      check: () => {
+        this.setState({ check: 'checking' });
+        setTimeout(() => this.setState({ check: 'found' }), 900);
+      },
+      openModal: () => this.setState({ step: 'available' }),
+      download: () => this.setState({ step: 'downloading' }),
+      isAvailable: step === 'available', isDownloading: step === 'downloading', isReady: step === 'ready'
+    };
+  }
+}
+</script>
+</body>
+</html>

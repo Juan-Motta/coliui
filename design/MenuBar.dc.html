@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Menu bar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.mi:hover{background:rgba(0,0,0,0.05)}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:0;border-radius:15px;background:transparent;color:#1D1D1F;cursor:pointer;padding:0}
+.ib:hover{background:rgba(0,0,0,0.07)}
+.pill{flex:1;box-sizing:border-box;height:32px;border:0;border-radius:16px;background:rgba(0,0,0,0.06);font-size:13px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;color:#1D1D1F}
+.pill:hover{background:rgba(0,0,0,0.1)}
+</style>
+</helmet>
+<div style="width: 360px; height: 580px; box-sizing: border-box; padding: 12px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%)">
+<div class="glass" style="height: 100%; box-sizing: border-box; background: rgba(250,250,252,0.72); border-radius: 22px; box-shadow: 0 18px 44px rgba(0,0,0,0.2); padding: 12px; display: flex; flex-direction: column; gap: 12px">
+
+<div style="display: flex; align-items: center; gap: 10px; padding: 4px 4px 0">
+<svg aria-hidden="true" width="24" height="24" viewBox="0 0 100 100" fill="none" style="color: #1D1D1F"><rect x="8" y="8" width="84" height="84" rx="18" stroke="currentColor" stroke-width="8"></rect><g transform="translate(12 12) scale(0.78)"><path d="M30 95 L32 44 C32 36 34 32 37 30 L35 16 L41 27 L44 14 L47 28 C52 29 60 32 66 36 C69 38 69 44 66 46 C62 48 57 49 53 50 C51 54 50 60 50 70 L52 95 Z" fill="currentColor"></path></g></svg>
+<div style="flex: 1; display: flex; flex-direction: column">
+<span style="font-size: 14px; font-weight: 600">ColiUI</span>
+<span style="font-size: 11px; color: #5E5E63">Profile: default</span>
+</div>
+<span style="display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: #1E7F3C; background: rgba(40,200,64,0.14); padding: 4px 10px; border-radius: 999px"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: #28C840"></span>Running</span>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<div style="background: rgba(255,255,255,0.7); border-radius: 14px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; color: #5E5E63">CPU</span><span style="font-size: 15px; font-weight: 600">12%</span>
+</div>
+<div style="background: rgba(255,255,255,0.7); border-radius: 14px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; color: #5E5E63">Memory</span><span style="font-size: 15px; font-weight: 600">2.1 / 8 G</span>
+</div>
+<div style="background: rgba(255,255,255,0.7); border-radius: 14px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; color: #5E5E63">Disk</span><span style="font-size: 15px; font-weight: 600">18 / 60 G</span>
+</div>
+</div>
+
+<div style="display: flex; gap: 8px">
+<button class="pill"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>Restart VM</button>
+<button class="pill" style="color: #B42318"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"></rect></svg>Stop VM</button>
+</div>
+
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 0">
+<span style="font-size: 11px; font-weight: 600; color: #5E5E63; letter-spacing: 0.04em">CONTAINERS</span>
+<span style="font-size: 11px; color: #5E5E63">4 of 6 running</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 2px; flex: 1">
+<sc-for list="{{items}}" as="c" hint-placeholder-count="6">
+<div class="mi" style="display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 4px 0 10px; border-radius: 10px">
+<span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: {{c.dot}}"></span>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="font-size: 13px; font-weight: 500">{{c.name}}</span>
+<span style="font-size: 11px; color: #5E5E63">{{c.meta}}</span>
+</div>
+<sc-if value="{{c.running}}" hint-placeholder-val="{{true}}">
+<button class="ib" aria-label="Stop container"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg></button>
+</sc-if>
+<sc-if value="{{c.stopped}}" hint-placeholder-val="{{false}}">
+<button class="ib" aria-label="Start container"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="#1E7F3C"><path d="M8 5v14l11-7z"></path></svg></button>
+</sc-if>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; align-items: center; gap: 8px">
+<a href="Main.dc.html" class="pill" style="text-decoration: none; font-weight: 500; color: #1D1D1F">Open ColiUI</a>
+<a href="Settings.dc.html" class="ib" aria-label="Settings" style="background: rgba(0,0,0,0.06); width: 32px; height: 32px; border-radius: 16px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg></a>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":580}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const raw = [
+      ['postgres-dev', 'running', 'Up 3 hours · 5432'],
+      ['redis-cache', 'running', 'Up 3 hours · 6379'],
+      ['api-server', 'running', 'Up 12 min · 8080'],
+      ['nginx-proxy', 'running', 'Up 2 days · 80, 443'],
+      ['worker-jobs', 'exited', 'Exited (1)'],
+      ['mailpit', 'stopped', 'Exited (0)']
+    ];
+    const items = raw.map(([name, state, meta]) => ({
+      name, meta,
+      running: state === 'running',
+      stopped: state !== 'running',
+      dot: state === 'running' ? '#28C840' : state === 'exited' ? '#E8590C' : '#AEAEB2'
+    }));
+    return { items };
+  }
+}
+</script>
+</body>
+</html>

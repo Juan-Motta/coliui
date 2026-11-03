@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Compose editor</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.cap{box-sizing:border-box;height:34px;border-radius:17px;display:inline-flex;align-items:center;gap:2px;padding:0 3px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:34px;height:28px;border:0;border-radius:14px;background:transparent;color:#1D1D1F;cursor:pointer;padding:0;text-decoration:none}
+.ib:hover{background:rgba(0,0,0,0.06);color:#1D1D1F}
+.seg{height:28px;padding:0 12px;border:0;border-radius:14px;background:transparent;font-size:12px;font-family:inherit;color:#1D1D1F;display:inline-flex;align-items:center;cursor:pointer}
+.seg:hover{background:rgba(0,0,0,0.06)}
+.tint{background:#0A6FD6;color:#FFFFFF;border:1px solid rgba(255,255,255,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.35),0 4px 14px rgba(0,102,204,0.3);font-family:inherit;cursor:pointer}
+.nav:hover{background:rgba(0,0,0,0.05)}
+.card{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px}
+</style>
+</helmet>
+<div style="min-height: 800px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="width: 100%; max-width: 1232px; min-height: 752px; display: flex; flex-wrap: wrap; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+
+<div style="flex: 0 0 240px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column">
+<dc-import name="Sidebar" selected="Containers" hint-size="240px,752px"></dc-import>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; flex-wrap: wrap">
+<div class="glass cap"><a class="ib" href="Compose.dc.html" aria-label="Back to Compose groups" style="width: 28px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a></div>
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 15px; font-weight: 600">shop-backend <span style="font-weight: 400; color: #6E6E73">— Edited</span></span>
+<span style="font-size: 11px; color: #6E6E73; font-family: ui-monospace, Menlo, monospace">~/code/shop/docker-compose.yml</span>
+</div>
+<div style="flex: 1"></div>
+<div class="glass cap">
+<button class="seg">Open in editor</button>
+<button class="seg">Show diff</button>
+<button class="seg">Save</button>
+</div>
+<button class="cap tint" style="padding: 0 16px; font-size: 13px; font-weight: 600">Save &amp; up -d</button>
+</header>
+
+<div style="flex: 1; display: flex; flex-wrap: wrap; gap: 16px; padding: 4px 16px 16px">
+<section aria-label="docker-compose.yml" class="card" style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; overflow: hidden">
+<div style="flex: 1; padding: 14px 0; font-family: ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.75; overflow: auto">
+<sc-for list="{{lines}}" as="l" hint-placeholder-count="24">
+<div style="display: flex; background: {{l.bg}}">
+<span style="width: 48px; flex: none; text-align: right; padding-right: 16px; color: #8E8E93; user-select: none">{{l.n}}</span>
+<span style="white-space: pre; padding-left: {{l.pad}}"><span style="color: #9A3412">{{l.k}}</span><span style="color: #3A3A3C">{{l.sep}}</span><span style="color: {{l.vc}}">{{l.v}}</span></span>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; gap: 16px; padding: 8px 16px; border-top: 1px solid rgba(0,0,0,0.06); font-size: 12px; color: #3A3A3C">
+<span style="display: flex; align-items: center; gap: 6px; color: #1E7F3C; font-weight: 500"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>Valid · docker compose config</span>
+<span>Ln 14, Col 21</span>
+<span style="margin-left: auto">YAML · UTF-8 · 2 spaces</span>
+</div>
+</section>
+
+<aside aria-label="Services" style="flex: 1 1 260px; max-width: 300px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 11px; font-weight: 600; color: #6E6E73; letter-spacing: 0.04em; padding: 6px 4px 0">SERVICES</span>
+<sc-for list="{{services}}" as="s" hint-placeholder-count="4">
+<div class="card" style="padding: 12px 14px; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: center; gap: 8px">
+<span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: {{s.dot}}"></span>
+<span style="font-size: 13px; font-weight: 600; flex: 1">{{s.name}}</span>
+<span style="font-size: 11px; color: #B54708; font-weight: 600">{{s.change}}</span>
+</div>
+<span style="font-size: 11px; color: #6E6E73; font-family: ui-monospace, Menlo, monospace">{{s.image}}</span>
+</div>
+</sc-for>
+<p style="margin: 0; padding: 0 4px; font-size: 12px; color: #6E6E73; line-height: 1.5">“Save &amp; up -d” recreates only services whose config changed.</p>
+</aside>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const raw = [
+      [0, 'services', ''],
+      [1, 'api', ''],
+      [2, 'image', 'myapp/api:latest'],
+      [2, 'ports', ''],
+      [3, '- ', '"8080:8080"'],
+      [2, 'environment', ''],
+      [3, 'DATABASE_URL', 'postgres://app:${DB_PASSWORD}@db:5432/shop'],
+      [3, 'REDIS_URL', 'redis://cache:6379'],
+      [2, 'depends_on', '[db, cache]'],
+      [1, 'db', ''],
+      [2, 'image', 'postgres:16-alpine'],
+      [2, 'volumes', ''],
+      [3, '- ', 'pgdata:/var/lib/postgresql/data'],
+      [2, 'environment', ''],
+      [3, 'POSTGRES_PASSWORD', '${DB_PASSWORD}'],
+      [1, 'cache', ''],
+      [2, 'image', 'redis:7'],
+      [1, 'worker', ''],
+      [2, 'image', 'myapp/worker:latest'],
+      [2, 'restart', 'unless-stopped'],
+      [0, '', ''],
+      [0, 'volumes', ''],
+      [1, 'pgdata', '']
+    ];
+    const lines = raw.map(([ind, k, v], i) => {
+      const isList = k === '- ';
+      return {
+        n: i + 1, pad: (ind * 16) + 'px',
+        k: isList ? '' : k, sep: isList ? '- ' : (k ? ': ' : ''),
+        v, vc: v.startsWith('"') ? '#1E7F3C' : v.startsWith('[') ? '#6E3FD1' : '#0B4F8A',
+        bg: i === 13 || i === 14 ? '#FFF7E6' : 'transparent'
+      };
+    });
+    const services = [
+      { name: 'api', image: 'myapp/api:latest', st: 'running', change: '' },
+      { name: 'db', image: 'postgres:16-alpine', st: 'running', change: 'Modified' },
+      { name: 'cache', image: 'redis:7', st: 'running', change: '' },
+      { name: 'worker', image: 'myapp/worker:latest', st: 'exited', change: '' }
+    ].map((s) => ({ ...s, dot: s.st === 'running' ? '#28C840' : '#E8590C' }));
+    return { lines, services };
+  }
+}
+</script>
+</body>
+</html>

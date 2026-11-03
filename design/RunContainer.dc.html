@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Run container</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.cap{box-sizing:border-box;height:34px;border-radius:17px;display:inline-flex;align-items:center;gap:2px;padding:0 3px}
+.in{height:30px;box-sizing:border-box;border:0;border-radius:10px;padding:0 10px;font-size:13px;font-family:inherit;background:rgba(0,0,0,0.05);color:#1D1D1F;min-width:0}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:0;border-radius:15px;background:transparent;color:#6E6E73;cursor:pointer;padding:0;flex:none}
+.ib:hover{background:rgba(0,0,0,0.06)}
+.add{border:0;background:transparent;color:#0066CC;font-size:12px;font-family:inherit;cursor:pointer;padding:4px 0;text-align:left}
+.pill{box-sizing:border-box;height:32px;padding:0 16px;border:0;border-radius:16px;background:rgba(0,0,0,0.06);font-size:13px;font-family:inherit;color:#1D1D1F;cursor:pointer}
+.tint{box-sizing:border-box;height:32px;padding:0 20px;border-radius:16px;background:#0A6FD6;color:#FFFFFF;border:1px solid rgba(255,255,255,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.35),0 4px 14px rgba(0,102,204,0.3);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="min-height: 860px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="position: relative; width: 100%; max-width: 1232px; min-height: 812px; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+
+<div inert="" aria-hidden="true" style="display: flex; min-height: 812px">
+<div style="flex: 0 0 240px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column">
+<dc-import name="Sidebar" selected="Containers" hint-size="240px,752px"></dc-import>
+</div>
+<div style="flex: 1; display: flex; flex-direction: column; padding: 8px 16px 16px; gap: 14px">
+<div style="min-height: 44px; display: flex; align-items: center; gap: 10px">
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 15px; font-weight: 600">Containers</span>
+<span style="font-size: 11px; color: #6E6E73">4 running · 2 stopped</span>
+</div>
+</div>
+<div style="height: 34px; width: 280px; border-radius: 17px; background: rgba(0,0,0,0.05)"></div>
+<div style="height: 300px; border-radius: 14px; background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08)"></div>
+</div>
+</div>
+<div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(240,240,244,0.55)"></div>
+
+<div role="dialog" aria-labelledby="run-h" class="glass" style="position: absolute; top: 28px; left: 50%; transform: translateX(-50%); z-index: 2; width: calc(100% - 32px); max-width: 640px; box-sizing: border-box; background: rgba(252,252,254,0.88); border-radius: 26px; box-shadow: 0 30px 70px rgba(0,0,0,0.28); padding: 24px 26px; display: flex; flex-direction: column; gap: 16px">
+<h2 id="run-h" style="margin: 0; font-size: 17px; font-weight: 600">Run a new container</h2>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #3A3A3C">Image
+<input class="in mono" value="postgres:16-alpine"></label>
+<label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #3A3A3C">Name (optional)
+<input class="in" value="postgres-test"></label>
+</div>
+
+<fieldset style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px">
+<legend style="font-size: 12px; font-weight: 600; color: #3A3A3C; padding: 0 0 6px">Ports</legend>
+<div style="display: flex; align-items: center; gap: 8px">
+<input class="in mono" aria-label="Host port" value="5433" style="width: 90px"><span style="color: #6E6E73">→</span><input class="in mono" aria-label="Container port" value="5432" style="width: 90px">
+<select class="in" aria-label="Protocol" style="width: 76px"><option>tcp</option><option>udp</option></select>
+<button class="ib" aria-label="Remove port"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 12h12"></path></svg></button>
+</div>
+<button class="add">+ Add port</button>
+</fieldset>
+
+<fieldset style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px">
+<legend style="font-size: 12px; font-weight: 600; color: #3A3A3C; padding: 0 0 6px">Volumes</legend>
+<div style="display: flex; align-items: center; gap: 8px">
+<input class="in mono" aria-label="Host path or volume" value="pgdata" style="flex: 1"><span style="color: #6E6E73">→</span><input class="in mono" aria-label="Container path" value="/var/lib/postgresql/data" style="flex: 1.4">
+<button class="ib" aria-label="Choose folder"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7h7l2 2h9v10H3z"></path></svg></button>
+</div>
+<button class="add">+ Add volume</button>
+</fieldset>
+
+<fieldset style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px">
+<legend style="font-size: 12px; font-weight: 600; color: #3A3A3C; padding: 0 0 6px">Environment</legend>
+<div style="display: flex; align-items: center; gap: 8px">
+<input class="in mono" aria-label="Variable name" value="POSTGRES_PASSWORD" style="flex: 1"><span style="color: #6E6E73">=</span><input class="in mono" type="password" aria-label="Variable value" value="example" style="flex: 1">
+<button class="ib" aria-label="Remove variable"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 12h12"></path></svg></button>
+</div>
+<button class="add">+ Add variable · Import .env file…</button>
+</fieldset>
+
+<div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center">
+<label style="display: flex; align-items: center; gap: 8px; font-size: 13px">Restart
+<select class="in"><option>no</option><option selected>unless-stopped</option><option>always</option><option>on-failure</option></select></label>
+<label style="display: flex; align-items: center; gap: 6px; font-size: 13px"><input type="checkbox" style="accent-color: #0066CC">Remove when stopped (--rm)</label>
+<label style="display: flex; align-items: center; gap: 6px; font-size: 13px"><input type="checkbox" checked style="accent-color: #0066CC">Pull latest image</label>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="font-size: 12px; font-weight: 600; color: #3A3A3C">Equivalent command</span>
+<button class="add">Copy</button>
+</div>
+<pre style="margin: 0; padding: 12px 14px; background: #1C1C1E; color: #E5E5EA; border-radius: 14px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.6; white-space: pre-wrap"><span style="color: #64D2FF">docker run</span> -d --name postgres-test \
+  -p 5433:5432 \
+  -v pgdata:/var/lib/postgresql/data \
+  -e POSTGRES_PASSWORD=•••••• \
+  --restart unless-stopped \
+  <span style="color: #FFD60A">postgres:16-alpine</span></pre>
+</div>
+
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<a href="Main.dc.html" class="pill" style="display: inline-flex; align-items: center; text-decoration: none; color: #1D1D1F">Cancel</a>
+<button class="tint">Run</button>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Container detail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.cap{box-sizing:border-box;height:34px;border-radius:17px;display:inline-flex;align-items:center;gap:2px;padding:0 3px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:34px;height:28px;border:0;border-radius:14px;background:transparent;color:#1D1D1F;cursor:pointer;padding:0;text-decoration:none}
+.ib:hover{background:rgba(0,0,0,0.06);color:#1D1D1F}
+.seg{height:28px;padding:0 12px;border:0;border-radius:14px;background:transparent;font-size:12px;font-family:inherit;color:#3A3A3C;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer}
+.on{background:#FFFFFF;color:#1D1D1F;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.14)}
+.nav:hover{background:rgba(0,0,0,0.05)}
+.card{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px}
+.pill{box-sizing:border-box;height:30px;padding:0 12px;border:0;border-radius:15px;background:rgba(0,0,0,0.05);font-size:12px;font-family:inherit;color:#1D1D1F;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.pill:hover{background:rgba(0,0,0,0.09)}
+</style>
+</helmet>
+<div style="min-height: 800px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="width: 100%; max-width: 1232px; min-height: 752px; display: flex; flex-wrap: wrap; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+
+<div style="flex: 0 0 240px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column">
+<dc-import name="Sidebar" selected="Containers" hint-size="240px,752px"></dc-import>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; flex-wrap: wrap">
+<div class="glass cap"><a class="ib" href="Main.dc.html" aria-label="Back to containers" style="width: 28px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a></div>
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 15px; font-weight: 600">api-server</span>
+<span style="font-size: 11px; color: #6E6E73; font-family: ui-monospace, Menlo, monospace">e81b3f0c55d2 · myapp/api:latest</span>
+</div>
+<span style="display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: #1E7F3C; background: #E7F6EC; padding: 4px 10px; border-radius: 999px"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: #28C840"></span>Up 12 min</span>
+<div style="flex: 1"></div>
+<div class="glass cap">
+<button class="ib" aria-label="Stop"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"></rect></svg></button>
+<button class="ib" aria-label="Restart"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></button>
+<a class="ib" href="Terminal.dc.html" aria-label="Open shell"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 17l6-5-6-5M12 19h8"></path></svg></a>
+</div>
+<div class="glass cap">
+<button class="ib" aria-label="Remove container"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></button>
+</div>
+</header>
+
+<div style="padding: 0 16px">
+<div role="tablist" aria-label="Container views" class="glass cap">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+<button role="tab" class="{{t.cls}}" aria-selected="{{t.active}}" onClick="{{t.pick}}">{{t.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="flex: 1; display: flex; flex-wrap: wrap; gap: 16px; padding: 14px 16px 16px">
+<section style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+
+<sc-if value="{{showLogs}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 12px; height: 100%">
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+<label class="cap" style="flex: 1; min-width: 180px; padding: 0 12px; gap: 6px; background: rgba(0,0,0,0.05)">
+<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6E73" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+<span style="position: absolute; left: -9999px">Filter logs</span>
+<input type="search" placeholder="Filter logs" style="border: 0; background: transparent; outline: none; font-size: 13px; width: 100%; font-family: inherit">
+</label>
+<button class="pill" aria-pressed="true" style="background: rgba(0,102,204,0.14); color: #0B4F8A; font-family: ui-monospace, Menlo, monospace">.*</button>
+<label class="pill"><input type="checkbox" checked style="margin: 0; accent-color: #0066CC">Follow</label>
+<label class="pill"><input type="checkbox" checked style="margin: 0; accent-color: #0066CC">Timestamps</label>
+<label class="pill">Since <select style="border: 0; background: transparent; font-size: 12px; font-family: inherit"><option>15 min</option><option>1 hour</option><option>All</option></select></label>
+<button class="pill"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>Export</button>
+<button class="pill">Clear</button>
+</div>
+<div role="log" aria-label="Container logs" style="flex: 1; min-height: 470px; background: {{logBg}}; border-radius: 14px; padding: 14px 16px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.7; overflow: auto">
+<sc-for list="{{logs}}" as="l" hint-placeholder-count="14">
+<div style="display: flex; gap: 12px; white-space: nowrap">
+<span style="color: #8E8E93">{{l.ts}}</span>
+<span style="color: {{l.levelColor}}; width: 44px; flex: none">{{l.level}}</span>
+<span style="color: #E5E5EA">{{l.msg}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{showOther}}" hint-placeholder-val="{{false}}">
+<div class="card" style="border-style: dashed; padding: 48px; text-align: center; font-size: 13px; color: #6E6E73">{{otherText}}</div>
+</sc-if>
+</section>
+
+<aside aria-label="Container info" style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 12px">
+<div class="card" style="padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<span style="font-size: 11px; font-weight: 600; color: #6E6E73; letter-spacing: 0.04em">OVERVIEW</span>
+<sc-for list="{{info}}" as="i" hint-placeholder-count="5">
+<div style="display: flex; justify-content: space-between; gap: 12px; font-size: 12px">
+<span style="color: #6E6E73">{{i.k}}</span>
+<span style="font-family: ui-monospace, Menlo, monospace; text-align: right">{{i.v}}</span>
+</div>
+</sc-for>
+</div>
+<div class="card" style="padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 11px; font-weight: 600; color: #6E6E73; letter-spacing: 0.04em">PORTS</span>
+<a href="#" style="font-size: 12px; font-family: ui-monospace, Menlo, monospace">localhost:8080 → 8080/tcp</a>
+</div>
+<div class="card" style="padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 11px; font-weight: 600; color: #6E6E73; letter-spacing: 0.04em">MOUNTS</span>
+<span style="font-size: 12px; font-family: ui-monospace, Menlo, monospace; color: #3A3A3C">./src → /app/src</span>
+<span style="font-size: 12px; font-family: ui-monospace, Menlo, monospace; color: #3A3A3C">api-data → /var/lib/api</span>
+</div>
+</aside>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"logBg":{"editor":"color","default":"#1C1C1E","options":["#1C1C1E","#0F1B2D","#2C2C2E"]},"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'logs' }; }
+  renderVals() {
+    const tab = this.state.tab;
+    const tabs = [['logs', 'Logs'], ['stats', 'Stats'], ['terminal', 'Terminal'], ['inspect', 'Inspect'], ['env', 'Environment']].map(([id, label]) => ({
+      label,
+      active: tab === id ? 'true' : 'false',
+      cls: tab === id ? 'seg on' : 'seg',
+      pick: () => this.setState({ tab: id })
+    }));
+    const lc = { INFO: '#64D2FF', WARN: '#FFD60A', ERROR: '#FF6961', DEBUG: '#8E8E93' };
+    const logs = [
+      ['10:42:01', 'INFO', 'Starting server on :8080'],
+      ['10:42:01', 'INFO', 'Connected to postgres-dev:5432'],
+      ['10:42:02', 'INFO', 'Connected to redis-cache:6379'],
+      ['10:42:02', 'DEBUG', 'Loaded 14 routes'],
+      ['10:43:15', 'INFO', 'GET /health 200 2ms'],
+      ['10:43:48', 'INFO', 'POST /api/users 201 34ms'],
+      ['10:44:02', 'WARN', 'Slow query: SELECT * FROM orders (812ms)'],
+      ['10:44:10', 'INFO', 'GET /api/orders 200 845ms'],
+      ['10:45:31', 'ERROR', 'Job queue timeout after 30s'],
+      ['10:45:32', 'INFO', 'Retrying job queue connection'],
+      ['10:45:33', 'INFO', 'Job queue reconnected'],
+      ['10:46:05', 'INFO', 'GET /health 200 1ms'],
+      ['10:47:19', 'INFO', 'GET /api/users/42 200 9ms'],
+      ['10:48:00', 'DEBUG', 'Cache hit ratio 0.93']
+    ].map(([ts, level, msg]) => ({ ts, level, msg, levelColor: lc[level] }));
+    const info = [
+      { k: 'Image', v: 'myapp/api:latest' },
+      { k: 'Created', v: '12 min ago' },
+      { k: 'Restart policy', v: 'unless-stopped' },
+      { k: 'Network', v: 'bridge' },
+      { k: 'IP', v: '172.17.0.4' }
+    ];
+    const texts = {
+      stats: 'Live charts — see the Live stats artboard',
+      terminal: 'Interactive shell — see the Terminal artboard',
+      inspect: 'docker inspect JSON — collapsible tree',
+      env: 'Environment variables — values masked by default'
+    };
+    return {
+      tabs, logs, info,
+      otherText: texts[tab] || '',
+      logBg: this.props.logBg ?? '#1C1C1E',
+      showLogs: tab === 'logs',
+      showOther: tab !== 'logs'
+    };
+  }
+}
+</script>
+</body>
+</html>

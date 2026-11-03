@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Colima profiles</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.cap{box-sizing:border-box;height:34px;border-radius:17px;display:inline-flex;align-items:center;gap:2px;padding:0 3px}
+.seg{height:28px;padding:0 12px;border:0;border-radius:14px;background:transparent;font-size:12px;font-family:inherit;color:#3A3A3C;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer}
+.on{background:#FFFFFF;color:#1D1D1F;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.14)}
+.tint{background:#0A6FD6;color:#FFFFFF;border:1px solid rgba(255,255,255,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.35),0 4px 14px rgba(0,102,204,0.3);font-family:inherit;cursor:pointer}
+.tint:hover{color:#FFFFFF;background:#0862BF}
+.nav:hover{background:rgba(0,0,0,0.05)}
+.card{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px}
+.prow{cursor:pointer}
+.prow:hover{background:rgba(0,102,204,0.05)}
+.pill{box-sizing:border-box;height:30px;padding:0 14px;border:0;border-radius:15px;background:rgba(0,0,0,0.05);font-size:13px;font-family:inherit;color:#1D1D1F;cursor:pointer}
+.step{width:30px;height:30px;border:0;border-radius:15px;background:rgba(0,0,0,0.05);font-size:16px;font-family:inherit;cursor:pointer;color:#1D1D1F}
+.sel{height:30px;border:0;border-radius:15px;background:rgba(0,0,0,0.05);padding:0 12px;font-size:12px;font-family:inherit;color:#1D1D1F}
+</style>
+</helmet>
+<div style="min-height: 800px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="width: 100%; max-width: 1232px; min-height: 752px; display: flex; flex-wrap: wrap; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+
+<div style="flex: 0 0 240px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column">
+<dc-import name="Sidebar" selected="Profiles" hint-size="240px,752px"></dc-import>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; margin-right: 6px">
+<span style="font-size: 15px; font-weight: 600">Colima profiles</span>
+<span style="font-size: 11px; color: #6E6E73">3 profiles · 1 running</span>
+</div>
+<div style="flex: 1"></div>
+<button class="cap tint" style="padding: 0 14px; gap: 6px; font-size: 13px; font-weight: 500">
+<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>New profile</button>
+</header>
+
+<main style="flex: 1; padding: 4px 16px 16px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+<section aria-label="Profiles" class="card" style="flex: 999 1 380px; min-width: 0; overflow: hidden; padding: 6px">
+<sc-for list="{{profiles}}" as="p" hint-placeholder-count="3">
+<div class="prow" onClick="{{p.pick}}" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; background: {{p.bg}}">
+<span aria-hidden="true" style="width: 9px; height: 9px; border-radius: 50%; background: {{p.dot}}"></span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+<button style="border: 0; background: transparent; padding: 0; text-align: left; font-size: 14px; font-weight: 600; font-family: inherit; color: #1D1D1F; cursor: pointer">{{p.name}}</button>
+<span style="font-size: 12px; color: #6E6E73">{{p.meta}}</span>
+</div>
+<span style="font-size: 12px; font-weight: 600; color: {{p.statusColor}}">{{p.status}}</span>
+<sc-if value="{{p.active}}" hint-placeholder-val="{{false}}">
+<span style="font-size: 11px; font-weight: 600; color: #0066CC; background: rgba(0,102,204,0.12); padding: 3px 9px; border-radius: 999px">docker context</span>
+</sc-if>
+</div>
+</sc-for>
+</section>
+
+<section aria-labelledby="edit-h" class="card" style="flex: 1 1 340px; padding: 20px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 id="edit-h" style="margin: 0; font-size: 15px; font-weight: 600">Edit “{{sel.name}}”</h2>
+<span style="font-size: 12px; color: #6E6E73">Changes apply on the next start</span>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="font-size: 13px">CPUs</span>
+<div style="display: flex; align-items: center; gap: 8px"><button class="step" aria-label="Fewer CPUs">−</button><span style="width: 28px; text-align: center; font-size: 14px; font-weight: 600">{{sel.cpu}}</span><button class="step" aria-label="More CPUs">+</button></div>
+</div>
+<label style="display: flex; flex-direction: column; gap: 6px">
+<span style="display: flex; justify-content: space-between; font-size: 13px">Memory<span style="font-weight: 600">{{sel.mem}} GiB</span></span>
+<input type="range" min="1" max="32" value="{{sel.mem}}" style="width: 100%; accent-color: #0066CC">
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px">
+<span style="display: flex; justify-content: space-between; font-size: 13px">Disk<span style="font-weight: 600">{{sel.disk}} GiB</span></span>
+<input type="range" min="20" max="200" value="{{sel.disk}}" style="width: 100%; accent-color: #0066CC">
+<span style="font-size: 11px; color: #6E6E73">Disk can grow but never shrink</span>
+</label>
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="font-size: 13px">VM type</span>
+<div role="group" aria-label="VM type" class="cap" style="background: rgba(0,0,0,0.05)">
+<button class="seg on" aria-pressed="true">vz</button>
+<button class="seg">qemu</button>
+</div>
+</div>
+<label style="display: flex; align-items: center; justify-content: space-between; font-size: 13px">Mount type
+<select class="sel"><option>virtiofs</option><option>sshfs</option><option>9p</option></select></label>
+<label style="display: flex; align-items: center; justify-content: space-between; font-size: 13px">Rosetta (x86 emulation)
+<span style="position: relative; width: 38px; height: 22px; border-radius: 11px; background: #30A14E; display: inline-block">
+<input type="checkbox" checked role="switch" style="position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer">
+<span aria-hidden="true" style="position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.25)"></span>
+</span></label>
+<label style="display: flex; align-items: center; justify-content: space-between; font-size: 13px">Runtime
+<select class="sel"><option>docker</option><option>containerd</option></select></label>
+<div style="display: flex; gap: 8px; justify-content: flex-end; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.06)">
+<button class="pill" style="color: #B42318; margin-right: auto">Delete…</button>
+<button class="pill">Revert</button>
+<button class="tint" style="height: 30px; padding: 0 16px; border-radius: 15px; font-size: 13px; font-weight: 600">Apply &amp; restart</button>
+</div>
+</section>
+</main>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sel: 'default' }; }
+  renderVals() {
+    const data = [
+      { name: 'default', running: true, cpu: 4, mem: 8, disk: 60, rt: 'docker', vm: 'vz' },
+      { name: 'work', running: false, cpu: 6, mem: 12, disk: 100, rt: 'docker', vm: 'vz' },
+      { name: 'x86-legacy', running: false, cpu: 2, mem: 4, disk: 40, rt: 'containerd', vm: 'qemu' }
+    ];
+    const cur = this.state.sel;
+    const profiles = data.map((p) => ({
+      name: p.name, active: p.running,
+      meta: p.cpu + ' CPU · ' + p.mem + ' GiB · ' + p.disk + ' GiB · ' + p.vm + ' · ' + p.rt,
+      status: p.running ? 'Running' : 'Stopped',
+      statusColor: p.running ? '#1E7F3C' : '#6E6E73',
+      dot: p.running ? '#28C840' : '#AEAEB2',
+      bg: p.name === cur ? 'rgba(0,102,204,0.10)' : 'transparent',
+      pick: () => this.setState({ sel: p.name })
+    }));
+    const sel = data.find((p) => p.name === cur);
+    return { profiles, sel };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.tab{display:flex;align-items:center;gap:6px;height:30px;padding:0 14px;border:0;border-radius:15px;font-size:12px;font-family:inherit;cursor:pointer;background:transparent;color:#3A3A3C}
+.on{background:#FFFFFF;color:#1D1D1F;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.14)}
+.group{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px;overflow:hidden}
+.r{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:8px 16px;box-sizing:border-box;font-size:13px;border-top:1px solid rgba(0,0,0,0.06)}
+.r:first-child{border-top:0}
+.sel{height:28px;border:0;border-radius:14px;background:rgba(0,0,0,0.05);padding:0 12px;font-size:12px;font-family:inherit;color:#1D1D1F}
+.kbd{display:inline-block;min-width:22px;padding:3px 8px;border-radius:7px;background:rgba(0,0,0,0.06);font-size:12px;text-align:center}
+</style>
+</helmet>
+<div style="width: 960px; height: 700px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="width: 680px; height: 652px; display: flex; flex-direction: column; background: #F5F5F7; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px">
+<div aria-hidden="true" style="display: flex; gap: 8px; width: 120px">
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span>
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span>
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span>
+</div>
+<div style="flex: 1; display: flex; justify-content: center">
+<div role="tablist" aria-label="Settings sections" class="glass" style="display: inline-flex; gap: 2px; padding: 3px; border-radius: 18px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+<button class="{{t.cls}}" role="tab" aria-selected="{{t.active}}" onClick="{{t.pick}}"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{t.icon}}"></path></svg>{{t.label}}</button>
+</sc-for>
+</div>
+</div>
+<div style="width: 120px"></div>
+</div>
+
+<div style="flex: 1; padding: 8px 40px 28px; overflow: auto; display: flex; flex-direction: column; gap: 18px">
+<sc-if value="{{isGeneral}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; font-weight: 600; color: #6E6E73; padding: 0 6px">Startup</span>
+<div class="group">
+<label class="r">Launch ColiUI at login<input type="checkbox" role="switch" checked style="width: 16px; height: 16px; accent-color: #30A14E"></label>
+<label class="r">Start Colima when ColiUI opens<input type="checkbox" role="switch" checked style="width: 16px; height: 16px; accent-color: #30A14E"></label>
+<label class="r">Show icon in Dock<input type="checkbox" role="switch" style="width: 16px; height: 16px; accent-color: #30A14E"></label>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; font-weight: 600; color: #6E6E73; padding: 0 6px">Colima</span>
+<div class="group">
+<label class="r">Default profile<select class="sel"><option>default</option><option>work</option></select></label>
+<label class="r" style="align-items: flex-start; flex-direction: column; gap: 6px">Docker socket
+<input value="~/.colima/default/docker.sock" style="width: 100%; box-sizing: border-box; height: 30px; border: 0; border-radius: 10px; background: rgba(0,0,0,0.05); padding: 0 10px; font-family: ui-monospace, Menlo, monospace; font-size: 12px">
+<span style="font-size: 11px; color: #6E6E73">Detected automatically from the active profile</span></label>
+<label class="r">Refresh stats every<select class="sel"><option>2 seconds</option><option>5 seconds</option><option>Off</option></select></label>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; font-weight: 600; color: #6E6E73; padding: 0 6px">Appearance</span>
+<div class="group">
+<div class="r">Theme
+<div role="group" aria-label="Appearance" style="display: inline-flex; padding: 2px; background: rgba(0,0,0,0.05); border-radius: 15px">
+<button class="tab on" aria-pressed="true" style="height: 26px">System</button>
+<button class="tab" style="height: 26px">Light</button>
+<button class="tab" style="height: 26px">Dark</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isNotif}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div class="group">
+<sc-for list="{{notifs}}" as="n" hint-placeholder-count="5">
+<label class="r">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-weight: 500">{{n.title}}</span>
+<span style="font-size: 12px; color: #6E6E73">{{n.desc}}</span>
+</div>
+<input type="checkbox" role="switch" checked="{{n.on}}" onChange="{{n.toggle}}" style="width: 16px; height: 16px; accent-color: #30A14E">
+</label>
+</sc-for>
+</div>
+<p style="margin: 0 6px; font-size: 12px; color: #6E6E73">Delivered through macOS Notification Center — allow ColiUI in System Settings › Notifications.</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isAbout}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 0 4px">
+<div aria-hidden="true" style="width: 72px; height: 72px; border-radius: 17px; background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 6px 18px rgba(0,0,0,0.12); display: flex; align-items: center; justify-content: center">
+<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1D1D1F" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"></path><path d="M4 7.5l8 4.5 8-4.5M12 12v9"></path></svg>
+</div>
+<span style="font-size: 20px; font-weight: 600">ColiUI</span>
+<span style="font-size: 12px; color: #6E6E73">Version 0.1.0 (1)</span>
+<span style="font-size: 13px; color: #3A3A3C">A native Mac app for Colima and Docker</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; font-weight: 600; color: #6E6E73; padding: 0 6px">This Mac</span>
+<div class="group">
+<div class="r"><span>Colima</span><span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #3A3A3C">0.9.1 · profile default (vz)</span></div>
+<div class="r"><span>Docker Engine</span><span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #3A3A3C">28.3.2 · API 1.51</span></div>
+<div class="r"><span>macOS</span><span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #3A3A3C">26.1 · Apple silicon</span></div>
+<div class="r"><span>Docker socket</span><span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #3A3A3C">~/.colima/default/docker.sock</span></div>
+</div>
+</div>
+<div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap">
+<button style="height: 30px; padding: 0 14px; border: 0; border-radius: 15px; background: rgba(0,0,0,0.05); font-size: 12px; font-family: inherit; cursor: pointer">Copy diagnostics</button>
+<a href="#" style="height: 30px; padding: 0 14px; border-radius: 15px; background: rgba(0,0,0,0.05); font-size: 12px; display: inline-flex; align-items: center; text-decoration: none">GitHub repository ↗</a>
+<a href="#" style="height: 30px; padding: 0 14px; border-radius: 15px; background: rgba(0,0,0,0.05); font-size: 12px; display: inline-flex; align-items: center; text-decoration: none">Report an issue ↗</a>
+</div>
+<p style="margin: 0; text-align: center; font-size: 11px; color: #6E6E73">Copy diagnostics puts these versions on the clipboard, ready to paste into an issue.</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isKeys}}" hint-placeholder-val="{{false}}">
+<div class="group">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="9">
+<div class="r"><span>{{k.action}}</span><span class="kbd">{{k.key}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":700}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'general', on: { crash: true, loop: true, vm: true, disk: true, pull: false } };
+  }
+  renderVals() {
+    const tab = this.state.tab;
+    const defs = [
+      ['general', 'General', 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1'],
+      ['notif', 'Notifications', 'M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0'],
+      ['keys', 'Shortcuts', 'M3 6h18v12H3zM7 10h1M11 10h1M15 10h1M8 14h8'],
+      ['about', 'About', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 11v6M12 7.5v.5']
+    ];
+    const tabs = defs.map(([id, label, icon]) => ({
+      label, icon, active: tab === id ? 'true' : 'false',
+      cls: tab === id ? 'tab on' : 'tab',
+      pick: () => this.setState({ tab: id })
+    }));
+    const on = this.state.on;
+    const notifs = [
+      ['crash', 'Container exited with an error', 'When a container stops with a non-zero exit code'],
+      ['loop', 'Restart loop detected', 'More than 3 restarts within 5 minutes'],
+      ['vm', 'Colima VM stopped or failed to start', 'Includes unexpected shutdowns'],
+      ['disk', 'VM disk almost full', 'When usage passes 80% — links to Cleanup'],
+      ['pull', 'Image pull finished', 'For pulls longer than 10 seconds']
+    ].map(([id, title, desc]) => ({ title, desc, on: !!on[id], toggle: () => this.setState({ on: { ...on, [id]: !on[id] } }) }));
+    const keys = [
+      ['Refresh', '⌘R'], ['Search', '⌘F'], ['Run container', '⌘N'], ['Start / stop selected', 'Space'],
+      ['View logs', '⌘L'], ['Open shell', '⌘⇧T'], ['Open port in browser', '⌘O'], ['Remove selected', '⌘⌫'], ['Settings', '⌘,']
+    ].map(([action, key]) => ({ action, key }));
+    return { tabs, notifs, keys, isGeneral: tab === 'general', isNotif: tab === 'notif', isKeys: tab === 'keys', isAbout: tab === 'about' };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Compose groups</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.cap{box-sizing:border-box;height:34px;border-radius:17px;display:inline-flex;align-items:center;gap:2px;padding:0 3px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:34px;height:28px;border:0;border-radius:14px;background:transparent;color:#1D1D1F;cursor:pointer;padding:0}
+.ib:hover{background:rgba(0,0,0,0.06)}
+.seg{height:28px;padding:0 12px;border:0;border-radius:14px;background:transparent;font-size:12px;font-family:inherit;color:#3A3A3C;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer}
+.on{background:#FFFFFF;color:#1D1D1F;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.14)}
+.tint{background:#0A6FD6;color:#FFFFFF;border:1px solid rgba(255,255,255,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.35),0 4px 14px rgba(0,102,204,0.3)}
+.tint:hover{color:#FFFFFF;background:#0862BF}
+.nav:hover{background:rgba(0,0,0,0.05)}
+.card{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px}
+.pill{box-sizing:border-box;height:28px;padding:0 12px;border:0;border-radius:14px;background:rgba(0,0,0,0.05);font-size:12px;font-family:inherit;color:#1D1D1F;cursor:pointer;display:inline-flex;align-items:center;text-decoration:none}
+.pill:hover{background:rgba(0,0,0,0.09);color:#1D1D1F}
+.mi{display:flex;align-items:center;gap:8px;height:28px;padding:0 10px;border:0;border-radius:7px;background:transparent;font-size:13px;font-family:inherit;color:#1D1D1F;cursor:pointer;text-align:left;width:100%}
+.mi:hover{background:#0A6FD6;color:#FFFFFF}
+</style>
+</helmet>
+<div style="min-height: 800px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="width: 100%; max-width: 1232px; min-height: 752px; display: flex; flex-wrap: wrap; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+
+<div style="flex: 0 0 240px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column">
+<dc-import name="Sidebar" selected="Containers" hint-size="240px,752px"></dc-import>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; margin-right: 6px">
+<span style="font-size: 15px; font-weight: 600">Containers</span>
+<span style="font-size: 11px; color: #6E6E73">2 projects · 7 containers</span>
+</div>
+<div role="group" aria-label="View" class="glass cap">
+<a class="seg" href="Main.dc.html">List</a>
+<button class="seg on" aria-pressed="true">Compose groups</button>
+</div>
+<div style="flex: 1"></div>
+<div class="glass cap">
+<button class="ib" aria-label="Refresh"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></button>
+<button class="ib" aria-label="Sort"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M7 12h10M10 17h4"></path></svg></button>
+</div>
+<label class="glass cap" style="width: 200px; padding: 0 12px; gap: 6px">
+<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6E73" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+<span style="position: absolute; left: -9999px">Search containers</span>
+<input type="search" placeholder="Search" style="border: 0; background: transparent; outline: none; font-size: 13px; width: 100%; font-family: inherit">
+</label>
+<a href="RunContainer.dc.html" class="cap tint" style="padding: 0 14px; gap: 6px; font-size: 13px; font-weight: 500; text-decoration: none">
+<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Run container</a>
+</header>
+
+<main style="flex: 1; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 14px; position: relative">
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+<section class="card">
+<div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; flex-wrap: wrap">
+<button class="ib" aria-label="{{g.toggleLabel}}" aria-expanded="{{g.expanded}}" onClick="{{g.toggle}}" style="width: 28px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="{{g.chevron}}"><path d="M9 6l6 6-6 6"></path></svg></button>
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0066CC" stroke-width="2" stroke-linejoin="round"><path d="M3 7h7l2 2h9v10H3z"></path></svg>
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 14px; font-weight: 600">{{g.name}}</span>
+<span style="font-size: 11px; color: #6E6E73; font-family: ui-monospace, Menlo, monospace">{{g.path}}</span>
+</div>
+<span style="font-size: 12px; font-weight: 600; color: {{g.badgeColor}}; background: {{g.badgeBg}}; padding: 3px 10px; border-radius: 999px">{{g.summary}}</span>
+<div style="flex: 1"></div>
+<sc-if value="{{g.running}}" hint-placeholder-val="{{true}}"><button class="pill">Stop all</button></sc-if>
+<sc-if value="{{g.stopped}}" hint-placeholder-val="{{false}}"><button class="pill" style="color: #1E7F3C; font-weight: 600">Start all</button></sc-if>
+<button class="pill">Restart</button>
+<a href="ComposeEditor.dc.html" class="pill">Edit compose file</a>
+</div>
+<sc-if value="{{g.open}}" hint-placeholder-val="{{true}}">
+<div>
+<sc-for list="{{g.services}}" as="s" hint-placeholder-count="3">
+<div style="position: relative; display: grid; grid-template-columns: 24px 1.6fr 1.8fr 1.4fr 1.6fr 76px; gap: 12px; align-items: center; padding: 0 12px 0 44px; height: 48px; border-top: 1px solid rgba(0,0,0,0.05); font-size: 13px; background: {{s.bg}}">
+<span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: {{s.dot}}"></span>
+<a href="Detail.dc.html" style="color: #1D1D1F; font-weight: 500; text-decoration: none">{{s.name}}</a>
+<span style="font-size: 12px; color: #3A3A3C; font-family: ui-monospace, Menlo, monospace">{{s.image}}</span>
+<span style="font-size: 12px; color: {{s.statusColor}}">{{s.status}}</span>
+<sc-if value="{{s.hasPort}}" hint-placeholder-val="{{true}}">
+<a href="#" style="font-size: 12px; font-family: ui-monospace, Menlo, monospace; display: inline-flex; align-items: center; gap: 4px">{{s.port}}<svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 17L17 7M9 7h8v8"></path></svg></a>
+</sc-if>
+<sc-if value="{{s.noPort}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #6E6E73">—</span></sc-if>
+<div style="display: flex; justify-content: flex-end; gap: 2px">
+<button class="ib" aria-label="Copy exec command" style="width: 28px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg></button>
+<button class="ib" aria-label="More actions" style="width: 28px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg></button>
+</div>
+<sc-if value="{{s.menu}}" hint-placeholder-val="{{false}}">
+<div role="menu" aria-label="Container actions" class="glass" style="position: absolute; right: 16px; top: 44px; z-index: 5; width: 250px; padding: 6px; background: rgba(250,250,252,0.82); border-radius: 14px; box-shadow: 0 16px 40px rgba(0,0,0,0.22); display: flex; flex-direction: column">
+<button class="mi" role="menuitem">Open localhost:8080<span style="flex: 1"></span><span style="font-size: 11px; opacity: 0.7">⌘O</span></button>
+<button class="mi" role="menuitem">View logs<span style="flex: 1"></span><span style="font-size: 11px; opacity: 0.7">⌘L</span></button>
+<button class="mi" role="menuitem">Open shell<span style="flex: 1"></span><span style="font-size: 11px; opacity: 0.7">⌘⇧T</span></button>
+<div style="height: 1px; background: rgba(0,0,0,0.08); margin: 4px 8px"></div>
+<button class="mi" role="menuitem">Copy container ID</button>
+<button class="mi" role="menuitem">Copy “docker exec -it … sh”</button>
+<div style="height: 1px; background: rgba(0,0,0,0.08); margin: 4px 8px"></div>
+<button class="mi" role="menuitem">Restart<span style="flex: 1"></span><span style="font-size: 11px; opacity: 0.7">⌘R</span></button>
+<button class="mi" role="menuitem">Stop<span style="flex: 1"></span><span style="font-size: 11px; opacity: 0.7">Space</span></button>
+<button class="mi" role="menuitem" style="color: #B42318">Remove…<span style="flex: 1"></span><span style="font-size: 11px; opacity: 0.7">⌘⌫</span></button>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</section>
+</sc-for>
+
+<div role="status" class="glass" style="position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 9px 16px; background: rgba(28,28,30,0.82); border-color: rgba(255,255,255,0.18); color: #FFFFFF; border-radius: 20px; font-size: 12px">
+<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#30D158" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>
+Copied <span style="font-family: ui-monospace, Menlo, monospace">docker exec -it e81b3f0c55d2 sh</span>
+</div>
+</main>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { closed: { blog: true } }; }
+  renderVals() {
+    const dotOf = (st) => st === 'running' ? '#28C840' : st === 'exited' ? '#E8590C' : '#AEAEB2';
+    const colorOf = (st) => st === 'running' ? '#1E7F3C' : st === 'exited' ? '#B54708' : '#6E6E73';
+    const data = [
+      { id: 'shop', name: 'shop-backend', path: '~/code/shop/docker-compose.yml', services: [
+        ['api', 'myapp/api:latest', 'running', 'Up 12 min', 'localhost:8080', true],
+        ['db', 'postgres:16-alpine', 'running', 'Up 3 hours', 'localhost:5432', false],
+        ['cache', 'redis:7', 'running', 'Up 3 hours', '', false],
+        ['worker', 'myapp/worker:latest', 'exited', 'Exited (1) · 4 restarts', '', false]
+      ] },
+      { id: 'blog', name: 'blog', path: '~/code/blog/compose.yaml', services: [
+        ['web', 'ghost:5', 'stopped', 'Exited (0)', 'localhost:2368', false],
+        ['mysql', 'mysql:8', 'stopped', 'Exited (0)', '', false]
+      ] },
+      { id: 'none', name: 'Standalone containers', path: 'not part of a Compose project', services: [
+        ['mailpit', 'axllent/mailpit', 'running', 'Up 2 days', 'localhost:8025', false]
+      ] }
+    ];
+    const groups = data.map((g) => {
+      const up = g.services.filter((s) => s[2] === 'running').length;
+      const total = g.services.length;
+      const open = !this.state.closed[g.id];
+      const partial = up > 0 && up < total;
+      return {
+        name: g.name, path: g.path, open,
+        expanded: open ? 'true' : 'false',
+        toggleLabel: (open ? 'Collapse ' : 'Expand ') + g.name,
+        chevron: open ? 'transform: rotate(90deg)' : '',
+        toggle: () => this.setState({ closed: { ...this.state.closed, [g.id]: open } }),
+        summary: up + ' / ' + total + ' running',
+        badgeColor: up === 0 ? '#6E6E73' : partial ? '#B54708' : '#1E7F3C',
+        badgeBg: up === 0 ? 'rgba(0,0,0,0.05)' : partial ? '#FEF3E7' : '#E7F6EC',
+        running: up > 0, stopped: up === 0,
+        services: g.services.map(([name, image, st, status, port, menu]) => ({
+          name, image, status, port, menu,
+          hasPort: !!port, noPort: !port,
+          dot: dotOf(st), statusColor: colorOf(st),
+          bg: menu ? 'rgba(0,102,204,0.05)' : 'transparent'
+        }))
+      };
+    });
+    return { groups };
+  }
+}
+</script>
+</body>
+</html>

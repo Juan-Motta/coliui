@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Containers</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.cap{box-sizing:border-box;height:34px;border-radius:17px;display:inline-flex;align-items:center;gap:2px;padding:0 3px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:34px;height:28px;border:0;border-radius:14px;background:transparent;color:#1D1D1F;cursor:pointer;padding:0}
+.ib:hover{background:rgba(0,0,0,0.06)}
+.seg{height:28px;padding:0 12px;border:0;border-radius:14px;background:transparent;font-size:12px;font-family:inherit;color:#3A3A3C;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer}
+.on{background:#FFFFFF;color:#1D1D1F;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.14)}
+.tint{background:#0A6FD6;color:#FFFFFF;border:1px solid rgba(255,255,255,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.35),0 4px 14px rgba(0,102,204,0.3)}
+.tint:hover{color:#FFFFFF;background:#0862BF}
+.nav:hover{background:rgba(0,0,0,0.05)}
+.row:hover{background:rgba(0,102,204,0.05)}
+.card{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px}
+</style>
+</helmet>
+<div style="min-height: 800px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="width: 100%; max-width: 1232px; min-height: 752px; display: flex; flex-wrap: wrap; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+
+<div style="flex: 0 0 240px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column">
+<dc-import name="Sidebar" selected="Containers" hint-size="240px,752px"></dc-import>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; margin-right: 6px">
+<span style="font-size: 15px; font-weight: 600">Containers</span>
+<span style="font-size: 11px; color: #6E6E73">4 running · 2 stopped</span>
+</div>
+<div role="group" aria-label="View" class="glass cap">
+<button class="seg on" aria-pressed="true">List</button>
+<a class="seg" href="Compose.dc.html">Compose groups</a>
+</div>
+<div style="flex: 1"></div>
+<div class="glass cap">
+<button class="ib" aria-label="Refresh"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></button>
+<button class="ib" aria-label="Sort"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M7 12h10M10 17h4"></path></svg></button>
+</div>
+<label class="glass cap" style="width: 200px; padding: 0 12px; gap: 6px">
+<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6E73" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+<span style="position: absolute; left: -9999px">Search containers</span>
+<input type="search" placeholder="Search" style="border: 0; background: transparent; outline: none; font-size: 13px; width: 100%; font-family: inherit">
+</label>
+<a href="RunContainer.dc.html" class="cap tint" style="padding: 0 14px; gap: 6px; font-size: 13px; font-weight: 500; text-decoration: none">
+<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Run container</a>
+</header>
+
+<main style="flex: 1; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+<div role="group" aria-label="Filter by state" class="glass cap">
+<sc-for list="{{segments}}" as="seg" hint-placeholder-count="3">
+<button class="{{seg.cls}}" onClick="{{seg.pick}}" aria-pressed="{{seg.active}}">{{seg.label}}</button>
+</sc-for>
+</div>
+<span style="font-size: 12px; color: #6E6E73">Live via Docker events</span>
+</div>
+
+<div class="card" style="overflow-x: auto">
+<div style="min-width: 760px">
+<div style="display: grid; grid-template-columns: 2fr 2fr 1.4fr 1.4fr 0.8fr 1fr 112px; gap: 12px; padding: 10px 16px; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 11px; font-weight: 600; color: #6E6E73; letter-spacing: 0.03em">
+<span>NAME</span><span>IMAGE</span><span>STATUS</span><span>PORTS</span><span>CPU</span><span>MEMORY</span><span style="text-align: center">ACTIONS</span>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+<div class="row" style="display: grid; grid-template-columns: 2fr 2fr 1.4fr 1.4fr 0.8fr 1fr 112px; gap: 12px; align-items: center; padding: 0 16px; height: 52px; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 13px">
+<div style="display: flex; flex-direction: column; min-width: 0">
+<a href="Detail.dc.html" style="color: #1D1D1F; font-weight: 500; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.name}}</a>
+<span style="font-size: 11px; color: #6E6E73; font-family: ui-monospace, Menlo, monospace">{{r.id}}</span>
+</div>
+<span style="color: #3A3A3C; font-family: ui-monospace, Menlo, monospace; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.image}}</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: {{r.statusColor}}; font-weight: 500"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: {{r.dot}}"></span>{{r.status}}</span>
+<span style="font-size: 12px; color: #0066CC; font-family: ui-monospace, Menlo, monospace">{{r.ports}}</span>
+<span style="font-size: 12px; color: #3A3A3C">{{r.cpu}}</span>
+<span style="font-size: 12px; color: #3A3A3C">{{r.mem}}</span>
+<div style="display: flex; justify-content: center; gap: 2px">
+<sc-if value="{{r.running}}" hint-placeholder-val="{{true}}">
+<button class="ib" aria-label="Stop" style="width: 28px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg></button>
+</sc-if>
+<sc-if value="{{r.stopped}}" hint-placeholder-val="{{false}}">
+<button class="ib" aria-label="Start" style="width: 28px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="#1E7F3C"><path d="M8 5v14l11-7z"></path></svg></button>
+</sc-if>
+<button class="ib" aria-label="Restart" style="width: 28px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></button>
+<button class="ib" aria-label="Remove" style="width: 28px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></button>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</main>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { filter: 'all' }; }
+  renderVals() {
+    const all = [
+      { name: 'postgres-dev', id: 'a3f91c2e7b10', image: 'postgres:16-alpine', state: 'running', status: 'Up 3 hours', ports: '5432→5432', cpu: '0.4%', mem: '86 MiB' },
+      { name: 'redis-cache', id: '7c02de44a91f', image: 'redis:7', state: 'running', status: 'Up 3 hours', ports: '6379→6379', cpu: '0.2%', mem: '12 MiB' },
+      { name: 'api-server', id: 'e81b3f0c55d2', image: 'myapp/api:latest', state: 'running', status: 'Up 12 min', ports: '8080→8080', cpu: '3.1%', mem: '214 MiB' },
+      { name: 'nginx-proxy', id: '1f9d07a6c3e8', image: 'nginx:1.27', state: 'running', status: 'Up 2 days', ports: '80→80, 443', cpu: '0.1%', mem: '9 MiB' },
+      { name: 'worker-jobs', id: '5b6e28d1f034', image: 'myapp/worker:latest', state: 'exited', status: 'Exited (1)', ports: '—', cpu: '—', mem: '—' },
+      { name: 'mailpit', id: '90ac4e1b72f6', image: 'axllent/mailpit', state: 'stopped', status: 'Exited (0)', ports: '—', cpu: '—', mem: '—' }
+    ];
+    const f = this.state.filter;
+    const rows = all
+      .filter((r) => f === 'all' || (f === 'running' ? r.state === 'running' : r.state !== 'running'))
+      .map((r) => ({
+        ...r,
+        running: r.state === 'running',
+        stopped: r.state !== 'running',
+        dot: r.state === 'running' ? '#28C840' : r.state === 'exited' ? '#E8590C' : '#AEAEB2',
+        statusColor: r.state === 'running' ? '#1E7F3C' : r.state === 'exited' ? '#B54708' : '#6E6E73'
+      }));
+    const segments = [['all', 'All (6)'], ['running', 'Running (4)'], ['stopped', 'Stopped (2)']].map(([id, label]) => ({
+      label,
+      active: f === id ? 'true' : 'false',
+      cls: f === id ? 'seg on' : 'seg',
+      pick: () => this.setState({ filter: id })
+    }));
+    return { rows, segments };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Container files</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+a{color:#0066CC}a:hover{color:#004C99}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.cap{box-sizing:border-box;height:34px;border-radius:17px;display:inline-flex;align-items:center;gap:2px;padding:0 3px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:34px;height:28px;border:0;border-radius:14px;background:transparent;color:#1D1D1F;cursor:pointer;padding:0;text-decoration:none}
+.ib:hover{background:rgba(0,0,0,0.06);color:#1D1D1F}
+.ib:disabled{opacity:0.35;cursor:default;background:transparent}
+.seg{height:28px;padding:0 12px;border:0;border-radius:14px;background:transparent;font-size:12px;font-family:inherit;color:#3A3A3C;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer}
+.seg:hover{color:#1D1D1F}
+.on{background:#FFFFFF;color:#1D1D1F;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.14)}
+.nav:hover{background:rgba(0,0,0,0.05)}
+.card{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px}
+.pill{box-sizing:border-box;height:30px;padding:0 12px;border:0;border-radius:15px;background:rgba(0,0,0,0.05);font-size:12px;font-family:inherit;color:#1D1D1F;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.pill:hover{background:rgba(0,0,0,0.09)}
+.pill-on{background:rgba(0,102,204,0.14);color:#0B4F8A}
+.crumb{border:0;background:transparent;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#3A3A3C;padding:3px 6px;border-radius:8px;cursor:pointer}
+.crumb:hover{background:rgba(0,0,0,0.06);color:#1D1D1F}
+.row{cursor:pointer}
+.row:hover{background:rgba(0,102,204,0.05)}
+.sel{background:rgba(0,102,204,0.10)}
+.sel:hover{background:rgba(0,102,204,0.12)}
+.k{font-size:11px;color:#6E6E73}
+.v{font-size:12px;font-family:ui-monospace,Menlo,monospace;color:#1D1D1F;text-align:right}
+</style>
+</helmet>
+<div style="min-height: 800px; box-sizing: border-box; padding: 24px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; justify-content: center">
+<div style="width: 100%; max-width: 1232px; min-height: 752px; display: flex; flex-wrap: wrap; background: #FBFBFD; border: 1px solid rgba(0,0,0,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22)">
+
+<div style="flex: 0 0 240px; background: #FFFFFF; border-right: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column">
+<dc-import name="Sidebar" selected="Containers" hint-size="240px,752px"></dc-import>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; flex-wrap: wrap">
+<div class="glass cap"><a class="ib" href="Main.dc.html" aria-label="Back to containers" style="width: 28px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a></div>
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 15px; font-weight: 600">api-server</span>
+<span style="font-size: 11px; color: #6E6E73; font-family: ui-monospace, Menlo, monospace">e81b3f0c55d2 · myapp/api:latest</span>
+</div>
+<span style="display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: #1E7F3C; background: #E7F6EC; padding: 4px 10px; border-radius: 999px"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: #28C840"></span>Up 12 min</span>
+<div style="flex: 1"></div>
+<div class="glass cap">
+<button class="ib" aria-label="Stop"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"></rect></svg></button>
+<button class="ib" aria-label="Restart"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></button>
+<a class="ib" href="Terminal.dc.html" aria-label="Open shell"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 17l6-5-6-5M12 19h8"></path></svg></a>
+</div>
+<div class="glass cap">
+<button class="ib" aria-label="Remove container"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></button>
+</div>
+</header>
+
+<div style="padding: 0 16px">
+<nav aria-label="Container views" class="glass cap">
+<a class="seg" href="Detail.dc.html">Logs</a>
+<a class="seg" href="LiveStats.dc.html">Stats</a>
+<a class="seg" href="Terminal.dc.html">Terminal</a>
+<a class="seg on" href="Files.dc.html" aria-current="page">Files</a>
+<a class="seg" href="Inspect.dc.html">Inspect</a>
+<a class="seg" href="Environment.dc.html">Environment</a>
+</nav>
+</div>
+
+<div style="flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 14px 16px 16px">
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+<div class="glass cap">
+<button class="ib" aria-label="Back" disabled="{{noBack}}" onClick="{{goBack}}" style="width: 30px"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></button>
+<button class="ib" aria-label="Enclosing folder" disabled="{{atRoot}}" onClick="{{goUp}}" style="width: 30px"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 11l6-6 6 6"></path></svg></button>
+<button class="ib" aria-label="Refresh" style="width: 30px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></button>
+</div>
+<nav aria-label="Path" class="cap" style="flex: 1; min-width: 220px; padding: 0 8px; gap: 0; background: rgba(0,0,0,0.05); overflow: hidden">
+<sc-for list="{{crumbs}}" as="c" hint-placeholder-count="3">
+<span style="display: inline-flex; align-items: center"><span style="color: #AEAEB2; font-size: 12px; padding: 0 1px">{{c.sep}}</span><button class="crumb" onClick="{{c.go}}" style="font-weight: {{c.weight}}">{{c.label}}</button></span>
+</sc-for>
+</nav>
+<label class="cap" style="width: 200px; padding: 0 12px; gap: 6px; background: rgba(0,0,0,0.05)">
+<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6E73" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+<span style="position: absolute; left: -9999px">Filter this folder</span>
+<input type="search" placeholder="Filter this folder" style="border: 0; background: transparent; outline: none; font-size: 13px; width: 100%; font-family: inherit">
+</label>
+<button class="{{hiddenCls}}" aria-pressed="{{hiddenPressed}}" onClick="{{toggleHidden}}">Hidden files</button>
+</div>
+
+<div style="flex: 1; display: flex; gap: 14px; min-height: 560px; flex-wrap: wrap">
+<div class="card" style="flex: 999 1 460px; min-width: 0; display: flex; flex-direction: column; overflow: hidden">
+<div style="display: grid; grid-template-columns: 1fr 80px 128px 96px; gap: 12px; padding: 10px 16px; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 11px; font-weight: 600; color: #6E6E73; letter-spacing: 0.03em">
+<span>NAME</span><span style="text-align: right">SIZE</span><span>MODIFIED</span><span>MODE</span>
+</div>
+<div role="listbox" aria-label="Folder contents" style="flex: 1; overflow: auto">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="10">
+<div role="option" aria-selected="{{r.selected}}" class="{{r.cls}}" onClick="{{r.pick}}" onDoubleClick="{{r.open}}" style="display: grid; grid-template-columns: 1fr 80px 128px 96px; gap: 12px; align-items: center; padding: 0 16px; height: 34px; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 13px">
+<span style="display: flex; align-items: center; gap: 8px; min-width: 0">
+<sc-if value="{{r.isDir}}" hint-placeholder-val="{{true}}">
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="#5AC8FA" stroke="#3BA9DB" stroke-width="1"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2h8.4A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"></path></svg>
+</sc-if>
+<sc-if value="{{r.isFile}}" hint-placeholder-val="{{false}}">
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" stroke="#8E8E93" stroke-width="1.6" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v4h4" fill="none"></path></svg>
+</sc-if>
+<sc-if value="{{r.isLink}}" hint-placeholder-val="{{false}}">
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"></path><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"></path></svg>
+</sc-if>
+<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: {{r.nameColor}}">{{r.name}}</span>
+<span style="font-size: 11px; color: #8E8E93; white-space: nowrap">{{r.target}}</span>
+</span>
+<span style="font-size: 12px; color: #6E6E73; text-align: right">{{r.size}}</span>
+<span style="font-size: 12px; color: #6E6E73">{{r.modified}}</span>
+<span style="font-size: 12px; color: #6E6E73; font-family: ui-monospace, Menlo, monospace">{{r.mode}}</span>
+</div>
+</sc-for>
+</div>
+<div style="padding: 8px 16px; border-top: 1px solid rgba(0,0,0,0.06); font-size: 11px; color: #6E6E73">{{summary}}</div>
+</div>
+
+<aside aria-label="Preview" class="card" style="flex: 1 1 300px; max-width: 380px; display: flex; flex-direction: column; overflow: hidden">
+<div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid rgba(0,0,0,0.06)">
+<span style="font-size: 14px; font-weight: 600; font-family: ui-monospace, Menlo, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{p.name}}</span>
+<div style="display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: baseline">
+<span class="k">Kind</span><span class="v">{{p.kind}}</span>
+<span class="k">Size</span><span class="v">{{p.size}}</span>
+<span class="k">Modified</span><span class="v">{{p.modified}}</span>
+<span class="k">Mode</span><span class="v">{{p.mode}}</span>
+<span class="k">Owner</span><span class="v">{{p.owner}}</span>
+</div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<button class="pill"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>{{p.downloadLabel}}</button>
+<button class="pill"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg>Copy path</button>
+<a class="pill" href="Terminal.dc.html" style="text-decoration: none"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 17l6-5-6-5M12 19h8"></path></svg>Shell here</a>
+</div>
+</div>
+<sc-if value="{{p.hasText}}" hint-placeholder-val="{{true}}">
+<pre aria-label="File contents" style="flex: 1; margin: 0; background: #1C1C1E; color: #E5E5EA; padding: 14px 16px; font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; line-height: 1.6; overflow: auto; white-space: pre">{{p.text}}</pre>
+</sc-if>
+<sc-if value="{{p.noText}}" hint-placeholder-val="{{false}}">
+<div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center; font-size: 12px; color: #6E6E73">{{p.note}}</div>
+</sc-if>
+</aside>
+</div>
+
+<p style="margin: 0; font-size: 12px; color: #6E6E73">Read-only · double-click a folder to open it · lists with <span style="font-family: ui-monospace, Menlo, monospace">docker exec</span>, downloads through the archive API · previews show the first 256 KB of text files</p>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { path: '/app', history: ['/'], selected: 'package.json', hidden: false };
+  }
+  fs() {
+    const d = (name, modified, items) => ({ name, dir: true, size: '—', modified, mode: 'drwxr-xr-x', owner: 'root:root', items });
+    const f = (name, size, modified, text, mode) => ({ name, dir: false, size, modified, mode: mode || '-rw-r--r--', owner: 'node:node', text });
+    const l = (name, target) => ({ name, link: true, target, size: '—', modified: 'Oct 2', mode: 'lrwxrwxrwx', owner: 'root:root' });
+    return {
+      '/': [d('app', 'Nov 1 10:30'), d('bin', 'Oct 2'), d('etc', 'Nov 1 10:30'), d('home', 'Oct 2'), l('lib64', '/usr/lib'), d('root', 'Nov 1 10:31'), d('tmp', 'Nov 1 10:42'), d('usr', 'Oct 2'), d('var', 'Oct 2')],
+      '/app': [
+        f('.env', '214 B', 'Nov 1 10:30', 'NODE_ENV=production\nPORT=8080\nDATABASE_URL=••••••', '-rw-------'),
+        f('.dockerignore', '38 B', 'Oct 30 18:02', 'node_modules\n.git\n*.log'),
+        d('dist', 'Nov 1 10:30'),
+        d('node_modules', 'Nov 1 10:31'),
+        d('src', 'Nov 1 10:30'),
+        f('package.json', '612 B', 'Oct 30 18:02', '{\n  "name": "api",\n  "version": "2.4.1",\n  "private": true,\n  "main": "dist/server.js",\n  "scripts": {\n    "start": "node dist/server.js",\n    "build": "tsc -p .",\n    "test": "vitest run"\n  },\n  "dependencies": {\n    "express": "^4.21.1",\n    "pg": "^8.13.0",\n    "redis": "^4.7.0"\n  }\n}'),
+        f('package-lock.json', '84 KB', 'Oct 30 18:02', '{\n  "name": "api",\n  "version": "2.4.1",\n  "lockfileVersion": 3,\n  "requires": true,\n  "packages": {\n    "": {\n      "name": "api",\n      "version": "2.4.1"\n…'),
+        f('README.md', '1.2 KB', 'Oct 28 09:15', '# api\n\nREST API for the shop.\n\n## Run\n\n    npm start\n\nListens on $PORT (8080).'),
+        f('server.log', '18 MB', 'Nov 1 10:48', null)
+      ],
+      '/app/src': [d('routes', 'Nov 1 10:30'), f('db.ts', '1.9 KB', 'Oct 30 18:02', "import { Pool } from 'pg';\n\nexport const pool = new Pool({\n  connectionString: process.env.DATABASE_URL,\n  max: 10,\n});"), f('server.ts', '2.6 KB', 'Oct 30 18:02', "import express from 'express';\nimport { routes } from './routes';\n\nconst app = express();\napp.use(express.json());\napp.use('/api', routes);\n\napp.listen(process.env.PORT ?? 8080);")],
+      '/app/dist': [f('server.js', '41 KB', 'Nov 1 10:30', '"use strict";\nObject.defineProperty(exports, "__esModule", { value: true });\n…')],
+      '/app/node_modules': [d('express', 'Nov 1 10:31'), d('pg', 'Nov 1 10:31'), d('redis', 'Nov 1 10:31')],
+      '/etc': [f('hostname', '13 B', 'Nov 1 10:30', 'e81b3f0c55d2'), f('hosts', '174 B', 'Nov 1 10:30', '127.0.0.1\tlocalhost\n172.17.0.4\te81b3f0c55d2'), f('os-release', '398 B', 'Oct 2', 'NAME="Alpine Linux"\nID=alpine\nVERSION_ID=3.20.3')],
+      '/tmp': []
+    };
+  }
+  renderVals() {
+    const { path, history, selected, hidden } = this.state;
+    const fs = this.fs();
+    const all = fs[path] || [];
+    const entries = all.filter((e) => hidden || !e.name.startsWith('.'));
+    const go = (p) => () => this.setState({ path: p, history: [...this.state.history, this.state.path], selected: null });
+    const child = (name) => (path === '/' ? '' : path) + '/' + name;
+    const rows = entries.map((e) => {
+      const isSel = e.name === selected;
+      return {
+        name: e.name,
+        isDir: !!e.dir, isFile: !e.dir && !e.link, isLink: !!e.link,
+        target: e.link ? '→ ' + e.target : '',
+        nameColor: e.name.startsWith('.') ? '#6E6E73' : '#1D1D1F',
+        size: e.size, modified: e.modified, mode: e.mode,
+        selected: isSel ? 'true' : 'false',
+        cls: isSel ? 'row sel' : 'row',
+        pick: () => this.setState({ selected: e.name }),
+        open: e.dir ? go(child(e.name)) : () => this.setState({ selected: e.name })
+      };
+    });
+    const parts = path.split('/').filter(Boolean);
+    const crumbs = [{ label: '/', sep: '', go: go('/'), weight: parts.length === 0 ? '600' : '400' }].concat(parts.map((part, i) => ({
+      label: part, sep: i === 0 ? '' : '/', go: go('/' + parts.slice(0, i + 1).join('/')), weight: i === parts.length - 1 ? '600' : '400'
+    })));
+    const sel = all.find((e) => e.name === selected);
+    const folderName = parts.length ? parts[parts.length - 1] : '/';
+    let p;
+    if (!sel) {
+      p = { name: folderName, kind: 'Folder', size: entries.length + ' items', modified: '—', mode: 'drwxr-xr-x', owner: 'root:root', downloadLabel: 'Download folder…', hasText: false, noText: true, note: 'Select a file to preview it.' };
+    } else if (sel.dir) {
+      const n = (fs[child(sel.name)] || []).length;
+      p = { name: sel.name, kind: 'Folder', size: n + ' items', modified: sel.modified, mode: sel.mode, owner: sel.owner, downloadLabel: 'Download folder…', hasText: false, noText: true, note: 'Double-click to open this folder.' };
+    } else if (sel.link) {
+      p = { name: sel.name, kind: 'Symlink → ' + sel.target, size: '—', modified: sel.modified, mode: sel.mode, owner: sel.owner, downloadLabel: 'Download…', hasText: false, noText: true, note: 'Links point elsewhere in the container.' };
+    } else {
+      p = { name: sel.name, kind: 'File', size: sel.size, modified: sel.modified, mode: sel.mode, owner: sel.owner, downloadLabel: 'Download…', hasText: !!sel.text, noText: !sel.text, text: sel.text || '', note: 'Too large to preview (over 256 KB). Download it instead.' };
+    }
+    const hiddenCount = all.length - entries.length;
+    return {
+      rows, crumbs, p,
+      summary: entries.length + (entries.length === 1 ? ' item' : ' items') + (hiddenCount ? ' · ' + hiddenCount + ' hidden' : ''),
+      hiddenCls: hidden ? 'pill pill-on' : 'pill',
+      hiddenPressed: hidden ? 'true' : 'false',
+      toggleHidden: () => this.setState({ hidden: !this.state.hidden }),
+      atRoot: path === '/',
+      noBack: history.length === 0,
+      goUp: () => go('/' + parts.slice(0, -1).join('/'))(),
+      goBack: () => {
+        const h = this.state.history;
+        if (!h.length) return;
+        this.setState({ path: h[h.length - 1], history: h.slice(0, -1), selected: null });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
