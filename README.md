@@ -5,7 +5,8 @@
 <h1 align="center">ColiUI</h1>
 
 <p align="center">
-  A native, lightweight Mac app for <a href="https://github.com/abiosoft/colima">Colima</a> and Docker.<br>
+  A native, lightweight Mac app for Docker — made for <a href="https://github.com/abiosoft/colima">Colima</a>,<br>
+  and it works with Docker Desktop, OrbStack and Rancher Desktop too.<br>
   Containers, logs, a terminal, images, volumes and networks — in a window and the menu bar.
 </p>
 
@@ -32,7 +33,25 @@
 2. Download `ColiUI-x.y.z.dmg` from the [latest release](https://github.com/Juan-Motta/coliui/releases/latest).
 3. Open it and drag **ColiUI** to **Applications**.
 
-ColiUI finds the engine by itself (Settings › General › Docker engine) and needs **macOS 26** or later. It's signed and notarized by Apple, and it updates itself: Settings › About › Updates, or **Check for Updates…** in the menus.
+ColiUI needs **macOS 26** or later on Apple silicon. It's signed and notarized by Apple.
+
+## Works with your Docker engine
+
+ColiUI finds the engine by itself: a `unix://` `DOCKER_HOST` if you set one, otherwise the first engine that answers, in this order.
+
+| Engine | What you get |
+| --- | --- |
+| **Colima** | Everything, plus the VM controls (start, stop, restart), Profiles, the VM disk size in Cleanup and an alert when the VM stops |
+| **Docker Desktop** | Everything that goes through Docker; start and stop it in Docker Desktop (**Open Docker Desktop** in the sidebar) |
+| **OrbStack** | The same, with **Open OrbStack** |
+| **Rancher Desktop** | The same, with **Open Rancher Desktop** |
+| **Custom socket** | Any Docker Engine socket you point it at |
+
+To pick one yourself: **Settings › General › Docker engine** (Automatic, an engine, or Custom socket…). The change applies the next time ColiUI opens.
+
+## Updates
+
+ColiUI checks for a new version once a day and shows it in **Settings › About › Updates** and the menu bar, with the release notes. **Install update** downloads it, verifies its signature and relaunches; your containers keep running. You can also check any time with **Check for Updates…** in the app menu or the menu bar, or turn the daily check off.
 
 ## What you can do
 
@@ -78,7 +97,7 @@ A shell inside the container, right in the app.
   </tr>
 </table>
 
-With Colima you also get the VM controls (start, stop, restart) and Profiles; Docker Desktop, OrbStack and Rancher Desktop keep starting and stopping in their own app. Images, volumes and networks have their own screens too, and Settings covers startup, notifications (a container that crashes or restart-loops, a VM that stops, a disk almost full), shortcuts and a light or dark theme.
+Images, volumes and networks have their own screens too, and Settings covers startup, notifications (a container that crashes or restart-loops, a VM that stops, a disk almost full), shortcuts and a light or dark theme.
 
 ## Build from source
 
