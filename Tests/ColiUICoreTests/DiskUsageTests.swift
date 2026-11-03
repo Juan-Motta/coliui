@@ -5,7 +5,7 @@ import Testing
 @Suite struct DiskUsageTests {
     static let dfWithUsage = """
     {"LayersSize":10301019904,
-     "Images":[{"Id":"sha256:aaaaaaaaaaaa1111","RepoTags":["ksg-cx-frontend:latest"],"Size":118667740,"SharedSize":93172486,"Containers":1},
+     "Images":[{"Id":"sha256:aaaaaaaaaaaa1111","RepoTags":["shop-frontend:latest"],"Size":118667740,"SharedSize":93172486,"Containers":1},
                {"Id":"sha256:bbbbbbbbbbbb2222","RepoTags":["old/tool:1.0"],"Size":500,"SharedSize":100,"Containers":0},
                {"Id":"sha256:cccccccccccc3333","RepoTags":[],"Size":300,"SharedSize":-1,"Containers":0}],
      "Containers":[{"Names":["/api"],"State":"running","SizeRw":16384},
