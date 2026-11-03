@@ -51,10 +51,10 @@ private final class SlowServer: @unchecked Sendable {
             $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { bind(fd, $0, socklen_t(MemoryLayout<sockaddr_un>.size)) }
         }
         guard bound == 0, listen(fd, 64) == 0 else { throw DockerError.connectionFailed("test server") }
-        let fd = fd
+        let listener = fd
         Thread.detachNewThread {
             while true {
-                let client = accept(fd, nil, nil)
+                let client = accept(listener, nil, nil)
                 guard client >= 0 else { return }
                 Thread.detachNewThread {
                     var buffer = [UInt8](repeating: 0, count: 4096)
