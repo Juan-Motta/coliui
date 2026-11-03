@@ -107,3 +107,7 @@ Sources/
 ```
 
 > On the macOS 27 SDK, SwiftUI's `@State` is a macro whose plugin ships only with Xcode. To keep the project buildable with the Command Line Tools, UI state lives in `@Observable` models instead of `@State`.
+
+## License
+
+[MIT](LICENSE). Security issues: see [SECURITY.md](SECURITY.md).
