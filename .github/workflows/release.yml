@@ -27,7 +27,9 @@ jobs:
           swift --version
 
       - name: Test
-        run: swift test
+        # Serial, with a short limit: on the 3-core runners one parallel run hung for 30 minutes.
+        timeout-minutes: 10
+        run: swift test --no-parallel
 
       - name: Import the Developer ID certificate
         env:
