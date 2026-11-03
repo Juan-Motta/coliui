@@ -111,8 +111,11 @@ private struct ReleaseNotesView: View {
                         ForEach(Array(section.items.enumerated()), id: \.offset) { _, item in
                             HStack(alignment: .firstTextBaseline, spacing: 6) {
                                 Text(verbatim: "•")
-                                (item.scope.map { Text(verbatim: "\($0): ").bold() } ?? Text(verbatim: ""))
-                                    + Text(verbatim: item.text)
+                                if let scope = item.scope {
+                                    Text("\(Text(verbatim: "\(scope): ").bold())\(item.text)")
+                                } else {
+                                    Text(verbatim: item.text)
+                                }
                             }
                             .font(.ui(12))
                             .foregroundStyle(Palette.tertiary)
