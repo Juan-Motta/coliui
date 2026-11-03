@@ -1,92 +1,101 @@
-# ColiUI
+<p align="center">
+  <img src="docs/images/icon.png" width="128" alt="ColiUI icon">
+</p>
 
-A native, lightweight macOS app for managing [Colima](https://github.com/abiosoft/colima) and its Docker containers — a window with a sidebar plus a menu bar extra.
+<h1 align="center">ColiUI</h1>
 
-## Requirements
+<p align="center">
+  A native, lightweight Mac app for <a href="https://github.com/abiosoft/colima">Colima</a> and Docker.<br>
+  Containers, logs, a terminal, images, volumes and networks — in a window and the menu bar.
+</p>
 
-- macOS 26 or later
-- Colima (`brew install colima`) with the Docker runtime
-- Swift 6.2+ (the Command Line Tools are enough; Xcode is optional)
+<p align="center">
+  <a href="https://github.com/Juan-Motta/coliui/releases/latest"><b>Download the latest release</b></a>
+</p>
 
-## Build and run
+<p align="center">
+  <img src="docs/images/containers.png" alt="The containers list: status, ports, CPU and memory per container">
+</p>
+
+> The screenshots come from the app's design canvas, which the app follows exactly.
+
+## Install
+
+1. Install Colima: `brew install colima`. ColiUI uses its Docker runtime, the default.
+2. Download `ColiUI-x.y.z.dmg` from the [latest release](https://github.com/Juan-Motta/coliui/releases/latest).
+3. Open it and drag **ColiUI** to **Applications**.
+
+ColiUI needs **macOS 26** or later. It's signed and notarized by Apple, and it updates itself: Settings › About › Updates, or **Check for Updates…** in the menus.
+
+## What you can do
+
+### Containers at a glance
+
+Every container with its status, ports, CPU and memory, updated live from Docker events. Filter by running or stopped, search, start, stop, restart or remove, and open a published port in the browser. Compose projects can be grouped, with start all and stop all.
+
+### Logs
+
+Live logs that open at the newest line. Filter by text or regex, follow, show timestamps, pick a time range, and export what you see.
+
+![Container logs with a filter, regex and a time range](docs/images/logs.png)
+
+### Terminal
+
+A shell inside the container, right in the app.
+
+![A shell inside a container](docs/images/terminal.png)
+
+### Everything else about a container
+
+| | |
+| --- | --- |
+| **Stats** — live CPU, memory, network and block I/O charts | **Files** — browse folders, preview files and download them |
+| ![Live stats](docs/images/stats.png) | ![Files](docs/images/files.png) |
+| **Environment** — variables from the image and the container, secrets masked | **Inspect** — the full `docker inspect` as a collapsible tree |
+| ![Environment](docs/images/environment.png) | ![Inspect](docs/images/inspect.png) |
+
+### Run, clean up and manage Colima
+
+| | |
+| --- | --- |
+| **Run a container** — image, name, ports, volumes, environment and restart policy | **Cleanup** — see what fills the VM disk and prune it |
+| ![Run container](docs/images/run-container.png) | ![Cleanup](docs/images/cleanup.png) |
+| **Profiles** — create, edit and delete Colima profiles | **Menu bar** — VM status and quick start and stop, without opening the window |
+| ![Profiles](docs/images/profiles.png) | ![Menu bar](docs/images/menu-bar.png) |
+
+Images, volumes and networks have their own screens too, and Settings covers startup, notifications (a container that crashes or restart-loops, a VM that stops, a disk almost full), shortcuts and a light or dark theme.
+
+## Build from source
+
+You need Swift 6.2 or later; the Command Line Tools are enough, Xcode is optional.
 
 ```bash
 swift run ColiUI          # run from source
 swift test                # run the test suite
-scripts/bundle.sh         # build build/ColiUI.app (release, ad-hoc signed)
+scripts/bundle.sh         # build build/ColiUI.app
 open build/ColiUI.app
-swift scripts/make-icon.swift   # regenerate Resources/AppIcon.icns from the Paper design
 ```
 
-## Releases
-
-`scripts/make-dmg.sh 0.2.0` builds `build/ColiUI-0.2.0.dmg` locally (ad-hoc signed unless the signing variables in the script are set). It needs [dmgbuild](https://pypi.org/project/dmgbuild/) (`pip install dmgbuild==1.6.7`, or point `DMGBUILD` at it), which lays out the installer window from `scripts/dmg-settings.py`. The window background comes from `swift scripts/make-dmg-background.swift`. `scripts/release-notes.sh v0.2.0` prints the notes for a tag: its commits since the previous published release, grouped into Features, Fixes, Performance, Refactoring and Other changes.
-
-Pushing a version tag publishes a release: `.github/workflows/release.yml` runs the tests, then builds, signs and notarizes the DMG, and creates the GitHub Release with the DMG and the notes.
-
 ```bash
-git tag v0.2.0
-git push origin v0.2.0
-```
-
-The workflow needs these repository secrets (Settings → Secrets and variables → Actions):
-
-| Secret | Value |
-| --- | --- |
-| `MACOS_CERTIFICATE_P12_BASE64` | Your *Developer ID Application* certificate and private key exported from Keychain Access as `.p12`, then `base64 -i cert.p12` |
-| `MACOS_CERTIFICATE_PASSWORD` | The password you set on that `.p12` export |
-| `APP_STORE_CONNECT_API_KEY_P8` | The full text of an App Store Connect API key file (`AuthKey_XXXX.p8`; Users and Access → Integrations → Team Keys, role *Developer*) |
-| `APP_STORE_CONNECT_KEY_ID` | That key's ID |
-| `APP_STORE_CONNECT_ISSUER_ID` | The issuer ID shown above the keys list |
-
-| `SPARKLE_PRIVATE_KEY` | The EdDSA private key that signs `appcast.xml` (see below) |
-
-The names and formats match the Loqui repository, so the same values work in both.
-
-### Updates
-
-ColiUI updates itself with [Sparkle](https://sparkle-project.org): Settings › About › Updates, "Check for Updates…" in the menus, and a daily check. Each release publishes `appcast.xml` next to the DMG; the app reads `releases/latest/download/appcast.xml` and installs an update only when its EdDSA signature matches `Resources/sparkle-public-key` and its Developer ID matches the installed app.
-
-One-time key setup (the private key never leaves your keychain and the repository secret):
-
-```bash
-swift package resolve
-.build/artifacts/sparkle/Sparkle/bin/generate_keys            # creates the key in your keychain, prints the public key
-.build/artifacts/sparkle/Sparkle/bin/generate_keys -p > Resources/sparkle-public-key
-.build/artifacts/sparkle/Sparkle/bin/generate_keys -x sparkle-private-key
-gh secret set SPARKLE_PRIVATE_KEY -R Juan-Motta/coliui < sparkle-private-key && rm sparkle-private-key
-```
-
-Builds without `Resources/sparkle-public-key` (or `SPARKLE_PUBLIC_KEY`) run with updates off; `SPARKLE_FEED_URL` points a test build at another feed. `scripts/make-appcast.sh` writes the appcast from the built app and DMG.
-
-## What works today
-
-- Colima status for the `default` profile, with start, stop and restart.
-- Containers list with All / Running / Stopped filter, search, start, stop, restart and remove (with confirmation).
-- Context menu: open a published port in the browser, copy the container ID or a `docker exec` command.
-- Container detail (click a name): live logs with filter, regex, follow, timestamps, time range, export and clear; overview, ports and mounts.
-- Menu bar extra with the VM status and quick start/stop per container.
-
-The list updates live from Docker events; CPU and memory refresh every 3 seconds (Colima every 15). Images, volumes, networks, settings and the other detail tabs are designed but not built yet.
-
-```bash
-COLIUI_LIVE=1 swift test   # also runs the tests that talk to your real Colima socket
+COLIUI_LIVE=1 swift test  # also runs the read-only tests against your real Colima socket
 ```
 
 `swift test --filter …` fails with the Command Line Tools (the Testing macro plugin isn't loaded); run the whole suite instead.
 
-## Architecture
+Releases, signing and updates: [docs/RELEASING.md](docs/RELEASING.md). Designs: [design/](design/README.md).
+
+## How it works
+
+ColiUI talks to the Docker Engine API directly over Colima's Unix socket (`~/.colima/<profile>/docker.sock`, or a `unix://` `DOCKER_HOST`), and to the `colima` CLI for the VM. No Docker CLI or Docker Desktop is needed.
 
 ```
 Sources/
   ColiUICore/            no third-party dependencies
-    Domain/              Container, ColimaInstance
-    Ports/               ContainerRepository, ColimaRuntime
-    Adapters/Docker/     HTTP/1.1 over the Colima Unix socket → Docker Engine API
-    Adapters/Colima/     `colima` CLI (list --json, start, stop, restart)
+    Domain/              containers, images, logs, stats, profiles, release notes
+    Ports/               what the app needs: repositories, streams, the Colima runtime
+    Adapters/Docker/     HTTP/1.1 over the Unix socket → Docker Engine API
+    Adapters/Colima/     the `colima` CLI
   ColiUI/                SwiftUI app: composition root, view models, views
 ```
-
-The Docker socket is `~/.colima/<profile>/docker.sock`, or a `unix://` `DOCKER_HOST` when set.
 
 > On the macOS 27 SDK, SwiftUI's `@State` is a macro whose plugin ships only with Xcode. To keep the project buildable with the Command Line Tools, UI state lives in `@Observable` models instead of `@State`.
