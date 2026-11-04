@@ -48,14 +48,19 @@ struct MenuBarView: View {
                 }
                 .padding(.horizontal, 6)
                 .padding(.top, 2)
+                // On a card like CPU, RAM and DISK so the list reads well over whatever is behind the glass.
                 VStack(spacing: 4) {
                     ForEach(list.groups) { group in
                         MenuBarGroup(group: group)
                     }
                     if containers.containers.isEmpty {
-                        Text("No containers").font(.ui(13)).foregroundStyle(Palette.sidebarSecondary).padding(.horizontal, 10)
+                        Text("No containers").font(.ui(13)).foregroundStyle(Palette.sidebarSecondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(10)
                     }
                 }
+                .padding(4)
+                .background(Palette.menuCard, in: .rect(cornerRadius: 14))
             }
 
             HStack(spacing: 8) {
