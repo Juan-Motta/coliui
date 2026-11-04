@@ -178,7 +178,11 @@ final class FakeColimaRuntime: ColimaRuntime, @unchecked Sendable {
     var instancesResult: [ColimaInstance]
     var error: Error?
 
+    var usage: ColimaResourceUsage?
+
     init(_ instances: [ColimaInstance]) { instancesResult = instances }
+
+    func resourceUsage(profile: String) async throws -> ColimaResourceUsage? { usage }
 
     var commands: [String] { lock.withLock { _commands } }
 

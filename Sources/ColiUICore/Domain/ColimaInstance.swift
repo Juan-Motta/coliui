@@ -29,6 +29,22 @@ public struct ColimaResourceUsage: Sendable, Equatable {
         self.diskTotalBytes = diskTotalBytes
     }
 
+    /// The last line of `ColimaCLIRuntime.resourceScript`: "12.50 used total diskUsed diskTotal".
+    public static func parse(_ output: String) -> ColimaResourceUsage? {
+        guard let line = output.split(whereSeparator: \.isNewline).last else { return nil }
+        let fields = line.split(whereSeparator: \.isWhitespace)
+        guard fields.count == 5, let cpu = Double(fields[0]), let used = Int64(fields[1]), let total = Int64(fields[2]),
+              let diskUsed = Int64(fields[3]), let diskTotal = Int64(fields[4]), total > 0, diskTotal > 0
+        else { return nil }
+        return ColimaResourceUsage(cpuPercent: min(max(cpu, 0), 100), memoryUsedBytes: used, memoryTotalBytes: total,
+                                   diskUsedBytes: diskUsed, diskTotalBytes: diskTotal)
+    }
+
+    /// Memory used, 0…1.
+    public var memoryLevel: Double { Double(memoryUsedBytes) / Double(max(memoryTotalBytes, 1)) }
+    /// Disk used, 0…1.
+    public var diskLevel: Double { min(max(Double(diskUsedBytes) / Double(max(diskTotalBytes, 1)), 0), 1) }
+
     public var cpuDisplay: String { String(format: "%.0f%%", cpuPercent) }
     public var memoryDisplay: String {
         "\(ByteFormat.binary(memoryUsedBytes)) / \(ByteFormat.binary(memoryTotalBytes))"

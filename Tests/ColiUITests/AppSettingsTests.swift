@@ -160,3 +160,30 @@ private func freshDefaults() -> UserDefaults {
         #expect(runtime.commands.isEmpty)
     }
 }
+
+@MainActor
+@Suite struct ColimaUsageHistoryTests {
+    private static func instance(_ status: ColimaStatus) -> ColimaInstance {
+        ColimaInstance(name: "default", status: status, arch: "aarch64", cpus: 4, memoryBytes: 4 << 30, diskBytes: 100 << 30, runtime: "docker")
+    }
+
+    @Test func keepsTheLast24SamplesAndClearsThemWhenTheVMStops() async {
+        let runtime = FakeColimaRuntime([Self.instance(.running)])
+        runtime.usage = ColimaResourceUsage(cpuPercent: 50, memoryUsedBytes: 1 << 30, memoryTotalBytes: 4 << 30,
+                                            diskUsedBytes: 20 << 30, diskTotalBytes: 100 << 30)
+        let colima = ColimaViewModel(runtime: runtime, profile: "default")
+        await colima.refresh()
+        for _ in 0..<30 { await colima.refreshResourceUsage() }
+        #expect(colima.cpuHistory.count == 24)
+        #expect(colima.cpuHistory.last == 0.5)
+        #expect(colima.memoryHistory.last == 0.25)
+
+        // Stopped: no usage, and an old curve doesn't come back on the next start.
+        runtime.instancesResult = [Self.instance(.stopped)]
+        await colima.refresh()
+        await colima.refreshResourceUsage()
+        #expect(colima.resourceUsage == nil)
+        #expect(colima.cpuHistory.isEmpty)
+        #expect(colima.memoryHistory.isEmpty)
+    }
+}

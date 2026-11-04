@@ -20,6 +20,8 @@ enum Palette {
 
     static let colimaCard = dynamic(rgb(0, 0, 0, 0.04), rgb(255, 255, 255, 0.08))
     static let colimaButton = dynamic(.white, rgb(255, 255, 255, 0.12))
+    /// MenuBar.dc.html cards on the popover glass: white at 70 %.
+    static let menuCard = dynamic(rgb(255, 255, 255, 0.7), rgb(255, 255, 255, 0.08))
     static let chip = dynamic(rgb(0, 0, 0, 0.06), rgb(255, 255, 255, 0.12))
     static let selected = dynamic(rgb(0, 102, 204, 0.14), rgb(77, 163, 255, 0.24))
     static let accent = dynamic(rgb(0x00, 0x66, 0xCC), rgb(0x4D, 0xA3, 0xFF))

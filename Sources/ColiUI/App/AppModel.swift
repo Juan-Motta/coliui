@@ -33,6 +33,8 @@ final class AppModel {
     var section: SidebarSection? = .containers
     /// Settings opens as a sheet over the main window.
     var isSettingsPresented = false
+    /// The menu bar's "Restart / Stop Colima?" or "Quit ColiUI?" question, while it's open.
+    var menuConfirmation: MenuConfirmation?
     private(set) var summary: DockerSummary?
     /// The open container detail, if any (shown in place of the list).
     private(set) var detail: ContainerDetailViewModel?

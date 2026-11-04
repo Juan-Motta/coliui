@@ -19,6 +19,10 @@ enum ColimaAction {
 final class ColimaViewModel {
     private(set) var instance: ColimaInstance?
     private(set) var resourceUsage: ColimaResourceUsage?
+    /// The menu bar charts: CPU and memory, 0…1, oldest first.
+    private(set) var cpuHistory: [Double] = []
+    private(set) var memoryHistory: [Double] = []
+    static let historyLength = 24
     private(set) var profileCount = 0
     private(set) var pendingAction: ColimaAction?
     var errorMessage: String?
@@ -39,9 +43,18 @@ final class ColimaViewModel {
     var isBusy: Bool { pendingAction != nil }
     var isRunning: Bool { instance?.isRunning ?? false }
 
+    /// One sample for the menu bar; a stopped VM clears the charts so an old curve doesn't return on start.
     func refreshResourceUsage() async {
-        guard isRunning else { resourceUsage = nil; return }
+        guard isRunning else {
+            resourceUsage = nil
+            cpuHistory = []
+            memoryHistory = []
+            return
+        }
         resourceUsage = try? await runtime.resourceUsage(profile: profile)
+        guard let resourceUsage else { return }
+        cpuHistory = Array((cpuHistory + [resourceUsage.cpuPercent / 100]).suffix(Self.historyLength))
+        memoryHistory = Array((memoryHistory + [resourceUsage.memoryLevel]).suffix(Self.historyLength))
     }
 
     func refresh() async {

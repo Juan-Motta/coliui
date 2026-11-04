@@ -70,23 +70,21 @@ public struct ColimaCLIRuntime: ColimaRuntime, ColimaVersionSource {
         candidatePaths.first(where: fileExists)
     }
 
+    /// Runs inside the VM and prints one line: CPU %, memory used and total, disk used and total (bytes).
+    /// CPU is sampled over one second from /proc/stat (iowait counts as idle). Disk is Colima's data disk,
+    /// where Docker keeps images, volumes and containers; the VM's root disk is much smaller.
+    static let resourceScript = #"""
+    sample() { read cpu u n s idle iow irq sirq steal rest < /proc/stat; echo $((u+n+s+idle+iow+irq+sirq+steal)) $((idle+iow)); }
+    set -- $(sample); total1=$1; idle1=$2
+    sleep 1
+    set -- $(sample); total2=$1; idle2=$2
+    awk -v t1="$total1" -v i1="$idle1" -v t2="$total2" -v i2="$idle2" '/^MemTotal:/ { total=$2*1024 } /^MemAvailable:/ { available=$2*1024 } END { cpu=(t2>t1 ? 100*(1-(i2-i1)/(t2-t1)) : 0); printf "%.2f %d %d ", cpu, total-available, total }' /proc/meminfo
+    { df -Pk /var/lib/docker 2>/dev/null || df -Pk /; } | awk 'END { printf "%d %d\n", $3*1024, $2*1024 }'
+    """#
+
     public func resourceUsage(profile: String) async throws -> ColimaResourceUsage? {
-        let script = #"""
-        read cpu u n s idle rest < /proc/stat
-        total1=$((u+n+s+idle))
-        idle1=$idle
-        sleep 1
-        read cpu u n s idle rest < /proc/stat
-        total2=$((u+n+s+idle))
-        idle2=$idle
-        awk -v t1="$total1" -v i1="$idle1" -v t2="$total2" -v i2="$idle2" '/^MemTotal:/ { total=$2*1024 } /^MemAvailable:/ { available=$2*1024 } END { cpu=(t2>t1 ? 100*(1-(i2-i1)/(t2-t1)) : 0); printf "%.2f %d %d ", cpu, total-available, total }' /proc/meminfo
-        df -Pk / | awk 'END { printf "%d %d\n", $3*1024, $2*1024 }'
-        """#
-        let output = try await execute(["ssh", "--profile", profile, "--", "sh", "-c", script], timeout: .seconds(10))
-        guard let line = output.split(whereSeparator: \.isNewline).last else { return nil }
-        let fields = line.split(whereSeparator: \.isWhitespace)
-        guard fields.count == 5, let cpu = Double(fields[0]), let used = Int64(fields[1]), let total = Int64(fields[2]), let diskUsed = Int64(fields[3]), let diskTotal = Int64(fields[4]), total > 0, diskTotal > 0 else { return nil }
-        return ColimaResourceUsage(cpuPercent: min(max(cpu, 0), 100), memoryUsedBytes: used, memoryTotalBytes: total, diskUsedBytes: diskUsed, diskTotalBytes: diskTotal)
+        let output = try await execute(["ssh", "--profile", profile, "--", "sh", "-c", Self.resourceScript], timeout: .seconds(10))
+        return ColimaResourceUsage.parse(output)
     }
 
     public func instances() async throws -> [ColimaInstance] {
