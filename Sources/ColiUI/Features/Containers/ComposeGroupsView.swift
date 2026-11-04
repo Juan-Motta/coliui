@@ -90,7 +90,13 @@ private struct GroupHeader: View {
             LineIcon(kind: .folder).icon(Palette.accent, size: 18)
 
             VStack(alignment: .leading, spacing: 0) {
-                Text(group.name).font(.ui(14, .semibold))
+                HStack(spacing: 6) {
+                    Text(group.name).font(.ui(14, .semibold))
+                    if !group.isStandalone {
+                        FavoriteStar(isOn: model.favorites.isFavorite(project: group.name), size: 16,
+                                     label: group.name) { model.toggleFavorite(project: group.name) }
+                    }
+                }
                 Text(group.configFile.map(abbreviate) ?? "not part of a Compose project")
                     .font(.mono(11))
                     .foregroundStyle(Palette.secondary)
@@ -145,7 +151,15 @@ private struct ServiceRow: View {
     var body: some View {
         let containers = model.containers
         let command = "docker exec -it \(container.shortID) sh"
+        let favorites = model.favorites
+        let byProject = container.composeProject.map(favorites.isFavorite(project:)) == true
         HStack(spacing: GroupColumns.gap) {
+            // Favorites.dc.html: the star sits in the row's leading gutter.
+            FavoriteStar(isOn: favorites.contains(container), size: 15, label: container.name,
+                         disabledHelp: byProject ? "Starred with \(container.composeProject ?? "")" : nil) {
+                model.toggleFavorite(container)
+            }
+            .disabled(byProject)
             Circle().fill(container.statusTint).frame(width: 8, height: 8)
                 .frame(width: GroupColumns.dot, alignment: .leading)
 
@@ -208,9 +222,11 @@ private struct ServiceRow: View {
             }
             .frame(width: GroupColumns.actions, alignment: .trailing)
         }
-        .padding(.leading, GroupColumns.leading)
+        // The 28 pt star plus the gap fill the 44 pt gutter, so the dot keeps its column.
+        .padding(.leading, GroupColumns.leading - 28 - GroupColumns.gap)
         .padding(.trailing, GroupColumns.trailing)
         .frame(height: 48)
+        .background(favorites.contains(container) ? Palette.favoriteWash : .clear)
         .rowWash(isSelected: containers.selectedID == container.id)
         .overlay(alignment: .top) { Palette.rowDivider.frame(height: 1) }
         .contentShape(.rect)
@@ -221,6 +237,28 @@ private struct ServiceRow: View {
         }
         .help("Show logs and details of \(container.name)")
         .contextMenu { ContainerMenu(container: container) }
+    }
+}
+
+/// Favorites.dc.html star: gold when on, a grey outline otherwise.
+struct FavoriteStar: View {
+    let isOn: Bool
+    let size: CGFloat
+    let label: String
+    var disabledHelp: String? = nil
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: isOn ? "star.fill" : "star")
+                .font(.system(size: size * 0.8, weight: .medium))
+                .foregroundStyle(isOn ? Palette.favorite : Palette.grayDot)
+                .frame(width: 28, height: 28)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .help(disabledHelp ?? (isOn ? "Remove \(label) from favorites" : "Add \(label) to favorites"))
+        .accessibilityLabel(isOn ? "Remove \(label) from favorites" : "Add \(label) to favorites")
     }
 }
 

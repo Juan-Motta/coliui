@@ -104,7 +104,7 @@ final class AppSettings {
     private enum Key {
         static let startColima = "startColimaOnOpen", showInDock = "showInDock", profile = "defaultProfile"
         static let socket = "socketPath", stats = "statsInterval", theme = "theme", notifications = "notifications"
-        static let engine = "engine"
+        static let engine = "engine", menuBarLimit = "menuBarLimit", favorites = "favorites"
     }
 
     static let defaultNotifications: Set<NotificationKind> = [.containerCrashed, .restartLoop, .colimaStopped, .diskAlmostFull]
@@ -118,6 +118,12 @@ final class AppSettings {
     /// The socket for Engine › Custom socket. Applies the next time ColiUI opens.
     var socketPath: String { didSet { defaults.set(socketPath, forKey: Key.socket) } }
     var statsInterval: StatsInterval { didSet { defaults.set(statsInterval.rawValue, forKey: Key.stats) } }
+    /// Settings › General › Menu bar › Containers to show.
+    var menuBarLimit: MenuBarLimit { didSet { defaults.set(menuBarLimit.rawValue, forKey: Key.menuBarLimit) } }
+    /// Favorites per engine and Colima profile ("colima/default"); container names repeat across them.
+    private var favoritesByScope: [String: ContainerFavorites] {
+        didSet { defaults.set(try? JSONEncoder().encode(favoritesByScope), forKey: Key.favorites) }
+    }
     var theme: AppTheme { didSet { defaults.set(theme.rawValue, forKey: Key.theme) } }
     private(set) var notifications: Set<NotificationKind> {
         didSet { defaults.set(notifications.map(\.rawValue).sorted(), forKey: Key.notifications) }
@@ -142,6 +148,9 @@ final class AppSettings {
             ?? (savedSocket.trimmingCharacters(in: .whitespaces).isEmpty ? .automatic : .custom)
         statsInterval = defaults.string(forKey: Key.stats).flatMap(StatsInterval.init) ?? .twoSeconds
         theme = defaults.string(forKey: Key.theme).flatMap(AppTheme.init) ?? .system
+        menuBarLimit = defaults.string(forKey: Key.menuBarLimit).flatMap(MenuBarLimit.init) ?? .eight
+        favoritesByScope = defaults.data(forKey: Key.favorites)
+            .flatMap { try? JSONDecoder().decode([String: ContainerFavorites].self, from: $0) } ?? [:]
         notifications = (defaults.stringArray(forKey: Key.notifications)?.compactMap(NotificationKind.init))
             .map(Set.init) ?? Self.defaultNotifications
     }
@@ -162,6 +171,18 @@ final class AppSettings {
                 }
             }
         }
+    }
+
+    func favorites(scope: String) -> ContainerFavorites {
+        favoritesByScope[scope] ?? ContainerFavorites()
+    }
+
+    func toggleFavorite(container name: String, scope: String) {
+        favoritesByScope[scope, default: ContainerFavorites()].toggle(container: name)
+    }
+
+    func toggleFavorite(project name: String, scope: String) {
+        favoritesByScope[scope, default: ContainerFavorites()].toggle(project: name)
     }
 
     func isEnabled(_ kind: NotificationKind) -> Bool {

@@ -31,18 +31,26 @@ struct MenuBarView: View {
             }
 
             if model.isEngineRunning {
+                let list = model.menuBarList
                 HStack {
-                    caption("CONTAINERS")
+                    HStack(spacing: 5) {
+                        if list.kind == .favorites {
+                            Image(systemName: "star.fill").font(.system(size: 9)).foregroundStyle(Palette.favorite)
+                        }
+                        caption(list.kind == .favorites ? "FAVORITES" : "CONTAINERS")
+                    }
                     Spacer()
-                    Text("\(containers.runningCount) of \(containers.containers.count) running")
+                    Text(list.kind == .favorites
+                         ? "\(list.shownCount) running"
+                         : "\(containers.runningCount) of \(containers.containers.count) running")
                         .font(.ui(11))
                         .foregroundStyle(Palette.sidebarSecondary)
                 }
                 .padding(.horizontal, 6)
                 .padding(.top, 2)
-                VStack(spacing: 2) {
-                    ForEach(containers.containers.prefix(8)) { container in
-                        MenuBarContainerRow(container: container)
+                VStack(spacing: 4) {
+                    ForEach(list.groups) { group in
+                        MenuBarGroup(group: group)
                     }
                     if containers.containers.isEmpty {
                         Text("No containers").font(.ui(13)).foregroundStyle(Palette.sidebarSecondary).padding(.horizontal, 10)
@@ -425,7 +433,74 @@ private struct MetricTile: View {
     }
 }
 
-/// `.mi`: 36 pt row with the state dot, name and status, and a round start or stop button.
+/// One Compose project (or Standalone) in the popover: fold arrow, icon, name, running / total, and the
+/// project's Restart all / Stop all (Start all when nothing runs); its containers below, indented.
+private struct MenuBarGroup: View {
+    @Environment(AppModel.self) private var model
+    let group: ComposeGroup
+
+    var body: some View {
+        let containers = model.containers
+        let isOpen = !model.menuCollapsedGroups.contains(group.id)
+        let running = group.runningCount
+        let total = group.containers.count
+        VStack(spacing: 2) {
+            Hoverable { hovered in
+                HStack(spacing: 8) {
+                    Button { model.toggleMenuGroup(group.id) } label: {
+                        LineIcon(kind: .chevronRight).icon(Palette.sidebarSecondary, size: 11, svgStrokeWidth: 2.6)
+                            .rotationEffect(.degrees(isOpen ? 90 : 0))
+                    }
+                    .buttonStyle(MenuRoundStyle(side: 20, filled: false))
+                    .help(isOpen ? "Collapse \(group.name)" : "Expand \(group.name)")
+                    if group.isStandalone {
+                        LineIcon(kind: .containers).icon(Palette.sidebarSecondary, size: 15)
+                    } else {
+                        LineIcon(kind: .folder).icon(Palette.accent, size: 15)
+                    }
+                    Text(group.name).font(.ui(13, .semibold)).lineLimit(1).truncationMode(.middle)
+                    Spacer(minLength: 4)
+                    Text(verbatim: "\(running) / \(total)")
+                        .font(.ui(11, .semibold))
+                        .monospacedDigit()
+                        .foregroundStyle(running == 0 ? Palette.secondary : running < total ? Palette.orangeText : Palette.greenText)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(running == 0 ? Palette.field : running < total ? Palette.orangePill : Palette.greenPill, in: .capsule)
+                    if !group.isStandalone {
+                        if running > 0 {
+                            Button { Task { await containers.perform(.restart, on: group) } } label: {
+                                LineIcon(kind: .refresh).icon(Palette.text, size: 13, svgStrokeWidth: 2.2)
+                            }
+                            .help("Restart all in \(group.name)")
+                            Button { Task { await containers.perform(.stopAll, on: group) } } label: {
+                                RoundedRectangle(cornerRadius: 1.5).fill(Palette.text).frame(width: 9, height: 9)
+                            }
+                            .help("Stop all in \(group.name)")
+                        } else {
+                            Button { Task { await containers.perform(.startAll, on: group) } } label: {
+                                Image(systemName: "play.fill").font(.system(size: 10)).foregroundStyle(Palette.greenText)
+                            }
+                            .help("Start all in \(group.name)")
+                        }
+                    }
+                }
+                .buttonStyle(MenuRoundStyle(side: 28, filled: false))
+                .padding(.leading, 6)
+                .padding(.trailing, 4)
+                .frame(height: 32)
+                .background(hovered ? Palette.hoverSubtle : .clear, in: .rect(cornerRadius: 10))
+            }
+            if isOpen {
+                ForEach(group.containers) { container in
+                    MenuBarContainerRow(container: container)
+                }
+            }
+        }
+    }
+}
+
+/// `.mi`: 36 pt row with the state dot, name and status, and Restart + Stop (or Start).
 private struct MenuBarContainerRow: View {
     @Environment(AppModel.self) private var model
     let container: Container
@@ -436,13 +511,18 @@ private struct MenuBarContainerRow: View {
             HStack(spacing: 10) {
                 Circle().fill(container.statusTint).frame(width: 8, height: 8)
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(container.name).font(.ui(13, .medium)).lineLimit(1)
+                    Text(container.composeService ?? container.name).font(.ui(13, .medium)).lineLimit(1)
                     Text(container.status).font(.ui(11)).foregroundStyle(Palette.sidebarSecondary).lineLimit(1)
                 }
                 Spacer(minLength: 4)
                 if containers.busyIDs.contains(container.id) {
                     ProgressView().controlSize(.small).frame(width: 30, height: 30)
                 } else if container.isRunning {
+                    Button { Task { await containers.perform(.restart, on: container) } } label: {
+                        LineIcon(kind: .refresh).icon(Palette.text, size: 13, svgStrokeWidth: 2.2)
+                    }
+                    .buttonStyle(MenuRoundStyle(side: 30, filled: false))
+                    .help("Restart \(container.name)")
                     Button { Task { await containers.perform(.stop, on: container) } } label: {
                         RoundedRectangle(cornerRadius: 1.5).fill(Palette.text).frame(width: 9, height: 9)
                     }
@@ -456,7 +536,7 @@ private struct MenuBarContainerRow: View {
                     .help("Start \(container.name)")
                 }
             }
-            .padding(.leading, 10)
+            .padding(.leading, 34)
             .padding(.trailing, 4)
             .frame(height: 36)
             .background(hovered ? Palette.hoverSubtle : .clear, in: .rect(cornerRadius: 10))

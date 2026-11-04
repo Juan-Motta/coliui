@@ -454,6 +454,11 @@ struct ContainerMenu: View {
         }
         Button("Restart") { Task { await containers.perform(.restart, on: container) } }
         Divider()
+        Button(model.favorites.contains(container) ? "Remove from Favorites" : "Add to Favorites") {
+            model.toggleFavorite(container)
+        }
+        .disabled(container.composeProject.map(model.favorites.isFavorite(project:)) == true)
+        Divider()
         Button("Copy Container ID") { Clipboard.copy(container.id) }
         Button("Copy “docker exec -it \(container.shortID) sh”") { Clipboard.copy("docker exec -it \(container.shortID) sh") }
         Divider()

@@ -43,6 +43,22 @@ struct ComposeGroup: Identifiable {
 
     var isStandalone: Bool { id == Self.standaloneID }
     var runningCount: Int { containers.filter(\.isRunning).count }
+
+    /// Compose projects by name (members by service), then the standalone containers.
+    static func grouped(_ containers: [Container], standaloneName: String) -> [ComposeGroup] {
+        let byProject = Dictionary(grouping: containers.filter { $0.composeProject != nil }) { $0.composeProject! }
+        var groups = byProject.keys.sorted { $0.localizedStandardCompare($1) == .orderedAscending }.map { project in
+            let members = byProject[project]!.sorted {
+                ($0.composeService ?? $0.name).localizedStandardCompare($1.composeService ?? $1.name) == .orderedAscending
+            }
+            return ComposeGroup(id: project, name: project, configFile: members.first?.composeConfigFile, containers: members)
+        }
+        let standalone = containers.filter { $0.composeProject == nil }
+        if !standalone.isEmpty {
+            groups.append(ComposeGroup(id: standaloneID, name: standaloneName, configFile: nil, containers: standalone))
+        }
+        return groups
+    }
 }
 
 @MainActor
@@ -82,19 +98,7 @@ final class ContainersViewModel {
     /// Compose projects by name, then standalone containers. Search applies; the state filter
     /// belongs to the list view and doesn't.
     var composeGroups: [ComposeGroup] {
-        let matching = containers.filter(matchesSearch)
-        let byProject = Dictionary(grouping: matching.filter { $0.composeProject != nil }) { $0.composeProject! }
-        var groups = byProject.keys.sorted { $0.localizedStandardCompare($1) == .orderedAscending }.map { project in
-            let members = byProject[project]!.sorted {
-                ($0.composeService ?? $0.name).localizedStandardCompare($1.composeService ?? $1.name) == .orderedAscending
-            }
-            return ComposeGroup(id: project, name: project, configFile: members.first?.composeConfigFile, containers: members)
-        }
-        let standalone = matching.filter { $0.composeProject == nil }
-        if !standalone.isEmpty {
-            groups.append(ComposeGroup(id: ComposeGroup.standaloneID, name: "Standalone containers", configFile: nil, containers: standalone))
-        }
-        return groups
+        ComposeGroup.grouped(containers.filter(matchesSearch), standaloneName: "Standalone containers")
     }
 
     func toggleGroup(_ id: String) {

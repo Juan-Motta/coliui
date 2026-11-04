@@ -20,6 +20,9 @@ enum Palette {
 
     static let colimaCard = dynamic(rgb(0, 0, 0, 0.04), rgb(255, 255, 255, 0.08))
     static let colimaButton = dynamic(.white, rgb(255, 255, 255, 0.12))
+    /// Favorites.dc.html star.
+    static let favorite = dynamic(rgb(0xE8, 0xA3, 0x17), rgb(0xFF, 0xC4, 0x3D))
+    static let favoriteWash = dynamic(rgb(232, 163, 23, 0.06), rgb(255, 196, 61, 0.08))
     /// MenuBar.dc.html cards on the popover glass: white at 70 %.
     static let menuCard = dynamic(rgb(255, 255, 255, 0.7), rgb(255, 255, 255, 0.08))
     static let chip = dynamic(rgb(0, 0, 0, 0.06), rgb(255, 255, 255, 0.12))

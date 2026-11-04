@@ -169,6 +169,24 @@ private struct GeneralSettings: View {
                     .padding(.horizontal, 6)
             }
 
+            VStack(alignment: .leading, spacing: 6) {
+                SettingsSection("Menu bar") {
+                    SettingsRow {
+                        Text("Containers to show")
+                        Spacer()
+                        CapsuleSegmented(
+                            options: MenuBarLimit.allCases.map { SegmentOption(value: $0, title: $0.rawValue) },
+                            selection: $settings.menuBarLimit,
+                            style: .field
+                        )
+                    }
+                }
+                Text("Favorites always show in full; the limit applies when none is running.")
+                    .font(.ui(11))
+                    .foregroundStyle(Palette.secondary)
+                    .padding(.horizontal, 6)
+            }
+
             SettingsSection("Startup") {
                 SwitchRow("Launch ColiUI at login", isOn: $settings.launchAtLogin)
                 if let error = settings.loginItemError {

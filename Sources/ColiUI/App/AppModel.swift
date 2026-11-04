@@ -35,6 +35,8 @@ final class AppModel {
     var isSettingsPresented = false
     /// The menu bar's "Restart / Stop Colima?" or "Quit ColiUI?" question, while it's open.
     var menuConfirmation: MenuConfirmation?
+    /// Groups folded in the menu bar popover (not saved).
+    private(set) var menuCollapsedGroups: Set<String> = []
     private(set) var summary: DockerSummary?
     /// The open container detail, if any (shown in place of the list).
     private(set) var detail: ContainerDetailViewModel?
@@ -416,6 +418,30 @@ final class AppModel {
         case .light: NSAppearance(named: .aqua)
         case .dark: NSAppearance(named: .darkAqua)
         }
+    }
+
+    /// Favorites belong to an engine and Colima profile: the same container names repeat across them.
+    var favoritesScope: String {
+        usesColima ? "colima/\(colima.profile)" : engineKind.rawValue
+    }
+
+    var favorites: ContainerFavorites { settings.favorites(scope: favoritesScope) }
+
+    func toggleFavorite(_ container: Container) {
+        settings.toggleFavorite(container: container.name, scope: favoritesScope)
+    }
+
+    func toggleFavorite(project: String) {
+        settings.toggleFavorite(project: project, scope: favoritesScope)
+    }
+
+    /// Favorites.dc.html: running favorites, or the first containers up to Settings › Menu bar.
+    var menuBarList: MenuBarList {
+        .make(containers: containers.containers, favorites: favorites, limit: settings.menuBarLimit.count)
+    }
+
+    func toggleMenuGroup(_ id: String) {
+        if menuCollapsedGroups.remove(id) == nil { menuCollapsedGroups.insert(id) }
     }
 
     /// The engine in use: a custom socket or DOCKER_HOST is named from `/info` once the engine answers.
