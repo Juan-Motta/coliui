@@ -22,27 +22,7 @@ struct MenuBarView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                if model.usesColima {
-                    HStack(spacing: 8) {
-                        if colima.isRunning {
-                            Button { pendingConfirmation = .restart } label: {
-                                Image(systemName: "arrow.clockwise")
-                            }
-                            .help("Restart Colima")
-                            Button { pendingConfirmation = .stop } label: {
-                                Image(systemName: "stop.fill")
-                            }
-                            .help("Stop Colima")
-                        } else {
-                            Button { Task { await model.performColima(.start) } } label: {
-                                Image(systemName: "play.fill")
-                            }
-                            .help("Start Colima")
-                        }
-                    }
-                    .buttonStyle(.borderless)
-                    .disabled(colima.isBusy)
-                } else {
+                if !model.usesColima {
                     StatusBadge(title: model.isEngineRunning ? "Running" : "Not running",
                                 tint: model.isEngineRunning ? .green : .gray, isBusy: false)
                 }
@@ -77,7 +57,34 @@ struct MenuBarView: View {
                 }
             }
 
-            if model.usesColima, let instance = colima.instance {
+            if model.usesColima {
+                HStack {
+                    if colima.isRunning {
+                        Button { pendingConfirmation = .restart } label: {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                        .help("Restart Colima")
+                        Button { pendingConfirmation = .stop } label: {
+                            Image(systemName: "stop.fill")
+                        }
+                        .help("Stop Colima")
+                    } else {
+                        Button { Task { await model.performColima(.start) } } label: {
+                            Image(systemName: "play.fill")
+                        }
+                        .tint(.blue)
+                        .help("Start Colima")
+                    }
+                    Spacer()
+                    StatusBadge(title: colima.statusTitle,
+                                tint: colima.isRunning ? colima.statusTint : .red,
+                                isBusy: colima.isBusy)
+                }
+                .buttonStyle(.borderless)
+                .disabled(colima.isBusy)
+            }
+
+            if model.usesColima, colima.isRunning, let instance = colima.instance {
                 VStack(spacing: 8) {
                     HStack(spacing: 8) {
                         ResourceCard(title: "CPU", resource: "\(instance.cpus) cores",
