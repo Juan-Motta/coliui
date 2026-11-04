@@ -18,6 +18,7 @@ enum ColimaAction {
 @Observable
 final class ColimaViewModel {
     private(set) var instance: ColimaInstance?
+    private(set) var resourceUsage: ColimaResourceUsage?
     private(set) var profileCount = 0
     private(set) var pendingAction: ColimaAction?
     var errorMessage: String?
@@ -37,6 +38,11 @@ final class ColimaViewModel {
 
     var isBusy: Bool { pendingAction != nil }
     var isRunning: Bool { instance?.isRunning ?? false }
+
+    func refreshResourceUsage() async {
+        guard isRunning else { resourceUsage = nil; return }
+        resourceUsage = try? await runtime.resourceUsage(profile: profile)
+    }
 
     func refresh() async {
         do {
