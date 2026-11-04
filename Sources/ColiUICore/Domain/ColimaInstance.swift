@@ -14,6 +14,27 @@ public enum ColimaStatus: Sendable, Equatable {
     }
 }
 
+public struct ColimaResourceUsage: Sendable, Equatable {
+    public let cpuPercent: Double
+    public let memoryUsedBytes: Int64
+    public let memoryTotalBytes: Int64
+    public let diskUsedBytes: Int64
+    public let diskTotalBytes: Int64
+
+    public init(cpuPercent: Double, memoryUsedBytes: Int64, memoryTotalBytes: Int64, diskUsedBytes: Int64 = 0, diskTotalBytes: Int64 = 0) {
+        self.cpuPercent = cpuPercent
+        self.memoryUsedBytes = memoryUsedBytes
+        self.memoryTotalBytes = memoryTotalBytes
+        self.diskUsedBytes = diskUsedBytes
+        self.diskTotalBytes = diskTotalBytes
+    }
+
+    public var cpuDisplay: String { String(format: "%.0f%%", cpuPercent) }
+    public var memoryDisplay: String {
+        "\(ByteFormat.binary(memoryUsedBytes)) / \(ByteFormat.binary(memoryTotalBytes))"
+    }
+}
+
 public struct ColimaInstance: Identifiable, Sendable, Equatable {
     public let name: String
     public let status: ColimaStatus

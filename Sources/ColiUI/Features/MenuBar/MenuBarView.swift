@@ -5,6 +5,9 @@ import SwiftUI
 struct MenuBarView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openWindow) private var openWindow
+    @State private var cpuHistory: [Double] = []
+    @State private var memoryHistory: [Double] = []
+    @State private var pendingConfirmation: MenuConfirmation?
 
     var body: some View {
         let colima = model.colima
@@ -20,11 +23,36 @@ struct MenuBarView: View {
                 }
                 Spacer()
                 if model.usesColima {
-                    StatusBadge(title: colima.statusTitle, tint: colima.statusTint, isBusy: colima.isBusy)
+                    HStack(spacing: 8) {
+                        if colima.isRunning {
+                            Button { pendingConfirmation = .restart } label: {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                            .help("Restart Colima")
+                            Button { pendingConfirmation = .stop } label: {
+                                Image(systemName: "stop.fill")
+                            }
+                            .help("Stop Colima")
+                        } else {
+                            Button { Task { await model.performColima(.start) } } label: {
+                                Image(systemName: "play.fill")
+                            }
+                            .help("Start Colima")
+                        }
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(colima.isBusy)
                 } else {
                     StatusBadge(title: model.isEngineRunning ? "Running" : "Not running",
                                 tint: model.isEngineRunning ? .green : .gray, isBusy: false)
                 }
+                Button { pendingConfirmation = .quit } label: {
+                    Image(systemName: "xmark")
+                }
+                .help("Quit ColiUI")
+                .keyboardShortcut("q")
+                .buttonStyle(.glass)
+                .padding(.leading, 5)
             }
 
             if !model.usesColima {
@@ -50,27 +78,36 @@ struct MenuBarView: View {
             }
 
             if model.usesColima, let instance = colima.instance {
-                HStack(spacing: 8) {
-                    MetricTile(title: "CPU", value: "\(instance.cpus) cores")
-                    MetricTile(title: "Memory", value: instance.memoryDisplay)
-                    MetricTile(title: "Disk", value: instance.diskDisplay)
-                }
-            }
-
-            if model.usesColima {
-                HStack {
-                    if colima.isRunning {
-                        Button("Restart VM", systemImage: "arrow.clockwise") { Task { await model.performColima(.restart) } }
-                            .frame(maxWidth: .infinity)
-                        Button("Stop VM", systemImage: "stop.fill", role: .destructive) { Task { await model.performColima(.stop) } }
-                            .frame(maxWidth: .infinity)
-                    } else {
-                        Button("Start VM", systemImage: "play.fill") { Task { await model.performColima(.start) } }
-                            .buttonStyle(.glassProminent)
-                            .frame(maxWidth: .infinity)
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) {
+                        ResourceCard(title: "CPU", resource: "\(instance.cpus) cores",
+                                     usage: colima.resourceUsage?.cpuDisplay ?? "—",
+                                     level: (colima.resourceUsage?.cpuPercent ?? 0) / 100, history: cpuHistory)
+                        ResourceCard(title: "RAM", resource: instance.memoryDisplay,
+                                     usage: colima.resourceUsage.map { ByteFormat.binary($0.memoryUsedBytes) } ?? "—",
+                                     level: colima.resourceUsage.map { Double($0.memoryUsedBytes) / Double(max($0.memoryTotalBytes, 1)) } ?? 0,
+                                     history: memoryHistory)
                     }
+                    let disk = colima.resourceUsage
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text("DISK").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                            Spacer()
+                            Text(disk.map { "\(ByteFormat.binary($0.diskUsedBytes)) / \(ByteFormat.binary($0.diskTotalBytes))" } ?? "—")
+                                .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                        }
+                        GeometryReader { geometry in
+                            Capsule().fill(.quaternary)
+                                .overlay(alignment: .leading) {
+                                    Capsule().fill(.green.gradient)
+                                        .frame(width: geometry.size.width * min(max(disk.map { Double($0.diskUsedBytes) / Double(max($0.diskTotalBytes, 1)) } ?? 0, 0), 1))
+                                }
+                        }
+                        .frame(height: 6)
+                    }
+                    .padding(10)
+                    .background(.quaternary.opacity(0.35), in: .rect(cornerRadius: 12))
                 }
-                .disabled(colima.isBusy)
             }
 
             if model.isEngineRunning {
@@ -106,14 +143,152 @@ struct MenuBarView: View {
                     }
                     .buttonStyle(.borderless)
                 }
-                Button("Quit") { NSApp.terminate(nil) }
-                    .keyboardShortcut("q")
-                    .buttonStyle(.borderless)
             }
         }
         .padding(14)
         .frame(width: 320)
-        .task { model.startPolling() }
+        .overlay {
+            if let pendingConfirmation {
+                ZStack {
+                    Color.black.opacity(0.62)
+                    VStack(spacing: 12) {
+                        Text(pendingConfirmation.title).font(.headline)
+                        Text(pendingConfirmation.message)
+                            .font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                        HStack {
+                            Button("Cancel") { self.pendingConfirmation = nil }
+                                .keyboardShortcut(.cancelAction)
+                            Spacer()
+                            Button("Confirm", role: .destructive) {
+                                confirm(pendingConfirmation, model: model)
+                                self.pendingConfirmation = nil
+                            }
+                            .keyboardShortcut(.defaultAction)
+                        }
+                    }
+                    .padding(16)
+                    .frame(maxWidth: 260)
+                    .background(.regularMaterial, in: .rect(cornerRadius: 14))
+                }
+                .ignoresSafeArea()
+            }
+        }
+        .task {
+            model.startPolling()
+            while !Task.isCancelled {
+                await colima.refreshResourceUsage()
+                if let usage = colima.resourceUsage {
+                    cpuHistory.append(usage.cpuPercent / 100)
+                    memoryHistory.append(Double(usage.memoryUsedBytes) / Double(max(usage.memoryTotalBytes, 1)))
+                    cpuHistory = Array(cpuHistory.suffix(24))
+                    memoryHistory = Array(memoryHistory.suffix(24))
+                }
+                try? await Task.sleep(for: .seconds(3))
+            }
+        }
+    }
+
+    private func confirm(_ action: MenuConfirmation, model: AppModel) {
+        switch action {
+        case .restart: Task { await model.performColima(.restart) }
+        case .stop: Task { await model.performColima(.stop) }
+        case .quit: NSApp.terminate(nil)
+        }
+    }
+}
+
+private enum MenuConfirmation {
+    case restart, stop, quit
+    var title: String {
+        switch self {
+        case .restart: "Restart Colima?"
+        case .stop: "Stop Colima?"
+        case .quit: "Quit ColiUI?"
+        }
+    }
+    var message: String {
+        switch self {
+        case .restart: "This will restart the Colima VM."
+        case .stop: "Containers and services running in Colima will stop."
+        case .quit: "ColiUI will close. Your containers will keep running."
+        }
+    }
+}
+
+private struct ResourceCard: View {
+    let title: String
+    let resource: String
+    let usage: String
+    let level: Double
+    let history: [Double]
+
+    private var tint: Color {
+        Color(hue: 0.33 * (1 - min(max(level, 0), 1)), saturation: 0.78, brightness: 0.82)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Text(title).font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                Spacer()
+                Text(resource).font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
+            }
+            Text(usage).font(.callout.weight(.semibold).monospacedDigit())
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+        .padding(10)
+        .background {
+            GeometryReader { proxy in
+                if history.count > 1 {
+                    UsageArea(values: history)
+                        .fill(LinearGradient(colors: [tint.opacity(0.02), tint.opacity(0.42)], startPoint: .top, endPoint: .bottom))
+                        .overlay(alignment: .bottom) {
+                            UsageSparkline(values: history)
+                                .stroke(tint.opacity(0.9), style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.bottom, 4)
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                }
+            }
+        }
+        .background(.quaternary.opacity(0.5), in: .rect(cornerRadius: 12))
+        .clipShape(.rect(cornerRadius: 12))
+    }
+}
+
+private struct UsageArea: Shape {
+    var values: [Double]
+    func path(in rect: CGRect) -> Path {
+        guard values.count > 1 else { return Path() }
+        let line = UsageSparkline(values: values).path(in: rect)
+        var area = line
+        area.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        area.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        area.closeSubpath()
+        return area
+    }
+}
+
+private struct UsageSparkline: Shape {
+    var values: [Double]
+    func path(in rect: CGRect) -> Path {
+        guard values.count > 1 else { return Path() }
+        let points = values.enumerated().map { index, value in
+            CGPoint(x: rect.minX + rect.width * CGFloat(index) / CGFloat(values.count - 1),
+                    y: rect.maxY - rect.height * CGFloat(min(max(value, 0), 1)))
+        }
+        var path = Path()
+        path.move(to: points[0])
+        for index in 1..<points.count {
+            let previous = points[index - 1]
+            let current = points[index]
+            let midpoint = (previous.x + current.x) / 2
+            path.addQuadCurve(to: CGPoint(x: midpoint, y: (previous.y + current.y) / 2), control: previous)
+            path.addQuadCurve(to: current, control: current)
+        }
+        return path
     }
 }
 
