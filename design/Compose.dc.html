@@ -23,6 +23,8 @@ a{color:#0066CC}a:hover{color:#004C99}
 .card{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px}
 .pill{box-sizing:border-box;height:28px;padding:0 12px;border:0;border-radius:14px;background:rgba(0,0,0,0.05);font-size:12px;font-family:inherit;color:#1D1D1F;cursor:pointer;display:inline-flex;align-items:center;text-decoration:none}
 .pill:hover{background:rgba(0,0,0,0.09);color:#1D1D1F}
+.rb{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:14px;background:rgba(0,0,0,0.05);color:#1D1D1F;cursor:pointer;padding:0;text-decoration:none}
+.rb:hover{background:rgba(0,0,0,0.09);color:#1D1D1F}
 .mi{display:flex;align-items:center;gap:8px;height:28px;padding:0 10px;border:0;border-radius:7px;background:transparent;font-size:13px;font-family:inherit;color:#1D1D1F;cursor:pointer;text-align:left;width:100%}
 .mi:hover{background:#0A6FD6;color:#FFFFFF}
 </style>
@@ -70,10 +72,14 @@ a{color:#0066CC}a:hover{color:#004C99}
 </div>
 <span style="font-size: 12px; font-weight: 600; color: {{g.badgeColor}}; background: {{g.badgeBg}}; padding: 3px 10px; border-radius: 999px">{{g.summary}}</span>
 <div style="flex: 1"></div>
-<sc-if value="{{g.running}}" hint-placeholder-val="{{true}}"><button class="pill">Stop all</button></sc-if>
-<sc-if value="{{g.stopped}}" hint-placeholder-val="{{false}}"><button class="pill" style="color: #1E7F3C; font-weight: 600">Start all</button></sc-if>
-<button class="pill">Restart</button>
-<a href="ComposeEditor.dc.html" class="pill">Edit compose file</a>
+<div style="display: flex; gap: 12px; margin-right: 4px">
+<div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 9px; font-weight: 600; color: #6E6E73">CPU</span><span style="font-size: 11px; font-weight: 500; font-family: ui-monospace, Menlo, monospace">{{g.cpu}}</span></div>
+<div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 9px; font-weight: 600; color: #6E6E73">MEM</span><span style="font-size: 11px; font-weight: 500; font-family: ui-monospace, Menlo, monospace">{{g.mem}}</span></div>
+</div>
+<sc-if value="{{g.running}}" hint-placeholder-val="{{true}}"><button class="rb" aria-label="Stop all" title="Stop the running containers of {{g.name}}"><svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"></rect></svg></button></sc-if>
+<sc-if value="{{g.stopped}}" hint-placeholder-val="{{false}}"><button class="rb" aria-label="Start all" title="Start every container of {{g.name}}" style="color: #1E7F3C"><svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"></path></svg></button></sc-if>
+<button class="rb" aria-label="Restart" title="Restart every container of {{g.name}}"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></button>
+<sc-if value="{{g.hasFile}}" hint-placeholder-val="{{true}}"><a href="ComposeEditor.dc.html" class="rb" aria-label="Edit compose file" title="Open {{g.path}} in your editor"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M14 6l4 4"></path></svg></a></sc-if>
 </div>
 <sc-if value="{{g.open}}" hint-placeholder-val="{{true}}">
 <div>
@@ -156,7 +162,9 @@ class Component extends DCLogic {
         summary: up + ' / ' + total + ' running',
         badgeColor: up === 0 ? '#6E6E73' : partial ? '#B54708' : '#1E7F3C',
         badgeBg: up === 0 ? 'rgba(0,0,0,0.05)' : partial ? '#FEF3E7' : '#E7F6EC',
-        running: up > 0, stopped: up === 0,
+        running: up > 0, stopped: up === 0, hasFile: g.id !== 'none',
+        cpu: up === 0 ? '—' : ({ shop: '3.7%', none: '0.1%' }[g.id] || '—'),
+        mem: up === 0 ? '—' : ({ shop: '312.0 MiB', none: '9.0 MiB' }[g.id] || '—'),
         services: g.services.map(([name, image, st, status, port, menu]) => ({
           name, image, status, port, menu,
           hasPort: !!port, noPort: !port,

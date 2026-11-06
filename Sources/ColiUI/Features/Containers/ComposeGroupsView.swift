@@ -123,19 +123,19 @@ private struct GroupHeader: View {
             .padding(.trailing, 4)
 
             if running > 0 {
-                groupAction("Stop all", icon: "stop.fill", help: "Stop the running containers of \\(group.name)", color: Palette.text) {
+                groupAction("Stop all", icon: "stop.fill", help: "Stop the running containers of \(group.name)", color: Palette.text) {
                     Task { await containers.perform(.stopAll, on: group) }
                 }
             } else {
-                groupAction("Start all", icon: "play.fill", help: "Start every container of \\(group.name)", color: Palette.greenText) {
+                groupAction("Start all", icon: "play.fill", help: "Start every container of \(group.name)", color: Palette.greenText) {
                     Task { await containers.perform(.startAll, on: group) }
                 }
             }
-            groupAction("Restart", icon: "arrow.clockwise", help: "Restart every container of \\(group.name)") {
+            groupAction("Restart", icon: "arrow.clockwise", help: "Restart every container of \(group.name)") {
                 Task { await containers.perform(.restart, on: group) }
             }
             if let file = group.configFile {
-                groupAction("Edit compose file", icon: "pencil", help: "Open \\(abbreviate(file)) in your editor") {
+                groupAction("Edit compose file", icon: "pencil", help: "Open \(abbreviate(file)) in your editor") {
                     NSWorkspace.shared.open(URL(fileURLWithPath: file))
                 }
             }
@@ -154,11 +154,13 @@ private struct GroupHeader: View {
 
     private func groupAction(_ label: String, icon: String, help: String, color: Color = Palette.text, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: icon).font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(color)
-                .frame(width: 28, height: 28)
-                .background(Palette.field, in: .circle)
-                .contentShape(.circle)
+            Hoverable { hovered in
+                Image(systemName: icon).font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(color)
+                    .frame(width: 28, height: 28)
+                    .background(hovered ? Palette.fieldHover : Palette.field, in: .circle)
+                    .contentShape(.circle)
+            }
         }
         .buttonStyle(.plain)
         .help(help)

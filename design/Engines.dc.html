@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ColiUI — Docker engines</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:#1D1D1F}
+.glass{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 4px 16px rgba(0,0,0,0.08)}
+.seg{height:26px;padding:0 12px;border:0;border-radius:13px;background:transparent;font-size:12px;font-family:inherit;color:#3A3A3C;cursor:pointer}
+.on{background:#FFFFFF;color:#1D1D1F;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.14)}
+.cap{font-size:12px;font-weight:600;color:#3A3A3C}
+.panel{background:#FBFBFD;border:1px solid rgba(0,0,0,0.12);border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.18)}
+.group{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:14px;overflow:hidden}
+.r{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:8px 16px;box-sizing:border-box;font-size:13px;border-top:1px solid rgba(0,0,0,0.06)}
+.r:first-child{border-top:0}
+.sel{height:28px;border:0;border-radius:14px;background:rgba(0,0,0,0.05);padding:0 12px;font-size:12px;font-family:inherit;color:#1D1D1F}
+.hint{font-size:11px;color:#6E6E73}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.nav{display:flex;align-items:center;gap:10px;height:30px;padding:0 8px;border-radius:8px;font-size:13px}
+.pill{flex:1;box-sizing:border-box;height:32px;border:0;border-radius:16px;background:rgba(0,0,0,0.06);font-size:13px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;color:#1D1D1F}
+.tile{background:rgba(255,255,255,0.7);border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+</style>
+</helmet>
+<div style="width: 1600px; height: 860px; box-sizing: border-box; padding: 28px 32px; background: linear-gradient(135deg, #BFD3EE 0%, #E6D7EC 50%, #CFE6DA 100%); display: flex; flex-direction: column; gap: 18px">
+
+<div style="display: flex; align-items: center; gap: 14px">
+<span style="font-size: 13px; font-weight: 600">Engine in use</span>
+<div role="group" aria-label="Engine" class="glass" style="display: inline-flex; gap: 2px; padding: 3px; border-radius: 16px">
+<sc-for list="{{engines}}" as="e" hint-placeholder-count="4">
+<button class="{{e.cls}}" aria-pressed="{{e.active}}" onClick="{{e.pick}}">{{e.label}}</button>
+</sc-for>
+</div>
+<span class="hint" style="color: #3A3A3C">Colima keeps the VM controls and Profiles; other engines are managed in their own app.</span>
+</div>
+
+<div style="flex: 1; display: flex; gap: 24px; align-items: flex-start">
+
+<!-- 1. Sidebar -->
+<section aria-label="Sidebar" style="flex: none; width: 240px; display: flex; flex-direction: column; gap: 8px">
+<span class="cap">Sidebar</span>
+<div class="panel" style="background: #FFFFFF; padding: 14px 10px 12px; display: flex; flex-direction: column; gap: 16px; height: 520px; box-sizing: border-box">
+<div aria-hidden="true" style="display: flex; gap: 8px; padding: 0 6px">
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span>
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span>
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span>
+</div>
+<div style="background: rgba(0,0,0,0.04); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="font-size: 11px; font-weight: 600; color: #5E5E63; letter-spacing: 0.04em">{{e.kicker}}</span>
+<span style="display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: {{e.stateColor}}"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: {{e.dot}}"></span>{{e.state}}</span>
+</div>
+<span style="font-size: 14px; font-weight: 600">{{e.title}}</span>
+<span style="font-size: 12px; color: #5E5E63">{{e.detail}}</span>
+<div style="display: flex; gap: 6px; margin-top: 4px">
+<sc-if value="{{e.isColima}}" hint-placeholder-val="{{true}}">
+<button style="flex: 1; height: 26px; border: 0; border-radius: 13px; background: #FFFFFF; font-size: 12px; font-family: inherit">Restart</button>
+<button style="flex: 1; height: 26px; border: 0; border-radius: 13px; background: #FFFFFF; color: #B42318; font-size: 12px; font-family: inherit">Stop</button>
+</sc-if>
+<sc-if value="{{e.isOther}}" hint-placeholder-val="{{false}}">
+<button style="flex: 1; height: 26px; border: 0; border-radius: 13px; background: #FFFFFF; font-size: 12px; font-family: inherit">{{e.openLabel}}</button>
+</sc-if>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; font-weight: 600; color: #5E5E63; padding: 0 8px 6px; letter-spacing: 0.04em">DOCKER</span>
+<div class="nav" style="background: rgba(0,102,204,0.14); font-weight: 600"><span style="flex: 1">Containers</span><span class="hint">6</span></div>
+<div class="nav"><span style="flex: 1">Images</span><span class="hint">12</span></div>
+<div class="nav"><span style="flex: 1">Volumes</span><span class="hint">5</span></div>
+<div class="nav"><span style="flex: 1">Networks</span><span class="hint">3</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; font-weight: 600; color: #5E5E63; padding: 0 8px 6px; letter-spacing: 0.04em">SYSTEM</span>
+<div class="nav"><span style="flex: 1">Cleanup</span><span class="hint">11 GB</span></div>
+<sc-if value="{{e.isColima}}" hint-placeholder-val="{{true}}"><div class="nav"><span style="flex: 1">Profiles</span><span class="hint">3</span></div></sc-if>
+</div>
+</div>
+<span class="hint" style="color: #3A3A3C">{{e.sidebarNote}}</span>
+</section>
+
+<!-- 2. Settings › General › Engine -->
+<section aria-label="Settings, General, Engine" style="flex: none; width: 560px; display: flex; flex-direction: column; gap: 8px">
+<span class="cap">Settings › General</span>
+<div class="panel" style="background: #F5F5F7; padding: 22px 32px; display: flex; flex-direction: column; gap: 18px; height: 520px; box-sizing: border-box">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; font-weight: 600; color: #6E6E73; padding: 0 6px">Docker engine</span>
+<div class="group">
+<label class="r">Engine
+<select class="sel"><option>{{e.choice}}</option><option>Colima</option><option>Docker Desktop</option><option>OrbStack</option><option>Rancher Desktop</option><option>Custom socket…</option></select></label>
+<div class="r" style="align-items: flex-start; flex-direction: column; gap: 6px">Docker socket
+<span class="mono" style="width: 100%; box-sizing: border-box; height: 30px; display: flex; align-items: center; border-radius: 10px; background: rgba(0,0,0,0.05); padding: 0 10px; color: #3A3A3C">{{e.socket}}</span>
+<span class="hint">{{e.socketHint}}</span></div>
+<sc-if value="{{e.isColima}}" hint-placeholder-val="{{true}}">
+<label class="r">Colima profile<select class="sel"><option>default</option><option>work</option></select></label>
+</sc-if>
+</div>
+<span class="hint" style="padding: 0 6px">Automatic picks the first engine that answers: Colima, then Docker Desktop, OrbStack and Rancher Desktop. Changes apply on the next launch.</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; font-weight: 600; color: #6E6E73; padding: 0 6px">Startup</span>
+<div class="group">
+<label class="r">Launch ColiUI at login<input type="checkbox" role="switch" checked style="width: 16px; height: 16px; accent-color: #30A14E"></label>
+<sc-if value="{{e.isColima}}" hint-placeholder-val="{{true}}">
+<label class="r">Start Colima when ColiUI opens<input type="checkbox" role="switch" checked style="width: 16px; height: 16px; accent-color: #30A14E"></label>
+</sc-if>
+<label class="r">Show icon in Dock<input type="checkbox" role="switch" style="width: 16px; height: 16px; accent-color: #30A14E"></label>
+</div>
+</div>
+</div>
+</section>
+
+<!-- 3. Menu bar popover -->
+<section aria-label="Menu bar popover" style="flex: none; width: 340px; display: flex; flex-direction: column; gap: 8px">
+<span class="cap">Menu bar popover</span>
+<div class="glass" style="background: rgba(250,250,252,0.85); border-radius: 22px; padding: 12px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 10px; padding: 4px 4px 0">
+<svg aria-hidden="true" width="24" height="24" viewBox="0 0 100 100" fill="none"><rect x="8" y="8" width="84" height="84" rx="18" stroke="#1D1D1F" stroke-width="8"></rect><g transform="translate(12 12) scale(0.78)"><path d="M30 95 L32 44 C32 36 34 32 37 30 L35 16 L41 27 L44 14 L47 28 C52 29 60 32 66 36 C69 38 69 44 66 46 C62 48 57 49 53 50 C51 54 50 60 50 70 L52 95 Z" fill="#1D1D1F"></path></g></svg>
+<div style="flex: 1; display: flex; flex-direction: column">
+<span style="font-size: 14px; font-weight: 600">ColiUI</span>
+<span style="font-size: 11px; color: #5E5E63">{{e.menuSubtitle}}</span>
+</div>
+<span style="display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: {{e.stateColor}}; background: {{e.stateBg}}; padding: 4px 10px; border-radius: 999px"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: {{e.dot}}"></span>{{e.state}}</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<div class="tile"><span style="font-size: 11px; color: #5E5E63">CPU</span><span style="font-size: 15px; font-weight: 600">{{e.cpu}}</span></div>
+<div class="tile"><span style="font-size: 11px; color: #5E5E63">Memory</span><span style="font-size: 15px; font-weight: 600">{{e.memory}}</span></div>
+<div class="tile"><span style="font-size: 11px; color: #5E5E63">Disk</span><span style="font-size: 15px; font-weight: 600">{{e.disk}}</span></div>
+</div>
+<div style="display: flex; gap: 8px">
+<sc-if value="{{e.isColima}}" hint-placeholder-val="{{true}}">
+<button class="pill">Restart VM</button><button class="pill" style="color: #B42318">Stop VM</button>
+</sc-if>
+<sc-if value="{{e.isOther}}" hint-placeholder-val="{{false}}">
+<button class="pill">{{e.openLabel}}</button>
+</sc-if>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 0">
+<span style="font-size: 11px; font-weight: 600; color: #5E5E63; letter-spacing: 0.04em">CONTAINERS</span>
+<span style="font-size: 11px; color: #5E5E63">4 of 6 running</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #28C840"></span><span style="font-size: 13px; font-weight: 500">postgres-dev</span></div>
+<div style="display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #28C840"></span><span style="font-size: 13px; font-weight: 500">api-server</span></div>
+</div>
+</div>
+</section>
+
+<!-- 4. Cleanup disk card -->
+<section aria-label="Cleanup disk card" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<span class="cap">Cleanup</span>
+<div style="background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600">{{e.diskTitle}}</h2>
+<span style="font-size: 13px; color: #3A3A3C"><strong style="font-size: 20px; color: #1D1D1F">41.2 GiB</strong> {{e.diskOf}}</span>
+</div>
+<div aria-hidden="true" style="display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: rgba(0,0,0,0.06); gap: 2px">
+<span style="width: {{e.w1}}; background: #0066CC"></span><span style="width: {{e.w2}}; background: #C2410C"></span><span style="width: {{e.w3}}; background: #7C5CD6"></span><span style="width: {{e.w4}}; background: #1E7F3C"></span>
+</div>
+<p style="margin: 0; font-size: 12px; color: #6E6E73; line-height: 1.5">{{e.diskNote}}</p>
+</div>
+</section>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":860}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { engine: 'colima' };
+  }
+  renderVals() {
+    const id = this.state.engine;
+    const running = { state: 'Running', stateColor: '#1E7F3C', stateBg: 'rgba(40,200,64,0.14)', dot: '#28C840' };
+    const stopped = { state: 'Not running', stateColor: '#6E6E73', stateBg: 'rgba(0,0,0,0.06)', dot: '#AEAEB2' };
+    const other = (name, app, socket, version) => ({
+      ...running, kicker: name.toUpperCase(), title: name, detail: 'Engine ' + version + ' · 10 CPU · 8 GiB',
+      isColima: false, isOther: true, openLabel: 'Open ' + app, choice: 'Automatic (' + name + ')',
+      socket, socketHint: 'Detected automatically. ' + name + ' runs its own VM; start and stop it in ' + app + '.',
+      menuSubtitle: name, cpu: '10 cores', memory: '8 GiB', disk: '41 G used',
+      diskTitle: name + ' disk', diskOf: 'used by images, cache, volumes and containers',
+      w1: '41%', w2: '11%', w3: '14%', w4: '2%',
+      diskNote: name + ' sets its disk size in its own settings, so ColiUI shows what Docker uses, not the free space.',
+      sidebarNote: 'Profiles is a Colima feature, so it is hidden.'
+    });
+    const defs = {
+      colima: { ...running, kicker: 'COLIMA', title: 'default', detail: '4 CPU · 8 GiB · 60 GiB · vz',
+        isColima: true, isOther: false, openLabel: '', choice: 'Automatic (Colima)',
+        socket: '~/.colima/default/docker.sock', socketHint: 'Detected automatically from the active profile.',
+        menuSubtitle: 'Profile: default', cpu: '12%', memory: '2.1 / 8 G', disk: '18 / 60 G',
+        diskTitle: 'Colima VM disk · default', diskOf: 'of 60 GiB used',
+        w1: '41%', w2: '11.3%', w3: '14%', w4: '2.3%',
+        diskNote: 'Colima disks can only grow — freeing space inside the VM is the only way to reclaim it.',
+        sidebarNote: 'Same as today: VM controls and Profiles.' },
+      desktop: other('Docker Desktop', 'Docker Desktop', '~/.docker/run/docker.sock', '28.5.1'),
+      orbstack: other('OrbStack', 'OrbStack', '~/.orbstack/run/docker.sock', '28.3.3'),
+      none: { ...stopped, kicker: 'DOCKER', title: 'No engine running', detail: 'Start Colima, Docker Desktop or OrbStack',
+        isColima: false, isOther: true, openLabel: 'Start Colima', choice: 'Automatic',
+        socket: '—', socketHint: 'No engine answered. ColiUI checks again every few seconds.',
+        menuSubtitle: 'No Docker engine', cpu: '—', memory: '—', disk: '—',
+        diskTitle: 'Docker disk', diskOf: 'unknown — no engine running', w1: '0%', w2: '0%', w3: '0%', w4: '0%',
+        diskNote: 'Start an engine to measure what Docker uses.',
+        sidebarNote: 'With Colima installed, Start Colima starts the default profile.' }
+    };
+    const labels = [['colima', 'Colima'], ['desktop', 'Docker Desktop'], ['orbstack', 'OrbStack'], ['none', 'None running']];
+    const engines = labels.map(([key, label]) => ({
+      label, active: id === key ? 'true' : 'false', cls: id === key ? 'seg on' : 'seg',
+      pick: () => this.setState({ engine: key })
+    }));
+    return { engines, e: defs[id] };
+  }
+}
+</script>
+</body>
+</html>
