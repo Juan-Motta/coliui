@@ -113,28 +113,56 @@ private struct GroupHeader: View {
 
             Spacer(minLength: 8)
 
-            if running > 0 {
-                Button("Stop all") { Task { await containers.perform(.stopAll, on: group) } }
-                    .buttonStyle(PillButtonStyle())
-                    .help("Stop the running containers of \(group.name)")
-            } else {
-                Button { Task { await containers.perform(.startAll, on: group) } } label: {
-                    Text("Start all").fontWeight(.semibold)
-                }
-                .buttonStyle(PillButtonStyle(foreground: Palette.greenText))
-                .help("Start every container of \(group.name)")
+            let groupStats = group.containers.filter(\.isRunning).compactMap { containers.stats[$0.id] }
+            let cpu = groupStats.reduce(0.0) { $0 + $1.cpuPercent }
+            let memory = groupStats.reduce(Int64(0)) { $0 + $1.memoryBytes }
+            HStack(spacing: 12) {
+                resourceStat("CPU", value: groupStats.isEmpty ? "—" : String(format: "%.1f%%", cpu))
+                resourceStat("MEM", value: groupStats.isEmpty ? "—" : ByteFormat.binary(memory))
             }
-            Button("Restart") { Task { await containers.perform(.restart, on: group) } }
-                .buttonStyle(PillButtonStyle())
-                .help("Restart every container of \(group.name)")
+            .padding(.trailing, 4)
+
+            if running > 0 {
+                groupAction("Stop all", icon: "stop.fill", help: "Stop the running containers of \\(group.name)", color: Palette.text) {
+                    Task { await containers.perform(.stopAll, on: group) }
+                }
+            } else {
+                groupAction("Start all", icon: "play.fill", help: "Start every container of \\(group.name)", color: Palette.greenText) {
+                    Task { await containers.perform(.startAll, on: group) }
+                }
+            }
+            groupAction("Restart", icon: "arrow.clockwise", help: "Restart every container of \\(group.name)") {
+                Task { await containers.perform(.restart, on: group) }
+            }
             if let file = group.configFile {
-                Button("Edit compose file") { NSWorkspace.shared.open(URL(fileURLWithPath: file)) }
-                    .buttonStyle(PillButtonStyle())
-                    .help("Open \(abbreviate(file)) in your editor")
+                groupAction("Edit compose file", icon: "pencil", help: "Open \\(abbreviate(file)) in your editor") {
+                    NSWorkspace.shared.open(URL(fileURLWithPath: file))
+                }
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
+    }
+
+    private func resourceStat(_ title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(title).font(.ui(9, .semibold)).foregroundStyle(Palette.secondary)
+            Text(value).font(.mono(11, .medium)).foregroundStyle(Palette.text).lineLimit(1)
+        }
+        .fixedSize()
+    }
+
+    private func groupAction(_ label: String, icon: String, help: String, color: Color = Palette.text, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icon).font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(color)
+                .frame(width: 28, height: 28)
+                .background(Palette.field, in: .circle)
+                .contentShape(.circle)
+        }
+        .buttonStyle(.plain)
+        .help(help)
+        .accessibilityLabel(label)
     }
 
     private func abbreviate(_ path: String) -> String {
