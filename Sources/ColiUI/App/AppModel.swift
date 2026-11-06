@@ -357,7 +357,7 @@ final class AppModel {
     }
 
     /// Settings › Refresh stats every: each stats round takes about a second, so the interval runs between rounds.
-    /// Rounds run only while the containers list (the only screen with CPU / memory columns) is on screen.
+    /// Rounds run while the containers screen is visible and has CPU / memory stats to show.
     private func startStats() {
         guard statsTask == nil else { return }
         statsTask = Task {
@@ -376,9 +376,9 @@ final class AppModel {
         }
     }
 
-    /// The containers list in its list layout, with no detail open.
+    /// The containers screen, in either list or Compose-group mode, with no detail open.
     private var showsStatsColumns: Bool {
-        (section ?? .containers) == .containers && detail == nil && containers.viewMode == .list
+        (section ?? .containers) == .containers && detail == nil
     }
 
     nonisolated static func samplesStats(enabled: Bool, isMainWindowOpen: Bool, showsStatsColumns: Bool) -> Bool {
