@@ -159,21 +159,24 @@ private struct ProfileEditor: View {
                     .buttonStyle(PillButtonStyle(foreground: Palette.danger))
                     .help("Delete this profile's VM")
                 Spacer()
-                if let operation = profiles.operation {
-                    ProgressView().controlSize(.small)
-                    Text(operation.title).font(.ui(12)).foregroundStyle(Palette.secondary)
-                }
                 Button("Revert") { profiles.revert() }
                     .buttonStyle(PillButtonStyle())
                     .disabled(!profiles.isDirty)
-                Button("Apply & restart") {
+                Button {
                     Task {
                         await profiles.requestApply()
                         await model.colima.refresh()
                     }
+                } label: {
+                    HStack(spacing: 7) {
+                        if profiles.operation == .applying {
+                            ProgressView().controlSize(.small).tint(.white)
+                        }
+                        Text(profiles.operation == .applying ? "Applying…" : "Apply & restart")
+                    }
                 }
                 .buttonStyle(TintButtonStyle())
-                .disabled(!profiles.isDirty)
+                .disabled(!profiles.isDirty || profiles.isBusy)
             }
             .padding(.top, 12)
             .overlay(alignment: .top) { Palette.rowDivider.frame(height: 1) }
