@@ -45,6 +45,7 @@ struct ProfilesView: View {
                 .padding(.bottom, 16)
             }
         }
+        .disabled(profiles.isBusy)
         .confirmationDialog(
             "Restart “\(profiles.selectedName ?? "")” to apply?",
             isPresented: $profiles.confirmingApply
@@ -162,17 +163,10 @@ private struct ProfileEditor: View {
                 Button("Revert") { profiles.revert() }
                     .buttonStyle(PillButtonStyle())
                     .disabled(!profiles.isDirty)
-                Button {
+                Button("Apply & restart") {
                     Task {
                         await profiles.requestApply()
                         await model.colima.refresh()
-                    }
-                } label: {
-                    HStack(spacing: 7) {
-                        if profiles.operation == .applying {
-                            ProgressView().controlSize(.small).tint(.white)
-                        }
-                        Text(profiles.operation == .applying ? "Applying…" : "Apply & restart")
                     }
                 }
                 .buttonStyle(TintButtonStyle())
