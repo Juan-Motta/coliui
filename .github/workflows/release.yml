@@ -21,6 +21,9 @@ jobs:
         with:
           fetch-depth: 0 # the release notes read the commits since the previous tag
 
+      - name: Check project conventions
+        run: scripts/check-conventions.sh
+
       - name: Select the newest Xcode
         run: |
           XCODE="$(ls -d /Applications/Xcode_*.app | grep -vi beta | sort -V | tail -1)"

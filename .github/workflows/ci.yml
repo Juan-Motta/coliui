@@ -1,0 +1,38 @@
+# Every pull request and every push to main: project conventions, build and tests.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check project conventions
+        run: scripts/check-conventions.sh
+
+      - name: Select the newest Xcode
+        run: |
+          XCODE="$(ls -d /Applications/Xcode_*.app | grep -vi beta | sort -V | tail -1)"
+          sudo xcode-select -s "$XCODE"
+          swift --version
+
+      - name: Build
+        run: swift build --build-tests
+
+      - name: Test
+        # Serial, with a short limit: on the 3-core runners one parallel run hung for 30 minutes.
+        timeout-minutes: 10
+        run: swift test --skip-build --no-parallel

@@ -116,7 +116,7 @@ COLIUI_LIVE=1 swift test  # also runs the read-only tests against your real Coli
 
 `swift test --filter …` fails with the Command Line Tools (the Testing macro plugin isn't loaded); run the whole suite instead.
 
-Releases, signing and updates: [docs/RELEASING.md](docs/RELEASING.md). Designs: [design/](design/README.md).
+Releases, signing and updates: [docs/RELEASING.md](docs/RELEASING.md). Designs: [design/](design/README.md). Want to help? Read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## How it works
 
