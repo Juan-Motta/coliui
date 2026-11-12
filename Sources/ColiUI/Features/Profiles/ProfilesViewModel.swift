@@ -2,7 +2,7 @@ import ColiUICore
 import Foundation
 import Observation
 
-enum ProfileOperation {
+enum ProfileOperation: Equatable {
     case applying, creating, deleting
 
     var title: String {

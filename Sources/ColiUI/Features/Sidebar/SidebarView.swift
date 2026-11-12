@@ -79,6 +79,27 @@ struct MainWindow: View {
         .onAppear { model.mainWindowOpened() }
         .onDisappear { model.mainWindowClosed() }
         .onChange(of: model.settings.theme) { model.applySystemSettings() }
+        .overlay {
+            if let operation = model.profiles.operation {
+                ZStack {
+                    Color.black.opacity(0.18)
+                        .ignoresSafeArea()
+                        .contentShape(.rect)
+                    HStack(spacing: 10) {
+                        ProgressView().controlSize(.small)
+                        Text(operation.title).font(.ui(13, .semibold))
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
+                    .background(Palette.card, in: .rect(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Palette.cardBorder, lineWidth: 1))
+                    .shadow(color: .black.opacity(0.18), radius: 18, y: 8)
+                }
+                .ignoresSafeArea()
+                .zIndex(10)
+            }
+        }
+        .disabled(model.profiles.isBusy)
     }
 }
 

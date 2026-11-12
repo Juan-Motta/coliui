@@ -291,6 +291,7 @@ struct ToolbarIconButtonStyle: ButtonStyle {
 
 /// `.tint`: blue capsule with a white hairline and coloured shadow; `compact` is the 28 pt / 12 pt row button.
 struct TintButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
     var compact = false
 
     func makeBody(configuration: Configuration) -> some View {
@@ -305,13 +306,13 @@ struct TintButtonStyle: ButtonStyle {
             .foregroundStyle(.white)
             .padding(.horizontal, 14)
             .frame(height: compact ? 28 : 34)
-            .background((hovered ? Palette.tintHover : Palette.tint).opacity(configuration.isPressed ? 0.88 : 1), in: .capsule)
+            .background((hovered ? Palette.tintHover : Palette.tint).opacity(isEnabled ? (configuration.isPressed ? 0.88 : 1) : 0.52), in: .capsule)
             .overlay(Capsule().strokeBorder(.white.opacity(0.4), lineWidth: 1))
             .overlay(Capsule().inset(by: 1).stroke(
                 LinearGradient(colors: [.white.opacity(0.35), .clear], startPoint: .top, endPoint: .init(x: 0.5, y: 0.15)),
                 lineWidth: 1
             ))
-            .shadow(color: Palette.tintShadow, radius: 7, y: 4)
+            .shadow(color: isEnabled ? Palette.tintShadow : .clear, radius: 7, y: 4)
             .contentShape(.capsule)
     }
 }

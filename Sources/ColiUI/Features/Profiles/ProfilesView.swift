@@ -45,6 +45,7 @@ struct ProfilesView: View {
                 .padding(.bottom, 16)
             }
         }
+        .disabled(profiles.isBusy)
         .confirmationDialog(
             "Restart “\(profiles.selectedName ?? "")” to apply?",
             isPresented: $profiles.confirmingApply
@@ -159,10 +160,6 @@ private struct ProfileEditor: View {
                     .buttonStyle(PillButtonStyle(foreground: Palette.danger))
                     .help("Delete this profile's VM")
                 Spacer()
-                if let operation = profiles.operation {
-                    ProgressView().controlSize(.small)
-                    Text(operation.title).font(.ui(12)).foregroundStyle(Palette.secondary)
-                }
                 Button("Revert") { profiles.revert() }
                     .buttonStyle(PillButtonStyle())
                     .disabled(!profiles.isDirty)
@@ -173,7 +170,7 @@ private struct ProfileEditor: View {
                     }
                 }
                 .buttonStyle(TintButtonStyle())
-                .disabled(!profiles.isDirty)
+                .disabled(!profiles.isDirty || profiles.isBusy)
             }
             .padding(.top, 12)
             .overlay(alignment: .top) { Palette.rowDivider.frame(height: 1) }
